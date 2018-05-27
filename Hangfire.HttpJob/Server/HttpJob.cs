@@ -1,4 +1,5 @@
 ﻿using Hangfire.Console;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Newtonsoft.Json;
 using System;
@@ -11,7 +12,7 @@ namespace Hangfire.HttpJob.Server
 {
     internal class HttpJob
     {
-
+        private static readonly ILog Logger = LogProvider.For<HttpJob>();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
 
 
@@ -73,6 +74,7 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
+                Logger.ErrorException("HttpJob.Excute", ex);
                 context.WriteLine(ex.Message);
             }
         }

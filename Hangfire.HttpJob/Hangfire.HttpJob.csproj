@@ -4,8 +4,9 @@
     <TargetFramework>netstandard1.3</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>httpjob for Hangfire</Description>
-    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/yuzd/Hangfire.HttpJob/blob/master/License.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
