@@ -67,7 +67,48 @@ Usage
 		});
 	}
 ```
+How to add Hangfire.HttpJob by restful api
+================================
+1.add backgroundjob
 
+```
+url:http://{hangfireserver}/hangfire/httpjob?op=backgroundjob
+method:post
+data:
+{
+  "Method": "POST",
+  "ContentType": "application/json",
+  "Url": "http://XXXXXXX",
+  "DelayFromMinutes": 1,
+  "Data": "{\"userName\":\"test\"}",
+  "Timeout": 5000,
+  "BasicUserName": "",// 如果你希望hangfire执行http的时候带basic认证的话 就设置这2个参数
+  "BasicPassword": "",
+  "JobName": "test_backgroundjob"
+}
+```
+
+2.add recurringjob
+
+```
+url:http://{hangfireserver}/hangfire/httpjob?op=recurringjob
+method:post
+data:
+{
+  "Method": "POST",
+  "ContentType": "application/json",
+  "Url": "http://XXXXXXX",
+  "Data": "{\"userName\":\"test\"}",
+  "Timeout": 5000,
+  "Corn": "0 12 * */2",
+  "BasicUserName": "",// 如果你希望hangfire执行http的时候带basic认证的话 就设置这2个参数
+  "BasicPassword": "",
+  "JobName": "test_recurringjob"
+}
+```
+
+How to add Hangfire.HttpJob  in Dashbord
+================================
 ![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic1.png)
 ![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic2.png)
 ![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic3.png)
