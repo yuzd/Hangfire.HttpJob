@@ -1,4 +1,5 @@
 ﻿using Hangfire.Dashboard;
+using Hangfire.Logging;
 using System;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Hangfire.HttpJob.Server
     public class HttpJobDispatcher : IDashboardDispatcher
     {
         private readonly HangfireHttpJobOptions _options;
-
+        private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
         public HttpJobDispatcher(HangfireHttpJobOptions options)
         {
             if (options == null)
@@ -23,61 +24,75 @@ namespace Hangfire.HttpJob.Server
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
-
-            if (!"POST".Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                return Task.FromResult(false);
-            }
-
-            var op = context.Request.GetQuery("op");
-            if (string.IsNullOrEmpty(op))
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                return Task.FromResult(false);
-            }
-
-            var jobItem = GetJobItem(context);
-            if (jobItem == null || string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) ||
-                string.IsNullOrEmpty(jobItem.JobName))
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                return Task.FromResult(false);
-            }
-
-            if (string.IsNullOrEmpty(jobItem.JobName))
-            {
-                var jobName = context.Request.Path.Split('/').LastOrDefault() ?? string.Empty;
-                jobItem.JobName = jobName;
-            }
-
-            var result = false;
-            switch (op.ToLower())
-            {
-                case "backgroundjob":
-                    result = AddHttpbackgroundjob(jobItem);
-                    break;
-                case "recurringjob":
-                    if (string.IsNullOrEmpty(jobItem.Corn))
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                        return Task.FromResult(false);
-                    }
-                    result = AddHttprecurringjob(jobItem);
-                    break;
-                default:
+                if (!"POST".Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase))
+                {
                     context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                     return Task.FromResult(false);
-            }
+                }
 
-            if (result)
-            {
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                return Task.FromResult(true);
+                var op = context.Request.GetQuery("op");
+                if (string.IsNullOrEmpty(op))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    return Task.FromResult(false);
+                }
+
+                var jobItem = GetJobItem(context);
+                if (jobItem == null || string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    return Task.FromResult(false);
+                }
+
+                if (string.IsNullOrEmpty(jobItem.JobName))
+                {
+                    var jobName = context.Request.Path.Split('/').LastOrDefault() ?? string.Empty;
+                    jobItem.JobName = jobName;
+                }
+
+                if (string.IsNullOrEmpty(jobItem.JobName))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    return Task.FromResult(false);
+                }
+
+                var result = false;
+                switch (op.ToLower())
+                {
+                    case "backgroundjob":
+                        result = AddHttpbackgroundjob(jobItem);
+                        break;
+                    case "recurringjob":
+                        if (string.IsNullOrEmpty(jobItem.Corn))
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                            return Task.FromResult(false);
+                        }
+                        result = AddHttprecurringjob(jobItem);
+                        break;
+                    default:
+                        context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                        return Task.FromResult(false);
+                }
+
+                if (result)
+                {
+                    context.Response.ContentType = "application/json";
+                    context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                    return Task.FromResult(true);
+                }
+                else
+                {
+                    context.Response.ContentType = "application/json";
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    return Task.FromResult(false);
+                }
             }
-            else
+            catch (Exception ex)
             {
+                Logger.ErrorException("HttpJobDispatcher.Dispatch", ex);
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 return Task.FromResult(false);
@@ -92,27 +107,17 @@ namespace Hangfire.HttpJob.Server
                 var context = _context.GetHttpContext();
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    try
-                    {
-                        context.Request.Body.CopyTo(ms);
-                        ms.Flush();
-                        ms.Seek(0, SeekOrigin.Begin);
-                        var sr = new StreamReader(ms);
-                        var requestBody = sr.ReadToEnd();
-                        return Newtonsoft.Json.JsonConvert.DeserializeObject<HttpJobItem>(requestBody);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                    finally
-                    {
-                    }
-
+                    context.Request.Body.CopyTo(ms);
+                    ms.Flush();
+                    ms.Seek(0, SeekOrigin.Begin);
+                    var sr = new StreamReader(ms);
+                    var requestBody = sr.ReadToEnd();
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<HttpJobItem>(requestBody);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ErrorException("HttpJobDispatcher.GetJobItem", ex);
                 return null;
             }
         }
@@ -130,9 +135,9 @@ namespace Hangfire.HttpJob.Server
                 BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Logger.ErrorException("HttpJobDispatcher.AddHttpbackgroundjob", ex);
                 return false;
             }
         }
@@ -149,8 +154,9 @@ namespace Hangfire.HttpJob.Server
                 RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, null), jobItem.Corn, TimeZoneInfo.Local);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ErrorException("HttpJobDispatcher.AddHttprecurringjob", ex);
                 return false;
             }
         }

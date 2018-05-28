@@ -16,11 +16,7 @@
 
 
             var button ='';
-
-
             var divModel = '';
-
-
             var options = {
                 schema: {},
                 mode: 'code'
@@ -114,7 +110,6 @@
 
 
             $('#addhttpJob_save-model').click(function () {
-                debugger;
                 var url = $(this).data("url");
                 if (!url) return;
                 var settings = {
@@ -148,8 +143,6 @@
 
 function loadHttpJobModule() {
     Hangfire.httpjob = new Hangfire.HttpJob();
-
-    console.log(window.Hangfire.httpjobConfig);
 }
 
 if (window.attachEvent) {
