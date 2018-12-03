@@ -23,7 +23,7 @@
             };
 
             var normal_templete = "{\"Method\":\"POST\",\"ContentType\":\"application/json\",\"Url\":\"\",\"DelayFromMinutes\":1,\"Data\":\"\",\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\"}";
-            var recurring_templete = "{\"Method\":\"POST\",\"ContentType\":\"application/json\",\"Url\":\"\",\"Data\":\"\",\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Corn\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\"}";
+            var recurring_templete = "{\"Method\":\"POST\",\"ContentType\":\"application/json\",\"Url\":\"\",\"Data\":\"\",\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\"}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton) {
                 button =

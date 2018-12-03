@@ -65,7 +65,7 @@ namespace Hangfire.HttpJob.Server
                         result = AddHttpbackgroundjob(jobItem);
                         break;
                     case "recurringjob":
-                        if (string.IsNullOrEmpty(jobItem.Corn))
+                        if (string.IsNullOrEmpty(jobItem.Cron))
                         {
                             context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                             return Task.FromResult(false);
@@ -151,7 +151,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, null), jobItem.Corn, TimeZoneInfo.Local);
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, null), jobItem.Cron, TimeZoneInfo.Local);
                 return true;
             }
             catch (Exception ex)
