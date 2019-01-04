@@ -19,10 +19,16 @@ Usage
 ## 
 
 ```csharp
-
+	//StartUp.cs
+  	private readonly IConfiguration _configuration;
+        public StartUp(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+	
 	public virtual void ConfigureServices(IServiceCollection services)
 	{
-		services.AddHangfire(Configuration);
+		services.AddHangfire(_configuration);
 	}
 
 	private void Configuration(IGlobalConfiguration globalConfiguration)
