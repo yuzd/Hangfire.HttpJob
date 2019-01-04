@@ -20,15 +20,10 @@ Usage
 
 ```csharp
 	//StartUp.cs
-  	private readonly IConfiguration _configuration;
-        public StartUp(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-	
+ 
 	public virtual void ConfigureServices(IServiceCollection services)
 	{
-		services.AddHangfire(_configuration);
+		services.AddHangfire(Configuration);//Configuration是下面的方法
 	}
 
 	private void Configuration(IGlobalConfiguration globalConfiguration)
