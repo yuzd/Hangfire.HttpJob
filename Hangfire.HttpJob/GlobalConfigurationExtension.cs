@@ -3,6 +3,7 @@ using Hangfire.HttpJob.Dashboard;
 using Hangfire.HttpJob.Server;
 using Hangfire.HttpJob.Support;
 using System.Reflection;
+using Hangfire.HttpJob.Dashboard.Pages;
 
 namespace Hangfire.HttpJob
 {
@@ -16,12 +17,14 @@ namespace Hangfire.HttpJob
 
             //处理http请求
             DashboardRoutes.Routes.Add("/httpjob", new HttpJobDispatcher(options));
-
+            DashboardRoutes.Routes.AddRazorPage("/corn", x => new CornJobsPage());
 
             var jsPath = DashboardRoutes.Routes.Contains("/js[0-9]+") ? "/js[0-9]+" : "/js[0-9]{3}";
             DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.jsoneditor.js"));
             DashboardRoutes.Routes.Append(jsPath, new DynamicJsDispatcher(options));
+            DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.cron.js"));
             DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.httpjob.js"));
+            
 
 
             var cssPath = DashboardRoutes.Routes.Contains("/css[0-9]+") ? "/css[0-9]+" : "/css[0-9]{3}";

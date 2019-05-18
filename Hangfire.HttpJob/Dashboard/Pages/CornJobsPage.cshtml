@@ -1,0 +1,433 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System.Collections
+@using System.Collections.Generic
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
+@inherits RazorPage
+@{
+    Layout = new LayoutPage(Hangfire.HttpJob.Content.resx.Strings.AddCronButtonName);
+}
+
+<style>
+    body {
+        width: 50%;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    input[type=number] {
+        height: 25px;
+        width: 52px;
+    }
+
+    .search-field input[type=text] {
+        width: 152px !important;
+    }
+</style>
+<div>
+    <div style="text-align: center;">
+        <h3>@Hangfire.HttpJob.Content.resx.Strings.AddCronButtonName</h3>
+        <br>
+    </div>
+    <div>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            @*<li role="presentation" class="active">
+                <a href="#second" aria-controls="second" role="tab" data-toggle="tab">秒</a>
+            </li>*@
+            <li role="presentation" class="active">
+                <a href="#minute" aria-controls="minute" role="tab" data-toggle="tab">分钟</a>
+            </li>
+            <li role="presentation">
+                <a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">小时</a>
+            </li>
+            <li role="presentation">
+                <a href="#day" aria-controls="day" role="tab" data-toggle="tab">日</a>
+            </li>
+            <li role="presentation">
+                <a href="#month" aria-controls="month" role="tab" data-toggle="tab">月</a>
+            </li>
+            <li role="presentation">
+                <a href="#week" aria-controls="week" role="tab" data-toggle="tab">周</a>
+            </li>
+            @*<li role="presentation">
+                <a href="#year" aria-controls="year" role="tab" data-toggle="tab">年</a>
+            </li>*@
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+
+            <!--秒-->
+            @*<div role="tabpanel" class="tab-pane active" id="second">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="secondType" value="All" checked="checked">
+                        每秒 允许的通配符[, - * /]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="secondType" value="Cyclic">
+                        周期从
+                        <input type="number" maxlength="2" id="secondTypeCyclic_1" value="">
+                        -
+                        <input type="number" id="secondTypeCyclic_2" value="">
+                        秒
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="secondType" value="Interval">
+                        从
+                        <input type="number" id="secondTypeInterval_1" value="">
+                        秒开始,每
+                        <input type="number" id="secondTypeInterval_2" value="">
+                        秒执行一次
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="secondType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="secondTypeAssigned_1" data-placeholder="选择指定的秒..."
+                            style="width:350px;" multiple></select>
+                </div>
+            </div>*@
+
+            <!--分钟-->
+            <div role="tabpanel" class="tab-pane active" id="minute">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="minuteType" value="All" checked="checked">
+                        每分钟 允许的通配符[, - * /]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="minuteType" value="Cyclic">
+                        周期从
+                        <input type="number" id="minuteTypeCyclic_1" value="">
+                        -
+                        <input type="number" id="minuteTypeCyclic_2" value="">
+                        分钟
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="minuteType" value="Interval">
+                        从
+                        <input type="number" id="minuteTypeInterval_1" value="">
+                        分钟开始,每
+                        <input type="number" id="minuteTypeInterval_2" value="">
+                        分钟执行一次
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="minuteType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="minuteTypeAssigned_1" data-placeholder="选择指定的分钟..."
+                            style="width:350px;" multiple></select>
+                </div>
+            </div>
+
+            <!--小时-->
+            <div role="tabpanel" class="tab-pane" id="hour">
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="hourType" value="All" checked="checked">
+                        每小时 允许的通配符[, - * /]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="hourType" value="Cyclic">
+                        周期从
+                        <input type="number" id="hourTypeCyclic_1" value="">
+                        -
+                        <input type="number" id="hourTypeCyclic_2" value="">
+                        小时
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="hourType" value="Interval">
+                        从
+                        <input type="number" id="hourTypeInterval_1" value="">
+                        时开始,每
+                        <input type="number" id="hourTypeInterval_2" value="">
+                        小时执行一次
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="hourType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="hourTypeAssigned_1" data-placeholder="选择指定的小时..."
+                            style="width:350px;" multiple></select>
+                </div>
+
+            </div>
+
+
+            <!--日-->
+            <div role="tabpanel" class="tab-pane" id="day">
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="All" checked="checked">
+                        每日 允许的通配符[, - * / L W]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="Cyclic">
+                        周期从
+                        <input type="number" id="dayTypeCyclic_1" value="">
+                        -
+                        <input type="number" id="dayTypeCyclic_2" value="">
+                        日
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="Interval">
+                        从
+                        <input type="number" id="dayTypeInterval_1" value="">
+                        日开始,每
+                        <input type="number" id="dayTypeInterval_2" value="">
+                        日执行一次
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="dayTypeAssigned_1" data-placeholder="选择指定的日..."
+                            style="width:350px;" multiple></select>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="NotAssigned">
+                        不指定
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="RecentDays">
+                        每月
+                        <input type="number" id="dayTypeRecentDays_1" value="">
+                        号最近的那个工作日
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="LastDayOfMonth">
+                        本月最后一天
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="LastDayOfMonthRecentDays">
+                        本月最后一个工作日
+                    </label>
+                </div>
+            </div>
+
+
+            <!--月-->
+            <div role="tabpanel" class="tab-pane" id="month">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="monthType" value="All" checked="checked">
+                        每月 允许的通配符[, - * /]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="monthType" value="Cyclic">
+                        周期从
+                        <input type="number" id="monthTypeCyclic_1" value="">
+                        -
+                        <input type="number" id="monthTypeCyclic_2" value="">
+                        月
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="monthType" value="Interval">
+                        从
+                        <input type="number" id="monthTypeInterval_1" value="">
+                        月开始,每
+                        <input type="number" id="monthTypeInterval_2" value="">
+                        月执行一次
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="monthType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="monthTypeAssigned_1" data-placeholder="选择指定的月..."
+                            style="width:350px;" multiple></select>
+                </div>
+
+                @*<div class="radio">
+                    <label>
+                        <input type="radio" name="monthType" value="NotAssigned">
+                        不指定
+                    </label>
+                </div>*@
+            </div>
+
+
+            <!--周-->
+            <div role="tabpanel" class="tab-pane" id="week">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="All" checked="checked">
+                        每周 允许的通配符[, - * / L #]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="Cyclic">
+                        周期从
+                        <input type="number" id="weekTypeCyclic_1" value="">
+                        -
+                        <input type="number" id="weekTypeCyclic_2" value="">
+                        周
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="WeeksOfWeek">
+                        第
+                        <input type="number" id="weekTypeWeeksOfWeek_1" value="">
+                        周 的星期
+                        <input type="number" id="weekTypeWeeksOfWeek_2" value="">
+
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="weekTypeAssigned_1" data-placeholder="选择指定的周..."
+                            style="width:350px;" multiple></select>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="NotAssigned">
+                        不指定
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="LastWeekOfMonth">
+                        本月最后一个星期
+                        <input type="number" id="weekTypeLastWeekOfMonth_1" value="1">
+
+                    </label>
+                </div>
+            </div>
+
+
+            <!--年-->
+            @*<div role="tabpanel" class="tab-pane" id="year">
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="yearType" value="All" checked="checked">
+                        每年 允许的通配符[, - * /]
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="yearType" value="NotAssigned">
+                        不指定
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="yearType" value="Cyclic">
+                        周期从
+                        <input type="number" id="yearTypeCyclic_1" value="2015">
+                        -
+                        <input type="number" id="yearTypeCyclic_2" value="2299">
+                        年
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="yearType" value="Assigned">
+                        指定
+                    </label>
+                </div>
+                <div style="margin-left: 20px;">
+                    <select id="yearTypeAssigned_1" data-placeholder="选择指定的年份..."
+                            style="width:350px;" multiple></select>
+                </div>
+            </div>*@
+
+        </div>
+    </div>
+    <hr>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">结果</h3>
+        </div>
+
+        <div class="panel-body">
+
+            <form class="form-inline">
+                <!--<div class="form-group">
+                    <label class="sr-only">结果</label>
+                    <p class="form-control-static">结果</p>
+                </div>-->
+                <div class="form-group">
+                    <label for="result" class="sr-only">Password</label>
+                    <input type="text" class="form-control" style="width: 500px;" id="result" placeholder="结果">
+                </div>
+                <button type="button" id="analysis" class="btn btn-default">反解析</button>
+            </form>
+        </div>
+    </div>
+</div>
