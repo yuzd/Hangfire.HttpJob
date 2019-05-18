@@ -131,7 +131,6 @@ namespace Hangfire.HttpJob.Server
 
         public int Timeout { get; set; }
 
-        public int DelayFromMinutes { get; set; }
         public string Corn { get; set; }
         public string JobName { get; set; }
         public string QueueName { get; set; }

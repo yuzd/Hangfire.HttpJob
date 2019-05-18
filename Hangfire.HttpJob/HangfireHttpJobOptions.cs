@@ -18,6 +18,7 @@ namespace Hangfire.HttpJob
         public string SearchPlaceholder { get; set; } = Strings.SearchPlaceholder;
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";
+        public string DefaultRecurringQueueName { get; set; }
 
 
         /// <summary>

@@ -57,6 +57,7 @@ namespace TestHangfire
                         User = "admin@kawayiyi.com",
                         Password = "aqeumnudiimnchic"
                     },
+                    DefaultRecurringQueueName = "recurring"
                 });
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -86,7 +87,7 @@ namespace TestHangfire
                 app.UseDeveloperExceptionPage();
             }
 
-            var queues = new[] { "default", "apis", "delay", "recurring" };
+            var queues = new[] { "default", "apis", "recurring" };
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 ServerTimeout = TimeSpan.FromMinutes(4),

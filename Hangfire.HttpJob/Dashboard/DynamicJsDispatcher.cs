@@ -30,6 +30,7 @@ namespace Hangfire.HttpJob.Dashboard
                   .AppendFormat("hangFire.httpjobConfig.DashboardName = '{0}';", _options.DashboardName)
                   .AppendFormat("hangFire.httpjobConfig.DashboardFooter = '{0}';", _options.DashboardFooter)
                   .AppendFormat("hangFire.httpjobConfig.LogOutButtonName = '{0}';", _options.LogOutButtonName)
+                  .AppendFormat("hangFire.httpjobConfig.DefaultRecurringQueueName = '{0}';", _options.DefaultRecurringQueueName)
 
                   .AppendFormat("hangFire.httpjobConfig.CloseButtonName = '{0}';", _options.CloseButtonName)
                   .AppendFormat("hangFire.httpjobConfig.SubmitButtonName = '{0}';", _options.SubmitButtonName)
