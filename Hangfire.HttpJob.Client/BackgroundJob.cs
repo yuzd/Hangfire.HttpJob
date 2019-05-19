@@ -87,5 +87,10 @@ namespace Hangfire.HttpJob.Client
         /// basic 验证密码
         /// </summary>
         public string BasicPassword { get; set; }
+
+        /// <summary>
+        /// 代理设置
+        /// </summary>
+        public string Proxy { get; set; }
     }
 }

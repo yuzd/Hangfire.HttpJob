@@ -47,7 +47,7 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 代理设置
         /// </summary>
-        public IWebProxy Proxy { get; set; }
+        public string Proxy { get; set; }
 
         /// <summary>
         /// 邮件配置

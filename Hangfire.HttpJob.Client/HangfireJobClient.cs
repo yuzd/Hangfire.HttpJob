@@ -1,12 +1,20 @@
-﻿using System;
+﻿using HttpClientFactory.Impl;
+using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Client
 {
-    public class HangfireJobClient 
+    public static class HangfireJobClient
     {
+        /// <summary>
+        /// HttpClient Factory
+        /// https://github.com/yuzd/HttpClientFactory
+        /// </summary>
+
+        internal static readonly HangfireHttpClientFactory HangfireJobHttpClientFactory = new HangfireHttpClientFactory();
+
 
         #region AddBackgroundJob
 
@@ -40,7 +48,9 @@ namespace Hangfire.HttpJob.Client
             }
 
             if (option == null) option = new HangfireServerPostOption();
-
+            option.HttpClient = !string.IsNullOrEmpty(option.ProxyUrl) ?
+                HangfireJobHttpClientFactory.GetProxiedHttpClient(option.ProxyUrl) :
+                HangfireJobHttpClientFactory.GetHttpClient(hangfireServerUrl);
             var _data = string.Empty;
             if (backgroundJob.Data != null)
             {
@@ -72,6 +82,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = backgroundJob.EnableRetry,
                 BasicUserName = backgroundJob.BasicUserName,
                 BasicPassword = backgroundJob.BasicPassword,
+                Proxy = backgroundJob.Proxy
             };
 
             return jobItem.PostAsync();
@@ -107,7 +118,9 @@ namespace Hangfire.HttpJob.Client
             }
 
             if (option == null) option = new HangfireServerPostOption();
-
+            option.HttpClient = !string.IsNullOrEmpty(option.ProxyUrl) ?
+                HangfireJobHttpClientFactory.GetProxiedHttpClient(option.ProxyUrl) :
+                HangfireJobHttpClientFactory.GetHttpClient(hangfireServerUrl);
             var _data = string.Empty;
             if (backgroundJob.Data != null)
             {
@@ -134,10 +147,11 @@ namespace Hangfire.HttpJob.Client
                 JobName = backgroundJob.JobName,
                 SendSucMail = backgroundJob.SendSucMail,
                 SendFaiMail = backgroundJob.SendFaiMail,
-                Mail = backgroundJob.Mail!=null&& backgroundJob.Mail.Any()?string.Join(",", backgroundJob.Mail):"",
+                Mail = backgroundJob.Mail != null && backgroundJob.Mail.Any() ? string.Join(",", backgroundJob.Mail) : "",
                 EnableRetry = backgroundJob.EnableRetry,
                 BasicUserName = backgroundJob.BasicUserName,
                 BasicPassword = backgroundJob.BasicPassword,
+                Proxy = backgroundJob.Proxy
             };
 
             return jobItem.Post();
@@ -181,7 +195,9 @@ namespace Hangfire.HttpJob.Client
             }
 
             if (option == null) option = new HangfireServerPostOption();
-
+            option.HttpClient = !string.IsNullOrEmpty(option.ProxyUrl) ?
+                HangfireJobHttpClientFactory.GetProxiedHttpClient(option.ProxyUrl) :
+                HangfireJobHttpClientFactory.GetHttpClient(hangfireServerUrl);
             var _data = string.Empty;
             if (recurringJob.Data != null)
             {
@@ -213,6 +229,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = recurringJob.EnableRetry,
                 BasicUserName = recurringJob.BasicUserName,
                 BasicPassword = recurringJob.BasicPassword,
+                Proxy = recurringJob.Proxy
             };
 
             return jobItem.PostAsync();
@@ -252,7 +269,9 @@ namespace Hangfire.HttpJob.Client
             }
 
             if (option == null) option = new HangfireServerPostOption();
-
+            option.HttpClient = !string.IsNullOrEmpty(option.ProxyUrl) ?
+                HangfireJobHttpClientFactory.GetProxiedHttpClient(option.ProxyUrl) :
+                HangfireJobHttpClientFactory.GetHttpClient(hangfireServerUrl);
             var _data = string.Empty;
             if (recurringJob.Data != null)
             {
@@ -284,6 +303,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = recurringJob.EnableRetry,
                 BasicUserName = recurringJob.BasicUserName,
                 BasicPassword = recurringJob.BasicPassword,
+                Proxy = recurringJob.Proxy
             };
 
             return jobItem.Post();

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Server
 {
-    public class HttpJobItem : PerHostHttpClientFactory
+    public class HttpJobItem 
     {
         public HttpJobItem()
         {
@@ -40,6 +40,11 @@ namespace Hangfire.HttpJob.Server
         public string QueueName { get; set; }
 
         /// <summary>
+        /// 代理设置
+        /// </summary>
+        public string Proxy { get; set; }
+
+        /// <summary>
         /// 是否成功发送邮件
         /// </summary>
         public bool SendSucMail { get; set; }
@@ -67,46 +72,6 @@ namespace Hangfire.HttpJob.Server
             return JsonConvert.SerializeObject(this);
         }
 
-        public HttpClient InitHttpClient()
-        {
-            return GetHttpClient(this.Url);
-        }
-
-        #region 重写HttpClientFactory
-
-        protected override HttpClient CreateHttpClient(HttpMessageHandler handler)
-        {
-            var client = new HttpClient(handler)
-            {
-                Timeout = TimeSpan.FromMilliseconds(HttpJob.HangfireHttpJobOptions.GlobalHttpTimeOut),
-            };
-
-            client.DefaultRequestHeaders.ConnectionClose = false;
-            client.DefaultRequestHeaders.Add("UserAgent","Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
-            return client;
-        }
-
-        protected override HttpMessageHandler CreateMessageHandler()
-        {
-            var handler = new HttpClientHandler();
-            if (HttpJob.HangfireHttpJobOptions.Proxy == null)
-            {
-                handler.UseProxy = false;
-            }
-            else
-            {
-                handler.Proxy = HttpJob.HangfireHttpJobOptions.Proxy;
-            }
-
-            handler.AllowAutoRedirect = false;
-
-            handler.AutomaticDecompression = DecompressionMethods.None;
-
-            handler.UseCookies = false;
-
-            return handler;
-        }
-        #endregion
     }
 
     public class RecurringJobItem 

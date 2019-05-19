@@ -7,12 +7,12 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using HttpClientFactory.Impl;
+
 using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Client
 {
-    internal class HttpJobItem : PerHostHttpClientFactory
+    internal class HttpJobItem
     {
         private readonly string _hangfireUrl;
         private readonly HangfireServerPostOption _httpPostOption;
@@ -77,6 +77,11 @@ namespace Hangfire.HttpJob.Client
         /// </summary>
         public bool EnableRetry { get; set; }
 
+        /// <summary>
+        /// 代理设置
+        /// </summary>
+        public string Proxy { get; set; }
+
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
         #endregion
@@ -90,7 +95,7 @@ namespace Hangfire.HttpJob.Client
             var result = new HangfireAddJobResult();
             try
             {
-                var client = GetHttpClient(this._hangfireUrl);
+                var client = _httpPostOption.HttpClient ?? HangfireJobClient.HangfireJobHttpClientFactory.GetHttpClient(_hangfireUrl);
                 var httpMesage = PrepareHttpRequestMessage();
                 var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_httpPostOption.TimeOut));
                 var httpResponse = await client.SendAsync(httpMesage, cts.Token);
@@ -134,36 +139,6 @@ namespace Hangfire.HttpJob.Client
             return request;
         }
 
-        #region 重写HttpClientFactory
-
-        protected override HttpClient CreateHttpClient(HttpMessageHandler handler)
-        {
-            var client = new HttpClient(handler);
-            client.DefaultRequestHeaders.ConnectionClose = false;
-            client.DefaultRequestHeaders.Add("UserAgent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
-            return client;
-        }
-
-        protected override HttpMessageHandler CreateMessageHandler()
-        {
-            var handler = new HttpClientHandler();
-            if (_httpPostOption.WebProxy == null)
-            {
-                handler.UseProxy = false;
-            }
-            else
-            {
-                handler.Proxy = _httpPostOption.WebProxy;
-            }
-
-            handler.AllowAutoRedirect = false;
-
-            handler.AutomaticDecompression = DecompressionMethods.None;
-
-            handler.UseCookies = false;
-
-            return handler;
-        }
-        #endregion
+      
     }
 }

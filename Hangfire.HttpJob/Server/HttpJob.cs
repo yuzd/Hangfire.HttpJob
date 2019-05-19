@@ -33,6 +33,7 @@ namespace Hangfire.HttpJob.Server
             var logList = new List<string>();
             try
             {
+                if (item.Timeout < 1) item.Timeout = 5000;
                 context.SetTextColor(ConsoleTextColor.Yellow);
                 context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 logList.Add($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
@@ -40,9 +41,25 @@ namespace Hangfire.HttpJob.Server
                 logList.Add($"{Strings.JobName}:{jobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
                 context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】");
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
-                var client = item.InitHttpClient();
+                HttpClient client;
+                var proxy = item.Proxy;
+                if (string.IsNullOrEmpty(proxy) && !string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
+                {
+                    proxy = HangfireHttpJobOptions.Proxy;
+                }
+                if (!string.IsNullOrEmpty(proxy))
+                {
+                    // per proxy per HttpClient
+                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(proxy);
+                    context.WriteLine($"Proxy:{proxy}");
+                    logList.Add($"Proxy:{proxy}");
+                }
+                else
+                {
+                    //per host per HttpClient
+                    client = HangfireHttpClientFactory.Instance.GetHttpClient(item.Url);
+                }
                 var httpMesage = PrepareHttpRequestMessage(item);
-                if (item.Timeout < 1) item.Timeout = 5000;
                 var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
                 var httpResponse = client.SendAsync(httpMesage, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                 HttpContent content = httpResponse.Content;

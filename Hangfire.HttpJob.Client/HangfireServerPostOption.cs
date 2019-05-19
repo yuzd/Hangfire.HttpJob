@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,11 +26,6 @@ namespace Hangfire.HttpJob.Client
         public int TimeOut { get; set; }
 
         /// <summary>
-        /// 请求HangfireServer的代理
-        /// </summary>
-        public IWebProxy WebProxy { get; set; }
-
-        /// <summary>
         /// 请求HangfireServer的时候错误是否抛出
         /// </summary>
         public bool ThrowException { get; set; }
@@ -43,5 +39,12 @@ namespace Hangfire.HttpJob.Client
         /// 请求HangfireServer的basic 验证的密码
         /// </summary>
         public string BasicPassword { get; set; }
+
+        /// <summary>
+        /// 代理
+        /// </summary>
+        public string ProxyUrl { get; set; }
+
+        internal HttpClient HttpClient { get; set; }
     }
 }
