@@ -294,4 +294,7 @@
   <data name="WeekDay12" xml:space="preserve">
     <value>周 的星期</value>
   </data>
+  <data name="JobEnd" xml:space="preserve">
+    <value>任务结束</value>
+  </data>
 </root>

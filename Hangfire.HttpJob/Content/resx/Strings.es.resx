@@ -294,4 +294,7 @@
   <data name="WeekDay12" xml:space="preserve">
     <value>st weekday  Specific day of </value>
   </data>
+  <data name="JobEnd" xml:space="preserve">
+    <value>JobEnd</value>
+  </data>
 </root>

@@ -48,6 +48,8 @@ namespace Hangfire.HttpJob.Server
                 logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode}");
                 context.WriteLine($"{Strings.JobResult}:{result}");
                 logList.Add($"{Strings.JobResult}:{result}");
+                context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 SendSuccessMail(item, string.Join("<br/>", logList));
             }
             catch (Exception ex)

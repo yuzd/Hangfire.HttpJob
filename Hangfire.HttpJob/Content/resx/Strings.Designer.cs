@@ -313,6 +313,15 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 JobEnd 的本地化字符串。
+        /// </summary>
+        public static string JobEnd {
+            get {
+                return ResourceManager.GetString("JobEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 JobName 的本地化字符串。
         /// </summary>
         public static string JobName {
