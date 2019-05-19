@@ -37,19 +37,19 @@
                 <a href="#second" aria-controls="second" role="tab" data-toggle="tab">秒</a>
             </li>*@
             <li role="presentation" class="active">
-                <a href="#minute" aria-controls="minute" role="tab" data-toggle="tab">分钟</a>
+                <a href="#minute" aria-controls="minute" role="tab" data-toggle="tab">@Hangfire.HttpJob.Content.resx.Strings.Minutes</a>
             </li>
             <li role="presentation">
-                <a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">小时</a>
+                <a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">@Hangfire.HttpJob.Content.resx.Strings.Hours</a>
             </li>
             <li role="presentation">
-                <a href="#day" aria-controls="day" role="tab" data-toggle="tab">日</a>
+                <a href="#day" aria-controls="day" role="tab" data-toggle="tab">@Hangfire.HttpJob.Content.resx.Strings.Days</a>
             </li>
             <li role="presentation">
-                <a href="#month" aria-controls="month" role="tab" data-toggle="tab">月</a>
+                <a href="#month" aria-controls="month" role="tab" data-toggle="tab">@Hangfire.HttpJob.Content.resx.Strings.Months</a>
             </li>
             <li role="presentation">
-                <a href="#week" aria-controls="week" role="tab" data-toggle="tab">周</a>
+                <a href="#week" aria-controls="week" role="tab" data-toggle="tab">@Hangfire.HttpJob.Content.resx.Strings.Weekday</a>
             </li>
             @*<li role="presentation">
                 <a href="#year" aria-controls="year" role="tab" data-toggle="tab">年</a>
@@ -106,40 +106,48 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="minuteType" value="All" checked="checked">
-                        每分钟 允许的通配符[, - * /]
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryMinute
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="minuteType" value="Cyclic">
-                        周期从
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryMinuteBetweenMinute
                         <input type="number" id="minuteTypeCyclic_1" value="">
                         -
                         <input type="number" id="minuteTypeCyclic_2" value="">
-                        分钟
+                        @Hangfire.HttpJob.Content.resx.Strings.Minutes
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="minuteType" value="Interval">
-                        从
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtMinute
                         <input type="number" id="minuteTypeInterval_1" value="">
-                        分钟开始,每
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtMinute2
                         <input type="number" id="minuteTypeInterval_2" value="">
-                        分钟执行一次
+                        @Hangfire.HttpJob.Content.resx.Strings.Minutess
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="minuteType" value="Assigned">
-                        指定
+                        @Hangfire.HttpJob.Content.resx.Strings.SpecificMinute
                     </label>
                 </div>
+              
                 <div style="margin-left: 20px;">
-                    <select id="minuteTypeAssigned_1" data-placeholder="选择指定的分钟..."
+                    <select id="minuteTypeAssigned_1" data-placeholder="@Hangfire.HttpJob.Content.resx.Strings.Choose"
                             style="width:350px;" multiple></select>
+                </div>
+                
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="minuteType" value="NotAssigned">
+                        @Hangfire.HttpJob.Content.resx.Strings.NoSpecific
+                    </label>
                 </div>
             </div>
 
@@ -149,42 +157,48 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="hourType" value="All" checked="checked">
-                        每小时 允许的通配符[, - * /]
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryHour
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="hourType" value="Cyclic">
-                        周期从
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryHourBetweenHour
                         <input type="number" id="hourTypeCyclic_1" value="">
                         -
                         <input type="number" id="hourTypeCyclic_2" value="">
-                        小时
+                        @Hangfire.HttpJob.Content.resx.Strings.Hours
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="hourType" value="Interval">
-                        从
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtHour
                         <input type="number" id="hourTypeInterval_1" value="">
-                        时开始,每
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtHour2
                         <input type="number" id="hourTypeInterval_2" value="">
-                        小时执行一次
+                        @Hangfire.HttpJob.Content.resx.Strings.Hourss
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="hourType" value="Assigned">
-                        指定
+                        @Hangfire.HttpJob.Content.resx.Strings.Specific
                     </label>
                 </div>
+
                 <div style="margin-left: 20px;">
-                    <select id="hourTypeAssigned_1" data-placeholder="选择指定的小时..."
+                    <select id="hourTypeAssigned_1" data-placeholder="@Hangfire.HttpJob.Content.resx.Strings.Choose"
                             style="width:350px;" multiple></select>
                 </div>
-
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="hourType" value="NotAssigned">
+                        @Hangfire.HttpJob.Content.resx.Strings.NoSpecific
+                    </label>
+                </div>
             </div>
 
 
@@ -194,67 +208,67 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="dayType" value="All" checked="checked">
-                        每日 允许的通配符[, - * / L W]
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryDay
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="dayType" value="Cyclic">
-                        周期从
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryDayBetweenDay
                         <input type="number" id="dayTypeCyclic_1" value="">
                         -
                         <input type="number" id="dayTypeCyclic_2" value="">
-                        日
+                        @Hangfire.HttpJob.Content.resx.Strings.Days
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="dayType" value="Interval">
-                        从
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtDay
                         <input type="number" id="dayTypeInterval_1" value="">
-                        日开始,每
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtDay2
                         <input type="number" id="dayTypeInterval_2" value="">
-                        日执行一次
+                        @Hangfire.HttpJob.Content.resx.Strings.Dayss
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="dayType" value="Assigned">
-                        指定
+                        @Hangfire.HttpJob.Content.resx.Strings.Specific
                     </label>
                 </div>
                 <div style="margin-left: 20px;">
-                    <select id="dayTypeAssigned_1" data-placeholder="选择指定的日..."
+                    <select id="dayTypeAssigned_1" data-placeholder="@Hangfire.HttpJob.Content.resx.Strings.Choose"
                             style="width:350px;" multiple></select>
                 </div>
 
                 <div class="radio">
                     <label>
-                        <input type="radio" name="dayType" value="NotAssigned">
-                        不指定
-                    </label>
-                </div>
-
-                <div class="radio">
-                    <label>
                         <input type="radio" name="dayType" value="RecentDays">
-                        每月
+                        @Hangfire.HttpJob.Content.resx.Strings.DayA
                         <input type="number" id="dayTypeRecentDays_1" value="">
-                        号最近的那个工作日
+                        @Hangfire.HttpJob.Content.resx.Strings.DayB
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="dayType" value="LastDayOfMonth">
-                        本月最后一天
+                        @Hangfire.HttpJob.Content.resx.Strings.LastDayOfMonth
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="dayType" value="LastDayOfMonthRecentDays">
-                        本月最后一个工作日
+                        @Hangfire.HttpJob.Content.resx.Strings.LastWeedDayOfMonth
+                    </label>
+                </div>
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="dayType" value="NotAssigned">
+                        @Hangfire.HttpJob.Content.resx.Strings.NoSpecific
                     </label>
                 </div>
             </div>
@@ -265,48 +279,48 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="monthType" value="All" checked="checked">
-                        每月 允许的通配符[, - * /]
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryMonth
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="monthType" value="Cyclic">
-                        周期从
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryMonthBetweenMonth
                         <input type="number" id="monthTypeCyclic_1" value="">
                         -
                         <input type="number" id="monthTypeCyclic_2" value="">
-                        月
+                        @Hangfire.HttpJob.Content.resx.Strings.Months
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="monthType" value="Interval">
-                        从
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtMonth
                         <input type="number" id="monthTypeInterval_1" value="">
-                        月开始,每
+                        @Hangfire.HttpJob.Content.resx.Strings.StartingAtMontn2
                         <input type="number" id="monthTypeInterval_2" value="">
-                        月执行一次
+                        @Hangfire.HttpJob.Content.resx.Strings.Monthss
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="monthType" value="Assigned">
-                        指定
+                        @Hangfire.HttpJob.Content.resx.Strings.Specific
                     </label>
                 </div>
                 <div style="margin-left: 20px;">
-                    <select id="monthTypeAssigned_1" data-placeholder="选择指定的月..."
+                    <select id="monthTypeAssigned_1" data-placeholder="@Hangfire.HttpJob.Content.resx.Strings.Choose"
                             style="width:350px;" multiple></select>
                 </div>
 
-                @*<div class="radio">
+                <div class="radio">
                     <label>
                         <input type="radio" name="monthType" value="NotAssigned">
-                        不指定
+                        @Hangfire.HttpJob.Content.resx.Strings.NoSpecific
                     </label>
-                </div>*@
+                </div>
             </div>
 
 
@@ -315,26 +329,26 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="weekType" value="All" checked="checked">
-                        每周 允许的通配符[, - * / L #]
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryWeekday
                     </label>
                 </div>
                 <div class="radio">
                     <label>
                         <input type="radio" name="weekType" value="Cyclic">
-                        周期从
+                        @Hangfire.HttpJob.Content.resx.Strings.EveryWeekdayBetweenWeekday
                         <input type="number" id="weekTypeCyclic_1" value="">
                         -
                         <input type="number" id="weekTypeCyclic_2" value="">
-                        周
+                        @Hangfire.HttpJob.Content.resx.Strings.Weekday
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
                         <input type="radio" name="weekType" value="WeeksOfWeek">
-                        第
+                        @Hangfire.HttpJob.Content.resx.Strings.WeekDay1
                         <input type="number" id="weekTypeWeeksOfWeek_1" value="">
-                        周 的星期
+                        @Hangfire.HttpJob.Content.resx.Strings.WeekDay12
                         <input type="number" id="weekTypeWeeksOfWeek_2" value="">
 
                     </label>
@@ -343,26 +357,28 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="weekType" value="Assigned">
-                        指定
+                        @Hangfire.HttpJob.Content.resx.Strings.Specific
                     </label>
                 </div>
                 <div style="margin-left: 20px;">
-                    <select id="weekTypeAssigned_1" data-placeholder="选择指定的周..."
+                    <select id="weekTypeAssigned_1" data-placeholder="@Hangfire.HttpJob.Content.resx.Strings.Choose"
                             style="width:350px;" multiple></select>
                 </div>
 
                 <div class="radio">
                     <label>
-                        <input type="radio" name="weekType" value="NotAssigned">
-                        不指定
-                    </label>
-                </div>
-                <div class="radio">
-                    <label>
                         <input type="radio" name="weekType" value="LastWeekOfMonth">
-                        本月最后一个星期
+                        @Hangfire.HttpJob.Content.resx.Strings.LastWeekdayOfMonth
                         <input type="number" id="weekTypeLastWeekOfMonth_1" value="1">
 
+                    </label>
+                </div>
+
+
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekType" value="NotAssigned">
+                        @Hangfire.HttpJob.Content.resx.Strings.NoSpecific
                     </label>
                 </div>
             </div>
@@ -412,7 +428,7 @@
 
     <div class="panel panel-info">
         <div class="panel-heading">
-            <h3 class="panel-title">结果</h3>
+            <h3 class="panel-title">@Hangfire.HttpJob.Content.resx.Strings.CronResult</h3>
         </div>
 
         <div class="panel-body">
@@ -424,9 +440,9 @@
                 </div>-->
                 <div class="form-group">
                     <label for="result" class="sr-only">Password</label>
-                    <input type="text" class="form-control" style="width: 500px;" id="result" placeholder="结果">
+                    <input type="text" class="form-control" style="width: 500px;" id="result" placeholder="@Hangfire.HttpJob.Content.resx.Strings.CronResult">
                 </div>
-                <button type="button" id="analysis" class="btn btn-default">反解析</button>
+                <button type="button" id="analysis" class="btn btn-default">@Hangfire.HttpJob.Content.resx.Strings.DESCRIBEEXPRESSION</button>
             </form>
         </div>
     </div>

@@ -39,10 +39,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Update="Dashboard\Pages\CornJobsPage.generated.cs">
+    <Compile Update="Dashboard\Pages\CronJobsPage.generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>CornJobsPage.cshtml</DependentUpon>
+      <DependentUpon>CronJobsPage.cshtml</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -54,9 +54,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Dashboard\Pages\CornJobsPage.cshtml">
+    <None Update="Dashboard\Pages\CronJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>CornJobsPage.generated.cs</LastGenOutput>
+      <LastGenOutput>CronJobsPage.generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
 

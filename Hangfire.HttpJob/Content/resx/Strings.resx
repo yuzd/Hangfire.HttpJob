@@ -126,8 +126,14 @@
   <data name="AddRecurringJobHttpJobButtonName" xml:space="preserve">
     <value>AddRecurringJob</value>
   </data>
+  <data name="Choose" xml:space="preserve">
+    <value>(choose one or many)</value>
+  </data>
   <data name="CloseButtonName" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="CronResult" xml:space="preserve">
+    <value>Cron</value>
   </data>
   <data name="DashboardName" xml:space="preserve">
     <value>JobWS</value>
@@ -135,8 +141,65 @@
   <data name="DashboardTitle" xml:space="preserve">
     <value>JobManager</value>
   </data>
+  <data name="DayA" xml:space="preserve">
+    <value>Nearest weekday (Monday to Friday) to the</value>
+  </data>
+  <data name="DayB" xml:space="preserve">
+    <value>st of the month</value>
+  </data>
+  <data name="Days" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Dayss" xml:space="preserve">
+    <value>day(s)</value>
+  </data>
+  <data name="DESCRIBEEXPRESSION" xml:space="preserve">
+    <value>DESCRIBE EXPRESSION</value>
+  </data>
   <data name="EditRecurringJobButtonName" xml:space="preserve">
     <value>EditRecurringJob</value>
+  </data>
+  <data name="Every" xml:space="preserve">
+    <value>Every</value>
+  </data>
+  <data name="EveryDay" xml:space="preserve">
+    <value>Every day</value>
+  </data>
+  <data name="EveryDayBetweenDay" xml:space="preserve">
+    <value>Every day between</value>
+  </data>
+  <data name="EveryHour" xml:space="preserve">
+    <value>Every hour</value>
+  </data>
+  <data name="EveryHourBetweenHour" xml:space="preserve">
+    <value>Every hour between hour</value>
+  </data>
+  <data name="EveryMinute" xml:space="preserve">
+    <value>Every minute</value>
+  </data>
+  <data name="EveryMinuteBetweenMinute" xml:space="preserve">
+    <value>Every minute between minute</value>
+  </data>
+  <data name="EveryMonth" xml:space="preserve">
+    <value>Every month</value>
+  </data>
+  <data name="EveryMonthBetweenMonth" xml:space="preserve">
+    <value>Every month between</value>
+  </data>
+  <data name="EveryWeekday" xml:space="preserve">
+    <value>Every weekday</value>
+  </data>
+  <data name="EveryWeekdayBetweenWeekday" xml:space="preserve">
+    <value>Every weekday between</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Hours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Hourss" xml:space="preserve">
+    <value>hour(s)</value>
   </data>
   <data name="JobName" xml:space="preserve">
     <value>JobName</value>
@@ -150,8 +213,32 @@
   <data name="JobStart" xml:space="preserve">
     <value>Job Start Time</value>
   </data>
+  <data name="LastDayOfMonth" xml:space="preserve">
+    <value>On the last day of the month</value>
+  </data>
+  <data name="LastWeedDayOfMonth" xml:space="preserve">
+    <value>On the last weekday of the month</value>
+  </data>
+  <data name="LastWeekdayOfMonth" xml:space="preserve">
+    <value>On the last weekday of the month</value>
+  </data>
   <data name="LogOutButtonName" xml:space="preserve">
     <value>Back</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
+  <data name="Minutess" xml:space="preserve">
+    <value>minute(s)</value>
+  </data>
+  <data name="Months" xml:space="preserve">
+    <value>Months</value>
+  </data>
+  <data name="Monthss" xml:space="preserve">
+    <value>month(s)</value>
+  </data>
+  <data name="NoSpecific" xml:space="preserve">
+    <value>NoSpecific</value>
   </data>
   <data name="PauseJobButtonName" xml:space="preserve">
     <value>Pause | Start</value>
@@ -165,7 +252,46 @@
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>Pelese Enter JobName Or Args ...</value>
   </data>
+  <data name="Specific" xml:space="preserve">
+    <value>Specific</value>
+  </data>
+  <data name="SpecificMinute" xml:space="preserve">
+    <value>Specific</value>
+  </data>
+  <data name="StartingAtDay" xml:space="preserve">
+    <value>Starting on the</value>
+  </data>
+  <data name="StartingAtDay2" xml:space="preserve">
+    <value>Every</value>
+  </data>
+  <data name="StartingAtHour" xml:space="preserve">
+    <value>Starting at hour</value>
+  </data>
+  <data name="StartingAtHour2" xml:space="preserve">
+    <value>Every</value>
+  </data>
+  <data name="StartingAtMinute" xml:space="preserve">
+    <value>Starting at minute</value>
+  </data>
+  <data name="StartingAtMinute2" xml:space="preserve">
+    <value>Every</value>
+  </data>
+  <data name="StartingAtMonth" xml:space="preserve">
+    <value>Starting on the</value>
+  </data>
+  <data name="StartingAtMontn2" xml:space="preserve">
+    <value>Every</value>
+  </data>
   <data name="SubmitButtonName" xml:space="preserve">
     <value>Submit</value>
+  </data>
+  <data name="Weekday" xml:space="preserve">
+    <value>Weekday</value>
+  </data>
+  <data name="WeekDay1" xml:space="preserve">
+    <value>Starting on the</value>
+  </data>
+  <data name="WeekDay12" xml:space="preserve">
+    <value>st weekday  Specific day of </value>
   </data>
 </root>

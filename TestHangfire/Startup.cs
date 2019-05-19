@@ -75,12 +75,14 @@ namespace TestHangfire
             //};
             //app.UseRequestLocalization(new RequestLocalizationOptions
             //{
-            //    DefaultRequestCulture = new RequestCulture("zh-CN"),
+            //    DefaultRequestCulture = new RequestCulture("en-US"),
             //    // Formatting numbers, dates, etc.
             //    SupportedCultures = supportedCultures,
             //    // UI strings that we have localized.
             //    SupportedUICultures = supportedCultures
             //});
+
+            //System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("");
 
             if (env.IsDevelopment())
             {

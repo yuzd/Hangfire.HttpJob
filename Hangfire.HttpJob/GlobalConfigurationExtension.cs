@@ -17,7 +17,7 @@ namespace Hangfire.HttpJob
 
             //处理http请求
             DashboardRoutes.Routes.Add("/httpjob", new HttpJobDispatcher(options));
-            DashboardRoutes.Routes.AddRazorPage("/corn", x => new CornJobsPage());
+            DashboardRoutes.Routes.AddRazorPage("/cron", x => new CronJobsPage());
 
             var jsPath = DashboardRoutes.Routes.Contains("/js[0-9]+") ? "/js[0-9]+" : "/js[0-9]{3}";
             DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.jsoneditor.js"));

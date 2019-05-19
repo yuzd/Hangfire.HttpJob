@@ -126,8 +126,14 @@
   <data name="AddRecurringJobHttpJobButtonName" xml:space="preserve">
     <value>新增周期性作业</value>
   </data>
+  <data name="Choose" xml:space="preserve">
+    <value>选择一个或多个...</value>
+  </data>
   <data name="CloseButtonName" xml:space="preserve">
     <value>关闭</value>
+  </data>
+  <data name="CronResult" xml:space="preserve">
+    <value>结果</value>
   </data>
   <data name="DashboardName" xml:space="preserve">
     <value>JOB管理</value>
@@ -135,8 +141,65 @@
   <data name="DashboardTitle" xml:space="preserve">
     <value>JOB系统</value>
   </data>
+  <data name="DayA" xml:space="preserve">
+    <value>每月</value>
+  </data>
+  <data name="DayB" xml:space="preserve">
+    <value>号最近的那个工作日</value>
+  </data>
+  <data name="Days" xml:space="preserve">
+    <value>日</value>
+  </data>
+  <data name="Dayss" xml:space="preserve">
+    <value>日执行一次</value>
+  </data>
+  <data name="DESCRIBEEXPRESSION" xml:space="preserve">
+    <value>反解析</value>
+  </data>
   <data name="EditRecurringJobButtonName" xml:space="preserve">
     <value>编辑周期任务</value>
+  </data>
+  <data name="Every" xml:space="preserve">
+    <value>每</value>
+  </data>
+  <data name="EveryDay" xml:space="preserve">
+    <value>每天</value>
+  </data>
+  <data name="EveryDayBetweenDay" xml:space="preserve">
+    <value>周期从</value>
+  </data>
+  <data name="EveryHour" xml:space="preserve">
+    <value>每小时</value>
+  </data>
+  <data name="EveryHourBetweenHour" xml:space="preserve">
+    <value>周期从</value>
+  </data>
+  <data name="EveryMinute" xml:space="preserve">
+    <value>每分钟</value>
+  </data>
+  <data name="EveryMinuteBetweenMinute" xml:space="preserve">
+    <value>周期从</value>
+  </data>
+  <data name="EveryMonth" xml:space="preserve">
+    <value>每月</value>
+  </data>
+  <data name="EveryMonthBetweenMonth" xml:space="preserve">
+    <value>周期从</value>
+  </data>
+  <data name="EveryWeekday" xml:space="preserve">
+    <value>每周</value>
+  </data>
+  <data name="EveryWeekdayBetweenWeekday" xml:space="preserve">
+    <value>周期从</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="Hours" xml:space="preserve">
+    <value>小时</value>
+  </data>
+  <data name="Hourss" xml:space="preserve">
+    <value>小时执行一次</value>
   </data>
   <data name="JobName" xml:space="preserve">
     <value>任务名称</value>
@@ -150,8 +213,32 @@
   <data name="JobStart" xml:space="preserve">
     <value>任务开始执行,执行时间</value>
   </data>
+  <data name="LastDayOfMonth" xml:space="preserve">
+    <value>本月最后一天</value>
+  </data>
+  <data name="LastWeedDayOfMonth" xml:space="preserve">
+    <value>本月最后一个工作日</value>
+  </data>
+  <data name="LastWeekdayOfMonth" xml:space="preserve">
+    <value>本月最后一个星期</value>
+  </data>
   <data name="LogOutButtonName" xml:space="preserve">
     <value>JOB配置</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>分钟</value>
+  </data>
+  <data name="Minutess" xml:space="preserve">
+    <value>分钟执行一次</value>
+  </data>
+  <data name="Months" xml:space="preserve">
+    <value>月</value>
+  </data>
+  <data name="Monthss" xml:space="preserve">
+    <value>月执行一次</value>
+  </data>
+  <data name="NoSpecific" xml:space="preserve">
+    <value>不指定</value>
   </data>
   <data name="PauseJobButtonName" xml:space="preserve">
     <value>停止或开始任务</value>
@@ -165,7 +252,46 @@
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>输入job名称关键字模糊搜索</value>
   </data>
+  <data name="Specific" xml:space="preserve">
+    <value>指定</value>
+  </data>
+  <data name="SpecificMinute" xml:space="preserve">
+    <value>指定</value>
+  </data>
+  <data name="StartingAtDay" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="StartingAtDay2" xml:space="preserve">
+    <value>日开始,每</value>
+  </data>
+  <data name="StartingAtHour" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="StartingAtHour2" xml:space="preserve">
+    <value>时开始,每</value>
+  </data>
+  <data name="StartingAtMinute" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="StartingAtMinute2" xml:space="preserve">
+    <value>分钟开始,每</value>
+  </data>
+  <data name="StartingAtMonth" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="StartingAtMontn2" xml:space="preserve">
+    <value>月开始,每</value>
+  </data>
   <data name="SubmitButtonName" xml:space="preserve">
     <value>提交</value>
+  </data>
+  <data name="Weekday" xml:space="preserve">
+    <value>周</value>
+  </data>
+  <data name="WeekDay1" xml:space="preserve">
+    <value>第</value>
+  </data>
+  <data name="WeekDay12" xml:space="preserve">
+    <value>周 的星期</value>
   </data>
 </root>

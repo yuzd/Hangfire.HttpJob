@@ -88,11 +88,29 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 (choose one or many) 的本地化字符串。
+        /// </summary>
+        public static string Choose {
+            get {
+                return ResourceManager.GetString("Choose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Close 的本地化字符串。
         /// </summary>
         public static string CloseButtonName {
             get {
                 return ResourceManager.GetString("CloseButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Cron 的本地化字符串。
+        /// </summary>
+        public static string CronResult {
+            get {
+                return ResourceManager.GetString("CronResult", resourceCulture);
             }
         }
         
@@ -115,11 +133,182 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 Nearest weekday (Monday to Friday) to the 的本地化字符串。
+        /// </summary>
+        public static string DayA {
+            get {
+                return ResourceManager.GetString("DayA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 st of the month 的本地化字符串。
+        /// </summary>
+        public static string DayB {
+            get {
+                return ResourceManager.GetString("DayB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Days 的本地化字符串。
+        /// </summary>
+        public static string Days {
+            get {
+                return ResourceManager.GetString("Days", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 day(s) 的本地化字符串。
+        /// </summary>
+        public static string Dayss {
+            get {
+                return ResourceManager.GetString("Dayss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 DESCRIBE EXPRESSION 的本地化字符串。
+        /// </summary>
+        public static string DESCRIBEEXPRESSION {
+            get {
+                return ResourceManager.GetString("DESCRIBEEXPRESSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 EditRecurringJob 的本地化字符串。
         /// </summary>
         public static string EditRecurringJobButtonName {
             get {
                 return ResourceManager.GetString("EditRecurringJobButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every 的本地化字符串。
+        /// </summary>
+        public static string Every {
+            get {
+                return ResourceManager.GetString("Every", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every day 的本地化字符串。
+        /// </summary>
+        public static string EveryDay {
+            get {
+                return ResourceManager.GetString("EveryDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every day between 的本地化字符串。
+        /// </summary>
+        public static string EveryDayBetweenDay {
+            get {
+                return ResourceManager.GetString("EveryDayBetweenDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every hour 的本地化字符串。
+        /// </summary>
+        public static string EveryHour {
+            get {
+                return ResourceManager.GetString("EveryHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every hour between hour 的本地化字符串。
+        /// </summary>
+        public static string EveryHourBetweenHour {
+            get {
+                return ResourceManager.GetString("EveryHourBetweenHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every minute 的本地化字符串。
+        /// </summary>
+        public static string EveryMinute {
+            get {
+                return ResourceManager.GetString("EveryMinute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every minute between minute 的本地化字符串。
+        /// </summary>
+        public static string EveryMinuteBetweenMinute {
+            get {
+                return ResourceManager.GetString("EveryMinuteBetweenMinute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every month 的本地化字符串。
+        /// </summary>
+        public static string EveryMonth {
+            get {
+                return ResourceManager.GetString("EveryMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every month between 的本地化字符串。
+        /// </summary>
+        public static string EveryMonthBetweenMonth {
+            get {
+                return ResourceManager.GetString("EveryMonthBetweenMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every weekday 的本地化字符串。
+        /// </summary>
+        public static string EveryWeekday {
+            get {
+                return ResourceManager.GetString("EveryWeekday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every weekday between 的本地化字符串。
+        /// </summary>
+        public static string EveryWeekdayBetweenWeekday {
+            get {
+                return ResourceManager.GetString("EveryWeekdayBetweenWeekday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 From 的本地化字符串。
+        /// </summary>
+        public static string From {
+            get {
+                return ResourceManager.GetString("From", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Hours 的本地化字符串。
+        /// </summary>
+        public static string Hours {
+            get {
+                return ResourceManager.GetString("Hours", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 hour(s) 的本地化字符串。
+        /// </summary>
+        public static string Hourss {
+            get {
+                return ResourceManager.GetString("Hourss", resourceCulture);
             }
         }
         
@@ -160,11 +349,83 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 On the last day of the month 的本地化字符串。
+        /// </summary>
+        public static string LastDayOfMonth {
+            get {
+                return ResourceManager.GetString("LastDayOfMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 On the last weekday of the month 的本地化字符串。
+        /// </summary>
+        public static string LastWeedDayOfMonth {
+            get {
+                return ResourceManager.GetString("LastWeedDayOfMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 On the last weekday of the month 的本地化字符串。
+        /// </summary>
+        public static string LastWeekdayOfMonth {
+            get {
+                return ResourceManager.GetString("LastWeekdayOfMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Back 的本地化字符串。
         /// </summary>
         public static string LogOutButtonName {
             get {
                 return ResourceManager.GetString("LogOutButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Minutes 的本地化字符串。
+        /// </summary>
+        public static string Minutes {
+            get {
+                return ResourceManager.GetString("Minutes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 minute(s) 的本地化字符串。
+        /// </summary>
+        public static string Minutess {
+            get {
+                return ResourceManager.GetString("Minutess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Months 的本地化字符串。
+        /// </summary>
+        public static string Months {
+            get {
+                return ResourceManager.GetString("Months", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 month(s) 的本地化字符串。
+        /// </summary>
+        public static string Monthss {
+            get {
+                return ResourceManager.GetString("Monthss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 NoSpecific 的本地化字符串。
+        /// </summary>
+        public static string NoSpecific {
+            get {
+                return ResourceManager.GetString("NoSpecific", resourceCulture);
             }
         }
         
@@ -205,11 +466,128 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 Specific 的本地化字符串。
+        /// </summary>
+        public static string Specific {
+            get {
+                return ResourceManager.GetString("Specific", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Specific 的本地化字符串。
+        /// </summary>
+        public static string SpecificMinute {
+            get {
+                return ResourceManager.GetString("SpecificMinute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Starting on the 的本地化字符串。
+        /// </summary>
+        public static string StartingAtDay {
+            get {
+                return ResourceManager.GetString("StartingAtDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every 的本地化字符串。
+        /// </summary>
+        public static string StartingAtDay2 {
+            get {
+                return ResourceManager.GetString("StartingAtDay2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Starting at hour 的本地化字符串。
+        /// </summary>
+        public static string StartingAtHour {
+            get {
+                return ResourceManager.GetString("StartingAtHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every 的本地化字符串。
+        /// </summary>
+        public static string StartingAtHour2 {
+            get {
+                return ResourceManager.GetString("StartingAtHour2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Starting at minute 的本地化字符串。
+        /// </summary>
+        public static string StartingAtMinute {
+            get {
+                return ResourceManager.GetString("StartingAtMinute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every 的本地化字符串。
+        /// </summary>
+        public static string StartingAtMinute2 {
+            get {
+                return ResourceManager.GetString("StartingAtMinute2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Starting on the 的本地化字符串。
+        /// </summary>
+        public static string StartingAtMonth {
+            get {
+                return ResourceManager.GetString("StartingAtMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Every 的本地化字符串。
+        /// </summary>
+        public static string StartingAtMontn2 {
+            get {
+                return ResourceManager.GetString("StartingAtMontn2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Submit 的本地化字符串。
         /// </summary>
         public static string SubmitButtonName {
             get {
                 return ResourceManager.GetString("SubmitButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Weekday 的本地化字符串。
+        /// </summary>
+        public static string Weekday {
+            get {
+                return ResourceManager.GetString("Weekday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Starting on the 的本地化字符串。
+        /// </summary>
+        public static string WeekDay1 {
+            get {
+                return ResourceManager.GetString("WeekDay1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 st weekday  Specific day of  的本地化字符串。
+        /// </summary>
+        public static string WeekDay12 {
+            get {
+                return ResourceManager.GetString("WeekDay12", resourceCulture);
             }
         }
     }

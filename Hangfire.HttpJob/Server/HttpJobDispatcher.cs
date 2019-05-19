@@ -36,7 +36,7 @@ namespace Hangfire.HttpJob.Server
                 var op = context.Request.GetQuery("op");
                 if (string.IsNullOrEmpty(op))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return Task.FromResult(false);
                 }
                 if (op.ToLower() == "getjoblist")
@@ -48,6 +48,11 @@ namespace Hangfire.HttpJob.Server
                     return Task.FromResult(true);
                 }
                 var jobItem = GetJobItem(context);
+                if (jobItem == null)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return Task.FromResult(false);
+                } 
                 if (op.ToLower() == "getrecurringjob")
                 {
                     var strdata = GetJobdata(jobItem.JobName);
@@ -65,9 +70,9 @@ namespace Hangfire.HttpJob.Server
                         return Task.FromResult(false);
                     }
                 }
-                if (jobItem == null || string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
+                if (string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return Task.FromResult(false);
                 }
 
@@ -79,7 +84,7 @@ namespace Hangfire.HttpJob.Server
 
                 if (string.IsNullOrEmpty(jobItem.JobName))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return Task.FromResult(false);
                 }
 
@@ -90,17 +95,17 @@ namespace Hangfire.HttpJob.Server
                         result = AddHttpbackgroundjob(jobItem);
                         break;
                     case "recurringjob":
-                        if (string.IsNullOrEmpty(jobItem.Corn))
+                        if (string.IsNullOrEmpty(jobItem.Cron))
                         {
-                            context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                             return Task.FromResult(false);
                         }
                         result = AddHttprecurringjob(jobItem);
                         break;
                     case "editrecurringjob":
-                        if (string.IsNullOrEmpty(jobItem.Corn))
+                        if (string.IsNullOrEmpty(jobItem.Cron))
                         {
-                            context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                             return Task.FromResult(false);
                         }
                         result = AddHttprecurringjob(jobItem);
@@ -296,7 +301,7 @@ namespace Hangfire.HttpJob.Server
             }
             try
             {
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.EnableRetry, null), jobItem.Corn, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.EnableRetry, null), jobItem.Cron, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
                 return true;
             }
             catch (Exception ex)
