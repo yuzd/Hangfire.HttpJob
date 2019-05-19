@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 
 namespace Hangfire.HttpJob.Server
 {
@@ -41,7 +42,9 @@ namespace Hangfire.HttpJob.Server
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 var client = item.InitHttpClient();
                 var httpMesage = PrepareHttpRequestMessage(item);
-                var httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
+                if (item.Timeout < 1) item.Timeout = 5000;
+                var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
+                var httpResponse = client.SendAsync(httpMesage, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
                 context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}");

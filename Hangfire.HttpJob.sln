@@ -5,7 +5,13 @@ VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{DE788EAF-44CC-48CB-860E-80EE3554FE67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHangfire", "TestHangfire\TestHangfire.csproj", "{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfire", "TestHangfire\TestHangfire.csproj", "{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.HttpJob.Client", "Hangfire.HttpJob.Client\Hangfire.HttpJob.Client.csproj", "{535C99D1-1D5B-4E42-8C5F-927691C61B37}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{6C712EFD-9B0C-431B-8B79-06177DF325BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.HttpJob.Client.Test", "Test\Hangfire.HttpJob.Client.Test\Hangfire.HttpJob.Client.Test.csproj", "{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +27,20 @@ Global
 		{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{535C99D1-1D5B-4E42-8C5F-927691C61B37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{535C99D1-1D5B-4E42-8C5F-927691C61B37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{535C99D1-1D5B-4E42-8C5F-927691C61B37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{535C99D1-1D5B-4E42-8C5F-927691C61B37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A} = {6C712EFD-9B0C-431B-8B79-06177DF325BA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A5F0048D-888D-47DA-8714-2283937235BC}
