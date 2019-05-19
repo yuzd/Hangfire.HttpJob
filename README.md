@@ -73,6 +73,42 @@ Usage
 		});
 	}
 ```
+# add Hangfire HttpJob by client
+
+``` 
+    Install-Package Hangfire.HttpJob.Client
+
+    var serverUrl = "http://localhost:5000/job";
+    var result = HangfireJobClient.AddBackgroundJob(serverUrl, new BackgroundJob
+    {
+	JobName = "测试api",
+	Method = "Get",
+	Url = "http://localhost:5000/testaaa",
+	Mail = new List<string> {"1877682825@qq.com"},
+	SendSucMail = true,
+	DelayFromMinutes = 1
+    }, new HangfireServerPostOption
+    {
+	BasicUserName = "admin",
+	BasicPassword = "test"
+    });
+    
+    var result = HangfireJobClient.AddRecurringJob(serverUrl, new RecurringJob()
+    {
+	JobName = "测试5点40执行",
+	Method = "Post",
+	Data = new {name = "aaa",age = 10},
+	Url = "http://localhost:5000/testpost",
+	Mail = new List<string> { "1877682825@qq.com" },
+	SendSucMail = true,
+	Cron = "40 17 * * *"
+    }, new HangfireServerPostOption
+    {
+	BasicUserName = "admin",
+	BasicPassword = "test"
+    });
+```
+
 How to add Hangfire.HttpJob by restful api
 ================================
 1.add backgroundjob
