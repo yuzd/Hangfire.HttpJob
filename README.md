@@ -3,6 +3,11 @@ Hangfire.HttpJob for .netcore
 
 Hangfire.HttpJob for Hangfire
 
+1. add delay background job by [http post] or on dashbord
+2. add recurring job by [http post] or on dashbord
+3. search job by jobname on dashbord
+4. stop or start job on dashbord
+5. cron generator on dashbord
 
 Installation
 -------------
@@ -110,7 +115,12 @@ data:
 
 How to add Hangfire.HttpJob  in Dashbord
 ================================
-![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic1.png)
-![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic2.png)
-![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic3.png)
-![image](https://github.com/yuzd/Hangfire.HttpJob/blob/master/pic4.png)
+![image](https://images4.c-ctrip.com/target/zb0k14000000wk58p27A6.png)
+![image](https://images4.c-ctrip.com/target/zb0p14000000wf3q84C46.png)
+![image](https://images4.c-ctrip.com/target/zb0114000000wsw9f5E9F.png)
+![image](https://images4.c-ctrip.com/target/zb0u14000000wfy2cBA74.png)
+![image](https://images4.c-ctrip.com/target/zb0814000000wg66eDEB1.png)
+![image](https://images4.c-ctrip.com/target/zb0p14000000wf3yn5CC8.png)
+![image](https://images4.c-ctrip.com/target/zb0c14000000wimqtC772.png)
+## Email notify
+![image](https://images4.c-ctrip.com/target/zb0514000000wihim765F.png)
