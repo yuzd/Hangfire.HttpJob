@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.HttpJob;
@@ -12,17 +6,26 @@ using Hangfire.MySql.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace TestHangfire
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public Startup(IConfiguration configuration)
+        {
+            JsonConfig = configuration;
+        }
+
+        public IConfiguration JsonConfig { get; }
+
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHangfire(Configuration);//Configuration是下面的方法
@@ -31,7 +34,7 @@ namespace TestHangfire
         {
             globalConfiguration.UseStorage(
                     new MySqlStorage(
-                        "Server=localhost;Port=28747;Database=hangfire;Uid=root;Pwd=123456;charset=utf8;SslMode=none;Allow User Variables=True",
+                        JsonConfig.GetSection("HangfireMysqlConnectionString").Get<string>(),
                         new MySqlStorageOptions
                         {
                             TransactionIsolationLevel = IsolationLevel.ReadCommitted,
@@ -51,13 +54,13 @@ namespace TestHangfire
                 {
                     MailOption = new MailOption
                     {
-                        Server = "smtp.qq.com",
-                        Port = 465,
-                        UseSsl = true,
-                        User = "admin@kawayiyi.com",
-                        Password = "aqeumnudiimnchic"
+                        Server = JsonConfig.GetSection("HangfireMail:Server").Get<string>(),
+                        Port = JsonConfig.GetSection("HangfireMail:Port").Get<int>(),
+                        UseSsl = JsonConfig.GetSection("HangfireMail:UseSsl").Get<bool>(),
+                        User = JsonConfig.GetSection("HangfireMail:User").Get<string>(),
+                        Password = JsonConfig.GetSection("HangfireMail:Password").Get<string>(),
                     },
-                    DefaultRecurringQueueName = "recurring"
+                    DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>()
                 });
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -68,28 +71,19 @@ namespace TestHangfire
             logging.AddNLog();
             #endregion
 
-            //var supportedCultures = new[]
-            //{
-            //    new CultureInfo("zh-CN"),
-            //    new CultureInfo("en-US")
-            //};
-            //app.UseRequestLocalization(new RequestLocalizationOptions
-            //{
-            //    DefaultRequestCulture = new RequestCulture("en-US"),
-            //    // Formatting numbers, dates, etc.
-            //    SupportedCultures = supportedCultures,
-            //    // UI strings that we have localized.
-            //    SupportedUICultures = supportedCultures
-            //});
 
-            //System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("");
+            //强制显示中文
+            //System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("zh-CN");
+
+            //强制显示英文
+            //System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            var queues = new[] { "default", "apis", "recurring" };
+            var queues = JsonConfig.GetSection("HangfireQueues").Get<List<string>>().ToArray();
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 ServerTimeout = TimeSpan.FromMinutes(4),
@@ -99,7 +93,9 @@ namespace TestHangfire
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40)//工作线程数，当前允许的最大线程，默认20
             });
 
-            app.UseHangfireDashboard("/job", new DashboardOptions
+            var hangfireStartUpPath = JsonConfig.GetSection("HangfireStartUpPath").Get<string>();
+            if (string.IsNullOrWhiteSpace(hangfireStartUpPath)) hangfireStartUpPath = "/job";
+            app.UseHangfireDashboard(hangfireStartUpPath, new DashboardOptions
             {
                 AppPath = "#",
                 DisplayStorageConnectionString = false,
@@ -113,19 +109,21 @@ namespace TestHangfire
                     {
                         new BasicAuthAuthorizationUser
                         {
-                            Login = "admin",
-                            PasswordClear =  "test"
+                            Login = JsonConfig.GetSection("HangfireUserName").Get<string>(),
+                            PasswordClear =  JsonConfig.GetSection("HangfirePwd").Get<string>()
                         }
                     }
 
                 }) }
             });
 
+            var hangfireReadOnlyPath = JsonConfig.GetSection("HangfireReadOnlyPath").Get<string>();
+            if (string.IsNullOrWhiteSpace(hangfireReadOnlyPath)) hangfireReadOnlyPath = "/job-read";
             //只读面板，只能读取不能操作
-            app.UseHangfireDashboard("/job-read", new DashboardOptions
+            app.UseHangfireDashboard(hangfireReadOnlyPath, new DashboardOptions
             {
                 IgnoreAntiforgeryToken = true,
-                AppPath = "/job",//返回时跳转的地址
+                AppPath = hangfireStartUpPath,//返回时跳转的地址
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 IsReadOnlyFunc = Context => true
             });

@@ -17,6 +17,7 @@
     <PackageReference Include="Hangfire.MySql.Core" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.5.0" />
   </ItemGroup>
 
