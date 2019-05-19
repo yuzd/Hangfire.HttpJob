@@ -111,6 +111,7 @@ namespace Hangfire.HttpJob.Client
                 result.IsSuccess = false;
                 result.ErrMessage = ex.Message;
                 if (_httpPostOption.ThrowException) throw;
+                return result;
             }
 
             return new HangfireAddJobResult
