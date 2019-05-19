@@ -121,6 +121,6 @@ How to add Hangfire.HttpJob  in Dashbord
 ![image](https://images4.c-ctrip.com/target/zb0u14000000wfy2cBA74.png)
 ![image](https://images4.c-ctrip.com/target/zb0814000000wg66eDEB1.png)
 ![image](https://images4.c-ctrip.com/target/zb0p14000000wf3yn5CC8.png)
-
+![image](https://images4.c-ctrip.com/target/zb0c14000000wimqtC772.png)
 ## Email notify
 ![image](https://images4.c-ctrip.com/target/zb0514000000wihim765F.png)
