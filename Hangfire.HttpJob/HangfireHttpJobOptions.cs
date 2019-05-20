@@ -10,11 +10,18 @@ namespace Hangfire.HttpJob
         /// 超时时间 毫秒
         /// </summary>
         public int GlobalHttpTimeOut { get; set; } = 5000;
+
+        /// <summary>
+        /// 默认保留7天执行记录
+        /// </summary>
+        public int JobExpirationTimeoutDay { get; set; } = 7;
+
         public string AddHttpJobButtonName { get; set; } = Strings.AddHttpJobButtonName;
         public string AddRecurringJobHttpJobButtonName { get; set; } = Strings.AddRecurringJobHttpJobButtonName;
         public string CloseButtonName { get; set; } = Strings.CloseButtonName;
         public string SubmitButtonName { get; set; } = Strings.SubmitButtonName;
         public string LogOutButtonName { get; set; } = Strings.LogOutButtonName;
+        public string StartBackgroudJobButtonName { get; set; } = Strings.StartBackgroudJobButtonName;
         public string SearchPlaceholder { get; set; } = Strings.SearchPlaceholder;
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";

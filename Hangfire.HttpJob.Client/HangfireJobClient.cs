@@ -82,7 +82,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = backgroundJob.EnableRetry,
                 BasicUserName = backgroundJob.BasicUserName,
                 BasicPassword = backgroundJob.BasicPassword,
-                Proxy = backgroundJob.Proxy
+                AgentClass = backgroundJob.AgentClass
             };
 
             return jobItem.PostAsync();
@@ -151,7 +151,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = backgroundJob.EnableRetry,
                 BasicUserName = backgroundJob.BasicUserName,
                 BasicPassword = backgroundJob.BasicPassword,
-                Proxy = backgroundJob.Proxy
+                AgentClass = backgroundJob.AgentClass
             };
 
             return jobItem.Post();
@@ -229,7 +229,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = recurringJob.EnableRetry,
                 BasicUserName = recurringJob.BasicUserName,
                 BasicPassword = recurringJob.BasicPassword,
-                Proxy = recurringJob.Proxy
+                AgentClass = recurringJob.AgentClass
             };
 
             return jobItem.PostAsync();
@@ -303,7 +303,7 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = recurringJob.EnableRetry,
                 BasicUserName = recurringJob.BasicUserName,
                 BasicPassword = recurringJob.BasicPassword,
-                Proxy = recurringJob.Proxy
+                AgentClass = recurringJob.AgentClass
             };
 
             return jobItem.Post();

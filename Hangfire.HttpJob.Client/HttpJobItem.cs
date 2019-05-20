@@ -78,9 +78,9 @@ namespace Hangfire.HttpJob.Client
         public bool EnableRetry { get; set; }
 
         /// <summary>
-        /// 代理设置
+        /// 传了class就代表是agentjob
         /// </summary>
-        public string Proxy { get; set; }
+        public string AgentClass { get; set; }
 
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }

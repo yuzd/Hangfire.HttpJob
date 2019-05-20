@@ -127,15 +127,16 @@ namespace Hangfire.HttpJob.Support
         public void OnStateElection(ElectStateContext context)
         {
             var jobdta = context.BackgroundJob.Job.Args.FirstOrDefault();
-            var httpjob = JsonConvert.DeserializeObject<HttpJobItem>(jobdta.ToString());
-            if (!httpjob.EnableRetry) { return; }
+            if (jobdta == null) return;
+            var httpjob = jobdta as HttpJobItem;
+            if (httpjob!=null &&!httpjob.EnableRetry) { return; }
             var failedState = context.CandidateState as FailedState;
             if (failedState == null)
             {
                 // This filter accepts only failed job state.
                 return;
             }
-            var job = context.BackgroundJob.Job.Args.FirstOrDefault();
+            //var job = context.BackgroundJob.Job.Args.FirstOrDefault();
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
 
             if (retryAttempt <= Attempts)

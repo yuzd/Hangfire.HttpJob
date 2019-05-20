@@ -40,9 +40,9 @@ namespace Hangfire.HttpJob.Server
         public string QueueName { get; set; }
 
         /// <summary>
-        /// 代理设置
+        /// 传了class就代表是agentjob
         /// </summary>
-        public string Proxy { get; set; }
+        public string AgentClass { get; set; }
 
         /// <summary>
         /// 是否成功发送邮件
@@ -76,7 +76,7 @@ namespace Hangfire.HttpJob.Server
 
     public class RecurringJobItem 
     {
-       
+
         /// <summary>
         /// 请求Url
         /// </summary>
@@ -101,6 +101,11 @@ namespace Hangfire.HttpJob.Server
         public string QueueName { get; set; }
 
         /// <summary>
+        /// 传了class就代表是agentjob
+        /// </summary>
+        public string AgentClass { get; set; }
+
+        /// <summary>
         /// 是否成功发送邮件
         /// </summary>
         public bool SendSucMail { get; set; }
@@ -122,7 +127,6 @@ namespace Hangfire.HttpJob.Server
 
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
-
 
     }
 }

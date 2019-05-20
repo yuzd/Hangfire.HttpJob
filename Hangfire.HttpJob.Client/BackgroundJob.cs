@@ -91,6 +91,6 @@ namespace Hangfire.HttpJob.Client
         /// <summary>
         /// 代理设置
         /// </summary>
-        public string Proxy { get; set; }
+        public string AgentClass { get; set; }
     }
 }

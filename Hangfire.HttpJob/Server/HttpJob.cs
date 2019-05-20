@@ -27,12 +27,16 @@ namespace Hangfire.HttpJob.Server
 
         [AutomaticRetrySet(Attempts = 3, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
-        [DisplayName("[JobName:{1} | QueueName:{2} | EnableRetry:{3}]")]
+        [DisplayName("[{1} | {2} | Retry:{3}]")]
+        [JobFilter(timeoutInSeconds: 3600)]
         public static void Excute(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
         {
             var logList = new List<string>();
             try
             {
+                if (context == null) return;
+                var runTimeData = context.GetJobParameter<string>("Data");
+                if (!string.IsNullOrEmpty(runTimeData)) item.Data = runTimeData;
                 if (item.Timeout < 1) item.Timeout = 5000;
                 context.SetTextColor(ConsoleTextColor.Yellow);
                 context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
@@ -42,17 +46,12 @@ namespace Hangfire.HttpJob.Server
                 context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】");
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;
-                var proxy = item.Proxy;
-                if (string.IsNullOrEmpty(proxy) && !string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
-                {
-                    proxy = HangfireHttpJobOptions.Proxy;
-                }
-                if (!string.IsNullOrEmpty(proxy))
+                if (!string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
                 {
                     // per proxy per HttpClient
-                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(proxy);
-                    context.WriteLine($"Proxy:{proxy}");
-                    logList.Add($"Proxy:{proxy}");
+                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(HangfireHttpJobOptions.Proxy);
+                    context.WriteLine($"Proxy:{HangfireHttpJobOptions.Proxy}");
+                    logList.Add($"Proxy:{HangfireHttpJobOptions.Proxy}");
                 }
                 else
                 {
@@ -74,16 +73,16 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
-                if (context == null) return;
                 //获取重试次数
-                var count = context.GetJobParameter<string>("RetryCount");
+                var count = context.GetJobParameter<string>("RetryCount")??string.Empty;
                 context.SetTextColor(ConsoleTextColor.Red);
-                if (count == "3" && item.SendFaiMail)//重试达到三次的时候发邮件通知
-                {
-                    SendFailMail(item, string.Join("<br/>", logList), ex);
-                }
                 Logger.ErrorException("HttpJob.Excute=>" + item, ex);
                 context.WriteLine(ex.Message);
+                if (count == "3")//重试达到三次的时候发邮件通知
+                {
+                    SendFailMail(item, string.Join("<br/>", logList), ex);
+                    return;
+                }
                 throw;
             }
         }
@@ -171,6 +170,12 @@ namespace Hangfire.HttpJob.Server
                     request.Content = new ByteArrayContent(bytes, 0, bytes.Length);
                 }
             }
+
+            if (!string.IsNullOrEmpty(item.AgentClass))
+            {
+                request.Headers.Add("x-job-agent-class",item.AgentClass);
+            }
+
             if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))
             {
                 var byteArray = Encoding.ASCII.GetBytes(item.BasicUserName + ":" + item.BasicPassword);

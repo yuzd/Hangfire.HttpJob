@@ -17,11 +17,11 @@
 
             if (config.DashboardFooter) {
                 //更改hangfire版本显示替换为任意值
-                $("#footer ul li:first-child").html('<a href="https://github.com/yuzd/Hangfire.Job" target="_blank">' + config.DashboardFooter+'</a>');
+                $("#footer ul li:first-child").html('<a href="https://github.com/yuzd/Hangfire.Job" target="_blank">' + config.DashboardFooter + '</a>');
 
             }
-           
-           
+
+
             if (config.DashboardTitle) {
                 //更改标题
                 document.title = config.DashboardTitle;
@@ -36,10 +36,10 @@
                 !config.NeedAddRecurringHttpJobButton &&
                 !config.NeedAddCronButton &&
                 !config.NeedEditRecurringJobButton) {
-                
+
                 return;
-            } 
-            
+            }
+
 
             var button = '';
             var AddCronButton = '';
@@ -47,6 +47,7 @@
             var EditRecurringJobutton = '';
             var editgeturl = config.GetRecurringJobUrl;
             var pauseurl = config.PauseJobUrl;
+            var startBackgroudJobUrl = config.StartBackgroudJobUrl;
             var getlisturl = config.GetJobListUrl;
             var divModel = '';
             var options = {
@@ -54,8 +55,8 @@
                 mode: 'code'
             };
 
-            var normal_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"Proxy\":\"\"}";
-            var recurring_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName +"\",\"JobName\":\"\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"Proxy\":\"\"}";
+            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
+            var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton) {
                 button =
@@ -145,7 +146,7 @@
             //暂停和启用任务
 
             PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="PauseJob">' +
-                '<span class="glyphicon glyphicon-stop"> ' + config.PauseJobButtonName + '</span>' +
+                '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
 
             if (!button || !divModel) return;
@@ -180,19 +181,69 @@
             });
 
             //暂停任务
-            $("#PauseJob").click(function () {
+            $("#PauseJob").click(function (e) {
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    alert("请选择要操作的任务"); return;
-                } else {
-                    $.ajax({
-                        type: "post",
-                        url: pauseurl,
-                        contentType: "application/json; charset=utf-8",
-                        data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
-                        async: true,
-                        success: function (returndata) {
-                        }
+                    swal({
+                        title: "",
+                        text: "Select Job Item First!",
+                        type: "error"
                     });
+                    return;
+                } else {
+                    var jobId = $(".js-jobs-list-checkbox:checked").val();
+                    if (config.NeedAddNomalHttpJobButton) {
+                        swal({
+                            title: "Start Job",
+                            text: "Are you sure want to start?",
+                            type: "input",
+                            showCancelButton: true,
+                            closeOnConfirm: false,
+                            animation: "slide-from-top",
+                            inputPlaceholder: "start param",
+                            showLoaderOnConfirm: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Submit",
+                            cancelButtonText: "Cancel"
+                        }, function (inputValue) {
+                            if (inputValue === false) return false;
+                            $.ajax({
+                                type: "post",
+                                url: startBackgroudJobUrl,
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify({ "JobName": jobId , "URL": "baseurl", "Data": inputValue, "ContentType": "application/json" }),
+                                async: true,
+                                success: function (returndata) {
+
+                                    var jobs = $("input[name='jobs[]']:checked", container).map(function () {
+                                        return $(this).val();
+                                    }).get();
+
+                                    $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
+                                        swal({
+                                            title: "Success",
+                                            text: "start job success",
+                                            type: "success"
+                                        });
+                                        window.location.reload();
+                                    });
+
+                                }
+                            });
+                        });
+                        e.stopPropagation();
+                        e.preventDefault();
+                    } else {
+                        $.ajax({
+                            type: "post",
+                            url: pauseurl,
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
+                            async: true,
+                            success: function (returndata) {
+                            }
+                        });
+                    }
+
                 }
             });
             GetJobList();
@@ -204,25 +255,54 @@
                     data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
                     async: true,
                     success: function (returndata) {
-                        $(".table tbody").find('tr').each(function () {
-                            var tdArr = $(this).children();
-                            var ss = tdArr.eq(1).text();
-                            for (var i = 0; i < returndata.length; i++) {
-                                if (ss === returndata[i].Id) {
-                                    $(this).css("color", "red");
-                                    $(this).addClass("Paused");
+                        if (config.NeedAddNomalHttpJobButton) {
+                            $(".table tbody").find('tr').each(function () {
+                                var tdArr = $(this).children();
+                                var ss = tdArr.eq(3).text();
+                                if (ss.indexOf('| multiple |') >= 0) {
+                                    tdArr.eq(2).text('multiple');
+                                    $(this).css("color", "blue");
                                 }
-                            }
-                        });
+                            });
+                        }
+
+                        if (config.NeedEditRecurringJobButton) {
+                            if (!returndata) return;
+                            if (returndata.length < 1) return;
+
+                            $(".table tbody").find('tr').each(function () {
+                                var tdArr = $(this).children();
+                                var ss = tdArr.eq(1).text();
+                                for (var i = 0; i < returndata.length; i++) {
+                                    if (ss === returndata[i].Id) {
+                                        $(this).css("color", "red");
+                                        $(this).addClass("Paused");
+                                    }
+                                }
+                            });
+                        }
+
                     }
                 });
             }
             //编辑任务
             $("#EditJob").click(function () {
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    alert("请选择要编辑的任务"); return;
+                    swal({
+                        title: "",
+                        text: "Select Job Item First!",
+                        type: "error"
+                    });
+                    return;
                 } else {
-                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) { alert("只能选择一项任务进行编辑"); return; }
+                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) {
+                        swal({
+                            title: "",
+                            text: "Select One Job Only!",
+                            type: "error"
+                        });
+                        return;
+                    }
                     $(".modal-title").html(config.EditRecurringJobButtonName);
                     $.ajax({
                         type: "post",
@@ -271,12 +351,26 @@
                 }
                 $.ajax(settings).done(function (response) {
 
-                    alert('success');
-                    $('#httpJobModal').modal('hide');
-                    window.jsonEditor.setText('{}');
-                    location.reload();
+                    swal({
+                        title: "Success",
+                        type: "success",
+                        showCancelButton: false,
+                        closeOnConfirm: false,
+                        animation: "slide-from-top",
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "OK",
+                    }, function () {
+                        $('#httpJobModal').modal('hide');
+                        window.jsonEditor.setText('{}');
+                        location.reload();
+                    });
+
                 }).fail(function () {
-                    alert("error");
+                    swal({
+                        title: "",
+                        text: "Add job fail！",
+                        type: "error"
+                    });
                 });
             });
             $('.jsoneditor-menu').hide();
@@ -301,7 +395,7 @@ var jobSearcher = new function () {
     var createSearchBox = function () {
         $('#search-box').closest('div').remove();
         $('.js-jobs-list').prepend('<div class="search-box-div">' +
-            '<input type="text" id="search-box" placeholder="' + (window.Hangfire.httpjobConfig.SearchPlaceholder)+'">' +
+            '<input type="text" id="search-box" placeholder="' + (window.Hangfire.httpjobConfig.SearchPlaceholder) + '">' +
             //'<img class="loader-img" src ="" />' +
             '<span class="glyphicon glyphicon-search" id="loaddata"> Checking...</span>' +
             '<p id="total-items"></p>' +

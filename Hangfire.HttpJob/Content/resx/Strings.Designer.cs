@@ -493,6 +493,15 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 Start With Param 的本地化字符串。
+        /// </summary>
+        public static string StartBackgroudJobButtonName {
+            get {
+                return ResourceManager.GetString("StartBackgroudJobButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Starting on the 的本地化字符串。
         /// </summary>
         public static string StartingAtDay {

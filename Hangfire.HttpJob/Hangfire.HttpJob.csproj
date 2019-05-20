@@ -6,7 +6,7 @@
     <Description>httpjob for Hangfire</Description>
     <PackageLicenseUrl>https://github.com/yuzd/Hangfire.HttpJob/blob/master/License.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>2.0.3</Version>
+    <Version>2.1.0</Version>
     <Authors>yuzd</Authors>
   </PropertyGroup>
 
@@ -15,6 +15,8 @@
     <None Remove="Content\httpjob.js" />
     <None Remove="Content\jsoneditor.css" />
     <None Remove="Content\jsoneditor.js" />
+    <None Remove="Content\sweetalert2.min.css" />
+    <None Remove="Content\sweetalert2.min.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +24,8 @@
     <EmbeddedResource Include="Content\httpjob.js" />
     <EmbeddedResource Include="Content\jsoneditor.css" />
     <EmbeddedResource Include="Content\jsoneditor.js" />
+    <EmbeddedResource Include="Content\sweetalert2.min.css" />
+    <EmbeddedResource Include="Content\sweetalert2.min.js" />
   </ItemGroup>
 
   <ItemGroup>

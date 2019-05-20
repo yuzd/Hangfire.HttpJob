@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Hangfire.HttpJob.Support;
 
 
 namespace Hangfire.HttpJob.Server
@@ -15,12 +16,6 @@ namespace Hangfire.HttpJob.Server
     public class HttpJobDispatcher : IDashboardDispatcher
     {
         private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
-        public HttpJobDispatcher(HangfireHttpJobOptions options)
-        {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-        }
-
         public Task Dispatch(DashboardContext context)
         {
             if (context == null)
@@ -70,6 +65,7 @@ namespace Hangfire.HttpJob.Server
                         return Task.FromResult(false);
                     }
                 }
+               
                 if (string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -112,6 +108,9 @@ namespace Hangfire.HttpJob.Server
                         break;
                     case "pausejob":
                         result = PauseOrRestartJob(jobItem.JobName);
+                        break;
+                    case "startbackgroudjob":
+                        result = StartBackgroudJob(jobItem);
                         break;
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
@@ -198,7 +197,29 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.EnableRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
+                // 普通作业
+                // 单纯的httpjob 有设置延迟
+                // 单纯的httpjob 没有设置延迟  但是不可以不设置延迟 所以就设置一个非常大的延迟 比如100年后
+                // 以agent模式开发的job 有设置延迟
+                // 以agent模式开发的job 没有设置延迟
+                // 没有设置延迟 代表的只可以自己触发
+                var queueName = !string.IsNullOrEmpty(jobItem.AgentClass) ? "JobAgent" : jobItem.QueueName;
+                if (string.IsNullOrEmpty(queueName))
+                {
+                    queueName = "DEFAULT";
+                }
+                if (jobItem.DelayFromMinutes == -1) //约定
+                {
+                    //代表设置的是智能自己触发的延迟job
+                   var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
+
+                   //自己触发完成后再把自己添加一遍
+                   BackgroundJob.ContinueJobWith(jobId,()=> AddHttpbackgroundjob(jobItem));
+                   return true;
+                }
+
+
+                BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
                 return true;
             }
             catch (Exception ex)
@@ -208,7 +229,35 @@ namespace Hangfire.HttpJob.Server
             }
         }
         /// <summary>
-        /// 暂停或者开始任务
+        /// 执行job
+        /// </summary>
+        /// <param name="jobItem"></param>
+        /// <returns></returns>
+        public bool StartBackgroudJob(HttpJobItem jobItem)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(jobItem.Data)) return true;
+                using (var connection = JobStorage.Current.GetConnection())
+                {
+                    var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
+                    using (var tran = connection.CreateWriteTransaction())
+                    {
+                        tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("Data", jobItem.Data) });
+                        tran.Commit();
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("HttpJobDispatcher.StartBackgroudJob", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 停止或者暂停项目
         /// </summary>
         /// <param name="jobname"></param>
         /// <returns></returns>
@@ -223,7 +272,6 @@ namespace Hangfire.HttpJob.Server
                         var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
                         if (conts.Contains("true"))
                         {
-
                             tran.RemoveFromSet($"JobPauseOf:{jobname}", "true");
                             tran.AddToSet($"JobPauseOf:{jobname}", "false");
                             tran.Commit();
@@ -244,8 +292,6 @@ namespace Hangfire.HttpJob.Server
                 return false;
             }
         }
-
-
         /// <summary>
         /// 获取已经暂停的任务
         /// </summary>
@@ -299,9 +345,16 @@ namespace Hangfire.HttpJob.Server
                     return false;
                 }
             }
+
+            var queueName = !string.IsNullOrEmpty(jobItem.AgentClass) ? "JobAgent" : jobItem.QueueName;
+            if (string.IsNullOrEmpty(queueName))
+            {
+                queueName = "DEFAULT";
+            }
+
             try
             {
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.EnableRetry, null), jobItem.Cron, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
                 return true;
             }
             catch (Exception ex)

@@ -297,4 +297,7 @@
   <data name="JobEnd" xml:space="preserve">
     <value>任务结束</value>
   </data>
+  <data name="StartBackgroudJobButtonName" xml:space="preserve">
+    <value>带参数执行</value>
+  </data>
 </root>
