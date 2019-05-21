@@ -73,11 +73,16 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
-                //获取重试次数
-                var count = context.GetJobParameter<string>("RetryCount")??string.Empty;
                 context.SetTextColor(ConsoleTextColor.Red);
                 Logger.ErrorException("HttpJob.Excute=>" + item, ex);
                 context.WriteLine(ex.Message);
+                if (!item.EnableRetry)
+                {
+                    SendFailMail(item, string.Join("<br/>", logList), ex);
+                    return;
+                }
+                //获取重试次数
+                var count = context.GetJobParameter<string>("RetryCount") ?? string.Empty;
                 if (count == "3")//重试达到三次的时候发邮件通知
                 {
                     SendFailMail(item, string.Join("<br/>", logList), ex);
