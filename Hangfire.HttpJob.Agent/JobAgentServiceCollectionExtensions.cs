@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using Hangfire.HttpJob.Agent.Config;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,12 @@ namespace Hangfire.HttpJob.Agent
             serviceCollection.AddOptions();
             serviceCollection.TryAddSingleton<IConfigureOptions<JobAgentOptions>, ConfigureJobAgentOptions>();
             var configurer = new JobAgentServiceConfigurer(serviceCollection);
-            configure?.Invoke(configurer);
+            if (configure == null)
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                configure = (c) => { c.AddJobAgent(assembly); };
+            }
+            configure.Invoke(configurer);
             serviceCollection.TryAddSingleton<JobAgentMiddleware>();
             return serviceCollection;
 
