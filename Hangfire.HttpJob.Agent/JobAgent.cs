@@ -14,13 +14,18 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         private Thread thd;
 
+        private  ManualResetEvent _mainThread ;
 
         private JobStatus jobStatus;
+
 
         /// <summary>
         /// 运行参数
         /// </summary>
         public string Param { get; private set; }
+        internal string AgentClass { get;  set; }
+        internal bool Singleton { get;  set; }
+        internal bool Hang { get;  set; }
 
         /// <summary>
         /// 开始时间
@@ -30,10 +35,10 @@ namespace Hangfire.HttpJob.Agent
         /// <summary>
         /// 最后接
         /// </summary>
-        internal DateTime lastEndTime { get; set; }
+        internal DateTime LastEndTime { get; set; }
 
 
-        public JobStatus JobStatus
+        internal JobStatus JobStatus
         {
             get => this.jobStatus;
             set
@@ -41,35 +46,50 @@ namespace Hangfire.HttpJob.Agent
                 this.jobStatus = value;
                 if (value != JobStatus.Stoped)
                     return;
-                this.lastEndTime = DateTime.Now;
+                this.LastEndTime = DateTime.Now;
             }
         }
 
-        protected abstract Task OnStartAsync(string param);
-        protected abstract Task OnStopAsync();
+        protected abstract Task OnStart(string param);
+        protected abstract void OnStop();
+        protected abstract void OnException(Exception ex);
 
 
         internal void Run(string param)
         {
+            _mainThread = new ManualResetEvent(false);
             this.Param = param;
-            this.thd = new Thread(async ()=> await this.start());
+            this.thd = new Thread(async () => { await this.start(); });
             this.thd.Start();
         }
 
-        internal async Task StopAsync()
+        internal void Stop()
         {
             try
             {
-                this.JobStatus = JobStatus.Stopping;
+                if (Hang)
+                {
+                    _mainThread.Set();
+                }
+
                 if (this.JobStatus == JobStatus.Stoped)
                     return;
-                await this.OnStopAsync();
+                this.JobStatus = JobStatus.Stopping;
+                this.OnStop();
                 this.JobStatus = JobStatus.Stoped;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                e.Data.Add("Method", "OnStop");
+                e.Data.Add("AgentClass", AgentClass);
+                try
+                {
+                    OnException(e);
+                }
+                catch (Exception)
+                {
+                    //ignore
+                }
             }
         }
 
@@ -80,14 +100,35 @@ namespace Hangfire.HttpJob.Agent
         {
             try
             {
-                this.lastEndTime = DateTime.MinValue;
+                if (this.JobStatus == JobStatus.Running) return;
+                this.LastEndTime = DateTime.MinValue;
+                this.StartTime = DateTime.Now;
                 this.JobStatus = JobStatus.Running;
-                await this.OnStartAsync(this.Param);
+                await this.OnStart(this.Param);
+                if (Hang)
+                {
+                    _mainThread.WaitOne();
+                }
                 this.JobStatus = JobStatus.Stoped;
             }
             catch (Exception e)
             {
+                e.Data.Add("Method", "OnStart");
+                e.Data.Add("AgentClass", AgentClass);
+                try
+                {
+                    OnException(e);
+                }
+                catch (Exception)
+                {
+                    //ignore
+                }
             }
+        }
+
+        internal string GetJobInfo()
+        {
+            return this.GetType().FullName;
         }
     }
 }

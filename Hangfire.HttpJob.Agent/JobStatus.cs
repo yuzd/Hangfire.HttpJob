@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Hangfire.HttpJob.Agent
 {
-    public enum JobStatus
+    internal enum JobStatus
     {
-        Stop,
         Running,
         Stopping,
         Stoped,
