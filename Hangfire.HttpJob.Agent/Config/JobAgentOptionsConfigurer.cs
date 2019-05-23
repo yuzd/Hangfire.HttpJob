@@ -24,5 +24,23 @@ namespace Hangfire.HttpJob.Agent.Config
             options.SitemapUrl = absoluteSitemapUri;
             return this;
         }
+
+        public JobAgentOptionsConfigurer EnabledBasicAuth(bool enabledBasicAuth)
+        {
+            options.EnabledBasicAuth = enabledBasicAuth;
+            return this;
+        }
+
+        public JobAgentOptionsConfigurer WithBasicUserName(string basicUserName)
+        {
+            options.BasicUserName = basicUserName;
+            return this;
+        }
+
+        public JobAgentOptionsConfigurer WithBasicUserPwd(string basicUserPwd)
+        {
+            options.BasicUserPwd = basicUserPwd;
+            return this;
+        }
     }
 }

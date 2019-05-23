@@ -112,6 +112,9 @@ namespace Hangfire.HttpJob.Server
                     case "startbackgroudjob":
                         result = StartBackgroudJob(jobItem);
                         break;
+                    case "stopbackgroudjob":
+                        result = StopBackgroudJob(jobItem);
+                        break;
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                         return Task.FromResult(false);
@@ -211,7 +214,7 @@ namespace Hangfire.HttpJob.Server
                 if (jobItem.DelayFromMinutes == -1) //约定
                 {
                     //代表设置的是智能自己触发的延迟job
-                   var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
+                   var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem , jobItem.JobName + (!string.IsNullOrEmpty(jobItem.AgentClass) ? "| JobAgent |" : ""), "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
 
                    //自己触发完成后再把自己添加一遍
                    BackgroundJob.ContinueJobWith(jobId,()=> AddHttpbackgroundjob(jobItem));
@@ -243,7 +246,10 @@ namespace Hangfire.HttpJob.Server
                     var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
                     using (var tran = connection.CreateWriteTransaction())
                     {
-                        tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("Data", jobItem.Data) });
+                        tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("Data", jobItem.Data)
+                        });
                         tran.Commit();
                     }
                 }
@@ -255,7 +261,27 @@ namespace Hangfire.HttpJob.Server
                 return false;
             }
         }
-
+        public bool StopBackgroudJob(HttpJobItem jobItem)
+        {
+            try
+            {
+                using (var connection = JobStorage.Current.GetConnection())
+                {
+                    var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
+                    using (var tran = connection.CreateWriteTransaction())
+                    {
+                        tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("Action", "stop") });
+                        tran.Commit();
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("HttpJobDispatcher.StopBackgroudJob", ex);
+                return false;
+            }
+        }
         /// <summary>
         /// 停止或者暂停项目
         /// </summary>

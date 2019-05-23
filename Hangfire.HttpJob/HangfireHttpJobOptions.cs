@@ -22,6 +22,7 @@ namespace Hangfire.HttpJob
         public string SubmitButtonName { get; set; } = Strings.SubmitButtonName;
         public string LogOutButtonName { get; set; } = Strings.LogOutButtonName;
         public string StartBackgroudJobButtonName { get; set; } = Strings.StartBackgroudJobButtonName;
+        public string StopBackgroudJobButtonName { get; set; } = Strings.StopBackgroudJobButtonName;
         public string SearchPlaceholder { get; set; } = Strings.SearchPlaceholder;
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";

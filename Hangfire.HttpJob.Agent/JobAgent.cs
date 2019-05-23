@@ -57,40 +57,48 @@ namespace Hangfire.HttpJob.Agent
 
         internal void Run(string param)
         {
-            _mainThread = new ManualResetEvent(false);
-            this.Param = param;
-            this.thd = new Thread(async () => { await this.start(); });
-            this.thd.Start();
+            lock (this)
+            {
+                _mainThread = new ManualResetEvent(false);
+                this.Param = param;
+                this.thd = new Thread(async () => { await this.start(); });
+                this.thd.Start();
+            }
         }
 
         internal void Stop()
         {
-            try
+            lock (this)
             {
-                if (Hang)
-                {
-                    _mainThread.Set();
-                }
-
-                if (this.JobStatus == JobStatus.Stoped)
-                    return;
-                this.JobStatus = JobStatus.Stopping;
-                this.OnStop();
-                this.JobStatus = JobStatus.Stoped;
-            }
-            catch (Exception e)
-            {
-                e.Data.Add("Method", "OnStop");
-                e.Data.Add("AgentClass", AgentClass);
                 try
                 {
-                    OnException(e);
+                    if (Hang)
+                    {
+                        _mainThread.Set();
+                    }
+
+                    if (this.JobStatus == JobStatus.Stoped)
+                        return;
+                    this.JobStatus = JobStatus.Stopping;
+                    this.OnStop();
+                    this.thd.Abort();
+                    this.JobStatus = JobStatus.Stoped;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    //ignore
+                    e.Data.Add("Method", "OnStop");
+                    e.Data.Add("AgentClass", AgentClass);
+                    try
+                    {
+                        OnException(e);
+                    }
+                    catch (Exception)
+                    {
+                        //ignore
+                    }
                 }
             }
+            
         }
 
         /// <summary>

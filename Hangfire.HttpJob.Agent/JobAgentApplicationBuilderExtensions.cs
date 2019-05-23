@@ -14,7 +14,7 @@ namespace Hangfire.HttpJob.Agent
         public static IApplicationBuilder UseHangfireHttpJobAgent(this IApplicationBuilder app,
             Action<JobAgentOptionsConfigurer> configureOptions = null)
         {
-            var evt = new EventId(1, "HttpJobAgent");
+            var evt = new EventId(1, "Hangfire.HttpJob.Agent");
             var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<JobAgentMiddleware>();
             var options = app.ApplicationServices.GetService<IOptions<JobAgentOptions>>();
@@ -36,6 +36,11 @@ namespace Hangfire.HttpJob.Agent
                 {
                     robotsApp.UseMiddleware<JobAgentMiddleware>();
                 });
+
+                foreach (KeyValuePair<Type,JobMetaData > jobAgent in JobAgentServiceConfigurer.JobAgentDic)
+                {
+                    logger.LogInformation(evt, $"[{jobAgent.Key.Name}] [Transient:{jobAgent.Value.Transien}] [HangJob:{jobAgent.Value.Hang}] - Registered", new { path = options.Value.SitemapUrl });
+                }
             }
             return app;
         }

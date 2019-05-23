@@ -47,7 +47,7 @@ namespace Hangfire.HttpJob.Agent.Config
         }
         public JobAgentServiceConfigurer AddTransientJobAgent(Type type)
         {
-            if (!type.IsAssignableFrom(typeof(JobAgent)))
+            if (!typeof(JobAgent).IsAssignableFrom(type))
             {
                 throw new InvalidCastException($"type:{type.Name} is not AssignableFrom typeOf JobAgent");
             }
@@ -83,7 +83,7 @@ namespace Hangfire.HttpJob.Agent.Config
 
         public JobAgentServiceConfigurer AddJobAgent(Type type)
         {
-            if (!type.IsAssignableFrom(typeof(JobAgent)))
+            if (!typeof(JobAgent).IsAssignableFrom(type))
             {
                 throw new InvalidCastException($"type:{type.Name} is not AssignableFrom typeOf JobAgent");
             }

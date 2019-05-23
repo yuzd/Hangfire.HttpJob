@@ -574,6 +574,15 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 Stop Job 的本地化字符串。
+        /// </summary>
+        public static string StopBackgroudJobButtonName {
+            get {
+                return ResourceManager.GetString("StopBackgroudJobButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Submit 的本地化字符串。
         /// </summary>
         public static string SubmitButtonName {

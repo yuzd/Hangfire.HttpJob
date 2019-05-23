@@ -3,10 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Company>yuzd</Company>
-    <Product>yuzd</Product>
-    <Description>Hangfire HttpJob Agent</Description>
+    <Product>Hangfire HttpJob Agent</Product>
+    <Description>HttpJob Agent for Hangfire</Description>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>yuzd</Authors>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0" />

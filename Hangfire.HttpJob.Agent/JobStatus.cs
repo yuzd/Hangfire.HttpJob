@@ -8,6 +8,7 @@ namespace Hangfire.HttpJob.Agent
 {
     internal enum JobStatus
     {
+        Default,
         Running,
         Stopping,
         Stoped,

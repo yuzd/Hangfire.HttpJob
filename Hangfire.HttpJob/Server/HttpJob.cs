@@ -41,8 +41,8 @@ namespace Hangfire.HttpJob.Server
                 context.SetTextColor(ConsoleTextColor.Yellow);
                 context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 logList.Add($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                context.WriteLine($"{Strings.JobName}:{jobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
-                logList.Add($"{Strings.JobName}:{jobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
+                context.WriteLine($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
+                logList.Add($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
                 context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】");
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;
@@ -58,7 +58,7 @@ namespace Hangfire.HttpJob.Server
                     //per host per HttpClient
                     client = HangfireHttpClientFactory.Instance.GetHttpClient(item.Url);
                 }
-                var httpMesage = PrepareHttpRequestMessage(item);
+                var httpMesage = PrepareHttpRequestMessage(item, context);
                 var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
                 var httpResponse = client.SendAsync(httpMesage, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                 HttpContent content = httpResponse.Content;
@@ -163,7 +163,7 @@ namespace Hangfire.HttpJob.Server
             return v.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
         }
 
-        private static HttpRequestMessage PrepareHttpRequestMessage(HttpJobItem item)
+        private static HttpRequestMessage PrepareHttpRequestMessage(HttpJobItem item, PerformContext context)
         {
             var request = new HttpRequestMessage(new HttpMethod(item.Method), item.Url);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(item.ContentType));
@@ -179,6 +179,19 @@ namespace Hangfire.HttpJob.Server
             if (!string.IsNullOrEmpty(item.AgentClass))
             {
                 request.Headers.Add("x-job-agent-class",item.AgentClass);
+            }
+
+            if (context != null)
+            {
+                var action = context.GetJobParameter<string>("Action");
+                if (!string.IsNullOrEmpty(action))
+                {
+                    request.Headers.Add("x-job-agent-action", action);
+                }
+                else if (!string.IsNullOrEmpty(item.AgentClass))
+                {
+                    request.Headers.Add("x-job-agent-action", "run");
+                }
             }
 
             if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))

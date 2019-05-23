@@ -300,4 +300,7 @@
   <data name="StartBackgroudJobButtonName" xml:space="preserve">
     <value>带参数执行</value>
   </data>
+  <data name="StopBackgroudJobButtonName" xml:space="preserve">
+    <value>停止Job</value>
+  </data>
 </root>
