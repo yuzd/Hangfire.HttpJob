@@ -8,6 +8,11 @@ Hangfire.HttpJob for Hangfire
 3. search job by jobname on dashbord
 4. stop or start job on dashbord
 5. cron generator on dashbord
+6. use Hangfire.HttpJob.Agent extention to quick develop job program
+
+# wiki
+
+https://github.com/yuzd/Hangfire.HttpJob/wiki
 
 Installation
 -------------
@@ -16,6 +21,10 @@ This library is available as a NuGet Package:
 
 ```
 Install-Package Hangfire.HttpJob
+
+Install-Package Hangfire.HttpJob.Agent
+
+Install-Package Hangfire.HttpJob.Client
 ```
 
 Usage
