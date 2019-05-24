@@ -23,9 +23,11 @@ namespace Hangfire.HttpJob.Agent
         /// 运行参数
         /// </summary>
         public string Param { get; private set; }
-        internal string AgentClass { get;  set; }
-        internal bool Singleton { get;  set; }
-        internal bool Hang { get;  set; }
+        internal string AgentClass { get; set; }
+
+        internal volatile bool Singleton = false;
+
+        internal volatile bool Hang = false;
 
         /// <summary>
         /// 开始时间
@@ -57,8 +59,10 @@ namespace Hangfire.HttpJob.Agent
 
         internal void Run(string param)
         {
+            if (this.JobStatus == JobStatus.Running) return;
             lock (this)
             {
+                if (this.JobStatus == JobStatus.Running) return;
                 _mainThread = new ManualResetEvent(false);
                 this.Param = param;
                 this.thd = new Thread(async () => { await this.start(); });
@@ -68,17 +72,21 @@ namespace Hangfire.HttpJob.Agent
 
         internal void Stop()
         {
+            if (this.JobStatus == JobStatus.Stoped || this.JobStatus == JobStatus.Stopping)
+                return;
+
             lock (this)
             {
                 try
                 {
+                    if (this.JobStatus == JobStatus.Stoped || this.JobStatus == JobStatus.Stopping)
+                        return;
+
                     if (Hang)
                     {
                         _mainThread.Set();
                     }
 
-                    if (this.JobStatus == JobStatus.Stoped)
-                        return;
                     this.JobStatus = JobStatus.Stopping;
                     this.OnStop();
                     this.thd.Abort();

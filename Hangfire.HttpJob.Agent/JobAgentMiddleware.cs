@@ -13,12 +13,7 @@ namespace Hangfire.HttpJob.Agent
 {
     internal class JobAgentMiddleware
     {
-        private readonly ConcurrentDictionary<string, List<JobAgent>> transitentJob = new ConcurrentDictionary<string, List<JobAgent>>();
-        private readonly RequestDelegate _next;
-        public JobAgentMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly ConcurrentDictionary<string, ConcurrentBag<JobAgent>> transitentJob = new ConcurrentDictionary<string, ConcurrentBag<JobAgent>>();
 
         public async Task Invoke(HttpContext httpContext,IOptions<JobAgentOptions> options)
         {
@@ -63,13 +58,6 @@ namespace Hangfire.HttpJob.Agent
                 if (!metaData.Transien)
                 {
                     var job = (JobAgent)httpContext.RequestServices.GetRequiredService(agentClassType.Item1);
-                    if (string.IsNullOrEmpty(job.AgentClass))
-                    {
-                        job.Singleton = true;
-                        job.Hang = metaData.Hang;
-                        job.AgentClass = agentClass;
-                    }
-
                     if (agentAction.Equals("run"))
                     {
                         //单例的 一次只能运行一次
@@ -79,6 +67,13 @@ namespace Hangfire.HttpJob.Agent
                             return;
                         }
 
+                        if (job.JobStatus == JobStatus.Default)
+                        {
+                            job.Singleton = true;
+                            job.Hang = metaData.Hang;
+                            job.AgentClass = agentClass;
+                        }
+                      
                         job.Run(requestBody);
                         message = $"JobClass:{agentClass} run success!";
                         return;
@@ -115,7 +110,7 @@ namespace Hangfire.HttpJob.Agent
                     job.Hang = metaData.Hang;
                     if (!transitentJob.TryGetValue(agentClass, out var jobAgentList))
                     {
-                        jobAgentList = new List<JobAgent> { job };
+                        jobAgentList = new ConcurrentBag<JobAgent> { job };
                         transitentJob.TryAdd(agentClass, jobAgentList);
                     }
                     else
