@@ -88,6 +88,11 @@ namespace Hangfire.HttpJob.Server
                 switch (op.ToLower())
                 {
                     case "backgroundjob":
+                        if (jobItem.DelayFromMinutes < -1)
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                            return Task.FromResult(false);
+                        }
                         result = AddHttpbackgroundjob(jobItem);
                         break;
                     case "recurringjob":
@@ -221,6 +226,11 @@ namespace Hangfire.HttpJob.Server
                    return true;
                 }
 
+                if (jobItem.DelayFromMinutes == 0)
+                {
+                    BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
+                    return true;
+                }
 
                 BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
                 return true;

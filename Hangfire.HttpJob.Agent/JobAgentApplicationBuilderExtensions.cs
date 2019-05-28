@@ -31,7 +31,7 @@ namespace Hangfire.HttpJob.Agent
             if (options.Value.Enabled)
             {
                 if (string.IsNullOrEmpty(options.Value.SitemapUrl)) options.Value.SitemapUrl = "/jobagent";
-                logger.LogInformation(evt, "[HttpJobAgent] - Registered HttpJobAgent middleware to respond to {path}", new { path = options.Value.SitemapUrl });
+                logger.LogInformation(evt, "【HttpJobAgent】 - Registered HttpJobAgent middleware to respond to {path}", new { path = options.Value.SitemapUrl });
                 app.Map(options.Value.SitemapUrl, robotsApp =>
                 {
                     robotsApp.UseMiddleware<JobAgentMiddleware>();
@@ -39,7 +39,7 @@ namespace Hangfire.HttpJob.Agent
 
                 foreach (KeyValuePair<Type,JobMetaData > jobAgent in JobAgentServiceConfigurer.JobAgentDic)
                 {
-                    logger.LogInformation(evt, $"[{jobAgent.Key.Name}] [Transient:{jobAgent.Value.Transien}] [HangJob:{jobAgent.Value.Hang}] - Registered", new { path = options.Value.SitemapUrl });
+                    logger.LogInformation(evt, $"【HttpJobAgent】 - [{jobAgent.Key.Name}] [Transient:{jobAgent.Value.Transien}] [HangJob:{jobAgent.Value.Hang}] - Registered", new { path = options.Value.SitemapUrl });
                 }
             }
             return app;

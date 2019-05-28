@@ -89,7 +89,6 @@ namespace Hangfire.HttpJob.Agent
 
                     this.JobStatus = JobStatus.Stopping;
                     this.OnStop();
-                    this.thd.Abort();
                     this.JobStatus = JobStatus.Stoped;
                 }
                 catch (Exception e)

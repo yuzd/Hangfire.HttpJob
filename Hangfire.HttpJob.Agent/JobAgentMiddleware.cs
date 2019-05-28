@@ -8,23 +8,34 @@ using Hangfire.HttpJob.Agent.Config;
 using Hangfire.HttpJob.Agent.Util;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Hangfire.HttpJob.Agent
 {
-    internal class JobAgentMiddleware
+    internal class JobAgentMiddleware:IMiddleware
     {
+        private readonly ILogger<JobAgentMiddleware> _logger;
+        private readonly IOptions<JobAgentOptions> _options;
+        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options)
+        {
+            _logger = logger;
+            _options = options;
+        }
+
         private readonly LazyConcurrentDictionary<string, ConcurrentBag<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, ConcurrentBag<JobAgent>>();
 
-        public async Task Invoke(HttpContext httpContext,IOptions<JobAgentOptions> options)
+       
+        public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
         {
             httpContext.Response.ContentType = "text/plain";
             string message = string.Empty;
             try
             {
-                if (!CheckAuth(httpContext, options))
+                if (!CheckAuth(httpContext, _options))
                 {
                     message = "basic auth invaild!";
+                    _logger.LogError(message);
                     return;
                 }
                 var agentClass = httpContext.Request.Headers["x-job-agent-class"].ToString();
@@ -32,12 +43,14 @@ namespace Hangfire.HttpJob.Agent
                 if (string.IsNullOrEmpty(agentClass))
                 {
                     message = "x-job-agent-class in headers can not be empty!";
+                    _logger.LogError(message);
                     return;
                 }
 
                 if (string.IsNullOrEmpty(agentAction))
                 {
                     message = $"x-job-agent-action in headers can not be empty!";
+                    _logger.LogError(message);
                     return;
                 }
 
@@ -47,12 +60,14 @@ namespace Hangfire.HttpJob.Agent
                 if (!string.IsNullOrEmpty(agentClassType.Item2))
                 {
                     message = $"JobClass:{agentClass} GetType err:{agentClassType.Item2}";
+                    _logger.LogError(message);
                     return;
                 }
 
                 if (!JobAgentServiceConfigurer.JobAgentDic.TryGetValue(agentClassType.Item1, out var metaData))
                 {
                     message = $"JobClass:{agentClass} is not registered!";
+                    _logger.LogWarning(message);
                     return;
                 }
 
@@ -65,6 +80,7 @@ namespace Hangfire.HttpJob.Agent
                         if (job.JobStatus == JobStatus.Running || job.JobStatus == JobStatus.Stopping)
                         {
                             message = $"JobClass:{agentClass} can not start, is already Running!";
+                            _logger.LogWarning(message);
                             return;
                         }
 
@@ -77,6 +93,7 @@ namespace Hangfire.HttpJob.Agent
                       
                         job.Run(requestBody);
                         message = $"JobClass:{agentClass} run success!";
+                        _logger.LogInformation(message);
                         return;
                     }
                     else if (agentAction.Equals("stop"))
@@ -84,21 +101,25 @@ namespace Hangfire.HttpJob.Agent
                         if (job.JobStatus == JobStatus.Stopping)
                         {
                             message = $"JobClass:{agentClass} is Stopping!";
+                            _logger.LogWarning(message);
                             return;
                         }
 
                         if (job.JobStatus == JobStatus.Stoped)
                         {
                             message = $"JobClass:{agentClass} is already Stoped!";
+                            _logger.LogWarning(message);
                             return;
                         }
 
                         job.Stop();
                         message = $"JobClass:{agentClass} stop success!";
+                        _logger.LogInformation(message);
                         return;
                     }
 
                     message = $"agentAction:{agentAction} invaild";
+                    _logger.LogError(message);
                     return;
                 }
 
@@ -114,6 +135,7 @@ namespace Hangfire.HttpJob.Agent
                     jobAgentList.Add(job);
                     job.Run(requestBody);
                     message = $"Transient JobClass:{agentClass} run success!";
+                    _logger.LogInformation(message);
                     return;
                 }
                 else if (agentAction.Equals("stop"))
@@ -121,6 +143,7 @@ namespace Hangfire.HttpJob.Agent
                     if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count<1)
                     {
                         message = $"Transient JobClass:{agentClass} have no running job!";
+                        _logger.LogWarning(message);
                         return;
                     }
                     var instanceCount = 0;
@@ -137,10 +160,12 @@ namespace Hangfire.HttpJob.Agent
 
                     transitentJob.TryRemove(agentClass, out _);
                     message = $"JobClass:{agentClass},Instance Count:{instanceCount} stop success!";
+                    _logger.LogInformation(message);
                     return;
                 }
 
                 message = $"agentAction:{agentAction} invaild";
+                _logger.LogError(message);
 
             }
             catch (Exception e)
@@ -149,7 +174,10 @@ namespace Hangfire.HttpJob.Agent
             }
             finally
             {
-                if (!string.IsNullOrEmpty(message)) await httpContext.Response.WriteAsync(message);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    await httpContext.Response.WriteAsync(message);
+                }
             }
         }
 
@@ -240,6 +268,8 @@ namespace Hangfire.HttpJob.Agent
                 return (null, e.Message);
             }
         }
+
+        
     }
     
     
