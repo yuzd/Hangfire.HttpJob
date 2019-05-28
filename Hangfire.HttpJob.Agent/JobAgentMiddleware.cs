@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Agent.Config;
+using Hangfire.HttpJob.Agent.Util;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -13,7 +14,7 @@ namespace Hangfire.HttpJob.Agent
 {
     internal class JobAgentMiddleware
     {
-        private readonly ConcurrentDictionary<string, ConcurrentBag<JobAgent>> transitentJob = new ConcurrentDictionary<string, ConcurrentBag<JobAgent>>();
+        private readonly LazyConcurrentDictionary<string, ConcurrentBag<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, ConcurrentBag<JobAgent>>();
 
         public async Task Invoke(HttpContext httpContext,IOptions<JobAgentOptions> options)
         {
@@ -108,29 +109,21 @@ namespace Hangfire.HttpJob.Agent
                     job.Singleton = false;
                     job.AgentClass = agentClass;
                     job.Hang = metaData.Hang;
-                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList))
-                    {
-                        jobAgentList = new ConcurrentBag<JobAgent> { job };
-                        transitentJob.TryAdd(agentClass, jobAgentList);
-                    }
-                    else
-                    {
-                        jobAgentList.Add(job);
-                    }
 
+                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentBag<JobAgent>());
+                    jobAgentList.Add(job);
                     job.Run(requestBody);
                     message = $"Transient JobClass:{agentClass} run success!";
                     return;
                 }
                 else if (agentAction.Equals("stop"))
                 {
-                    var instanceCount = 0;
-                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList))
+                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count<1)
                     {
                         message = $"Transient JobClass:{agentClass} have no running job!";
                         return;
                     }
-
+                    var instanceCount = 0;
                     foreach (var runingJob in jobAgentList)
                     {
                         if (runingJob.JobStatus == JobStatus.Stopping || runingJob.JobStatus == JobStatus.Stoped)
@@ -248,4 +241,6 @@ namespace Hangfire.HttpJob.Agent
             }
         }
     }
+    
+    
 }
