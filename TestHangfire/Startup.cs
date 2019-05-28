@@ -13,6 +13,8 @@ using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Hangfire.Tags;
+using Hangfire.Tags.Mysql;
 
 namespace TestHangfire
 {
@@ -61,7 +63,8 @@ namespace TestHangfire
                         Password = JsonConfig.GetSection("HangfireMail:Password").Get<string>(),
                     },
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>()
-                });
+                })
+                .UseTagsWithMysql();
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logging)

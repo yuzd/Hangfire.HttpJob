@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.HttpJob\Hangfire.HttpJob.csproj" />
+    <ProjectReference Include="..\Hangfire.Tags.Mysql\Hangfire.Tags.Mysql.csproj" />
   </ItemGroup>
 
   <ItemGroup>

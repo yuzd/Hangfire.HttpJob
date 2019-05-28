@@ -7,6 +7,7 @@ using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
+using Hangfire.Tags;
 using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Support
@@ -93,6 +94,8 @@ namespace Hangfire.HttpJob.Support
                         filterContext.Canceled = true;//任务被暂停不执行直接跳过
                         return;
                     }
+
+                    if(!string.IsNullOrEmpty(job.JobName))filterContext.BackgroundJob.Id.AddTags(job.JobName);
                 }
 
                 //设置运行时被设置的参数
