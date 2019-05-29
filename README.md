@@ -12,6 +12,14 @@ Hangfire.HttpJob for Hangfire
 
 # wiki
 
+00.QickStart
+
+01.how to create backgroud httpjob
+
+02.how to create recurringHttpJob
+
+03.how to use HttpJob.Agent
+
 https://github.com/yuzd/Hangfire.HttpJob/wiki
 
 Installation
