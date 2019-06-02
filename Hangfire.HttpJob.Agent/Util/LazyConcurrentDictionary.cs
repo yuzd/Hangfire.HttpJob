@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Hangfire.HttpJob.Agent.Util
 {
-    public class LazyConcurrentDictionary<TKey, TValue>
+    internal class LazyConcurrentDictionary<TKey, TValue>
     {
         private readonly ConcurrentDictionary<TKey, Lazy<TValue>> concurrentDictionary;
 

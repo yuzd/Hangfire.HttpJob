@@ -33,6 +33,7 @@ namespace Hangfire.HttpJob.Dashboard
                   .AppendFormat("hangFire.httpjobConfig.DefaultRecurringQueueName = '{0}';", _options.DefaultRecurringQueueName)
                   .AppendFormat("hangFire.httpjobConfig.StartBackgroudJobButtonName = '{0}';", _options.StartBackgroudJobButtonName)
                   .AppendFormat("hangFire.httpjobConfig.StopBackgroudJobButtonName = '{0}';", _options.StopBackgroudJobButtonName)
+                  .AppendFormat("hangFire.httpjobConfig.AgentJobDeatilButton = '{0}';", _options.AgentJobDeatilButton)
 
                   .AppendFormat("hangFire.httpjobConfig.CloseButtonName = '{0}';", _options.CloseButtonName)
                   .AppendFormat("hangFire.httpjobConfig.SubmitButtonName = '{0}';", _options.SubmitButtonName)
@@ -44,6 +45,7 @@ namespace Hangfire.HttpJob.Dashboard
                    .AppendFormat("hangFire.httpjobConfig.EditRecurringJobUrl = '{0}/httpjob?op=EditRecurringJob';", context.Request.PathBase)
 
                    .AppendFormat("hangFire.httpjobConfig.PauseJobUrl = '{0}/httpjob?op=PauseJob';", context.Request.PathBase)
+                   .AppendFormat("hangFire.httpjobConfig.AgentJobDeatilButtonUrl = '{0}/httpjob?op=getbackgroundjobdetail';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.StartBackgroudJobUrl = '{0}/httpjob?op=StartBackgroudJob';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.StopBackgroudJobUrl = '{0}/httpjob?op=StopBackgroudJob';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.GetJobListUrl = '{0}/httpjob?op=GetJobList';", context.Request.PathBase)

@@ -39,7 +39,7 @@ namespace Hangfire.HttpJob.Agent
 
                 foreach (KeyValuePair<Type,JobMetaData > jobAgent in JobAgentServiceConfigurer.JobAgentDic)
                 {
-                    logger.LogInformation(evt, $"【HttpJobAgent】 - [{jobAgent.Key.Name}] [Transient:{jobAgent.Value.Transien}] [HangJob:{jobAgent.Value.Hang}] - Registered", new { path = options.Value.SitemapUrl });
+                    logger.LogInformation(evt, $"【HttpJobAgent】 - [{jobAgent.Key.Name}] [Transient:{jobAgent.Value.Transien}] [HangJob:{jobAgent.Value.Hang}] - Registered");
                 }
             }
             return app;

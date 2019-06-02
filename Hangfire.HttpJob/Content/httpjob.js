@@ -49,6 +49,7 @@
             var pauseurl = config.PauseJobUrl;
             var startBackgroudJobUrl = config.StartBackgroudJobUrl;
             var stopBackgroudJobUrl = config.StopBackgroudJobUrl;
+            var agentJobDeatilButtonUrl = config.AgentJobDeatilButtonUrl;
             var getlisturl = config.GetJobListUrl;
             var divModel = '';
             var options = {
@@ -59,7 +60,7 @@
             var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
             var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
             //如果需要注入新增计划任务
-            if (config.NeedAddNomalHttpJobButton) {
+            if (config.NeedAddNomalHttpJobButton)   {
                 button =
                     '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float: inherit;margin-left: 10px" id="addHttpJob">' +
                     '<span class="glyphicon glyphicon-plus"> ' + config.AddHttpJobButtonName + '</span>' +
@@ -83,6 +84,22 @@
                     ' </div>';
 
             }
+            
+            var jobDetailModel = '<div class="modal inmodal" id="jobDetailModel" tabindex="-1" role="dialog" aria-hidden="true">' +
+                '<div class="modal-dialog">' +
+                '<div class="modal-content">' +
+                '<div class="modal-header">' +
+                '<h4 class="modal-title">AgentJob:</h4>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                '<div class="jobInfoDiv" style="height: 250px;white-space:normal;word-break:break-all;word-wrap:break-word;overflow-y: auto; overflow-x:hidden;"></div>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
+                '</div>' +
+                ' </div>' +
+                ' </div>' +
+                ' </div>';
 
 
             //如果需要注入新增周期性任务
@@ -150,13 +167,19 @@
                 '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
             
+            var getAgentJobDeatilButton =  '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="JobDetail">' +
+                '<span class="glyphicon glyphicon-stop"> ' + (config.AgentJobDeatilButton) + '</span>' +
+                '</button>';
+            
             if (!button || !divModel) return;
             //新增按钮
             $('.page-header').append(button);
             $('.page-header').append(EditRecurringJobutton);
             $('.page-header').append(AddCronButton);
             $('.btn-toolbar-top').append(PauseButton);
+            $('.btn-toolbar-top').append(getAgentJobDeatilButton);
             $(document.body).append(divModel);
+            $(document.body).append(jobDetailModel);
             if (config.NeedAddNomalHttpJobButton) {
                 var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="StopJob">' +
                     '<span class="glyphicon glyphicon-stop"> ' + config.StopBackgroudJobButtonName + '</span>' +
@@ -246,6 +269,60 @@
                     e.preventDefault();
                 }
             });
+            
+            //获取agentJob的执行情况
+            $("#JobDetail").click(function (e) {
+                if (!$(".js-jobs-list-checkbox").is(':checked')) {
+                    swal({
+                        title: "",
+                        text: "Select Job Item First!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                } else {
+                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) {
+                        swal({
+                            title: "",
+                            text: "Select One Job Only!",
+                            type: "error"
+                        });
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    var jobId = $(".js-jobs-list-checkbox:checked").val();
+                    
+                    swal({
+                        title: "Are you sure to get JobDetail?",
+                        type: "success",
+                        showCancelButton: false,
+                        closeOnConfirm: false,
+                        animation: "slide-from-top",
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Just Do it",
+                    }, function () {
+                        $.ajax({
+                            type: "post",
+                            url: agentJobDeatilButtonUrl,
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
+                            async: true,
+                            success: function (returndata) {
+                                $('.jobInfoDiv').html(returndata||'');
+                                $('#jobDetailModel').modal({ backdrop: 'static', keyboard: false });
+                                $('#jobDetailModel').modal('show');
+                            }
+                        });
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            });
+            
+            
             //暂停任务
             $("#PauseJob").click(function (e) {
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Agent.Config;
@@ -23,7 +24,7 @@ namespace Hangfire.HttpJob.Agent
             _options = options;
         }
 
-        private readonly LazyConcurrentDictionary<string, ConcurrentBag<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, ConcurrentBag<JobAgent>>();
+        private readonly LazyConcurrentDictionary<string, List<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, List<JobAgent>>();
 
        
         public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
@@ -117,6 +118,13 @@ namespace Hangfire.HttpJob.Agent
                         _logger.LogInformation(message);
                         return;
                     }
+                    else if (agentAction.Equals("detail"))
+                    {
+                        //获取job详情
+                        message = job.GetJobInfo();
+                        _logger.LogInformation(message);
+                        return;
+                    }
 
                     message = $"agentAction:{agentAction} invaild";
                     _logger.LogError(message);
@@ -131,11 +139,18 @@ namespace Hangfire.HttpJob.Agent
                     job.AgentClass = agentClass;
                     job.Hang = metaData.Hang;
 
-                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentBag<JobAgent>());
+                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new List<JobAgent>());
+                    var stopedJobList = jobAgentList.Where(r => r.JobStatus == JobStatus.Stoped).ToList();
+                    foreach (var stopedJob in stopedJobList)
+                    {
+                        jobAgentList.Remove(stopedJob);
+                    }
+                    
                     jobAgentList.Add(job);
                     job.Run(requestBody);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
+                   
                     return;
                 }
                 else if (agentAction.Equals("stop"))
@@ -147,20 +162,63 @@ namespace Hangfire.HttpJob.Agent
                         return;
                     }
                     var instanceCount = 0;
+                    var stopedJobList = new List<JobAgent>();
                     foreach (var runingJob in jobAgentList)
                     {
-                        if (runingJob.JobStatus == JobStatus.Stopping || runingJob.JobStatus == JobStatus.Stoped)
+                        if (runingJob.JobStatus == JobStatus.Stopping)
                         {
                             continue;
                         }
 
+                        if (runingJob.JobStatus == JobStatus.Stoped)
+                        {
+                            stopedJobList.Add(runingJob);
+                            continue;
+                        }
+                        
                         runingJob.Stop();
                         instanceCount++;
                     }
 
+                    foreach (var stopedJob in stopedJobList)
+                    {
+                        jobAgentList.Remove(stopedJob);
+                    }
+                    
                     transitentJob.TryRemove(agentClass, out _);
                     message = $"JobClass:{agentClass},Instance Count:{instanceCount} stop success!";
                     _logger.LogInformation(message);
+                    return;
+                }
+                else if (agentAction.Equals("detail"))
+                {
+                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count<1)
+                    {
+                        message = $"Transient JobClass:{agentClass} have no running job!";
+                        _logger.LogWarning(message);
+                        return;
+                    }
+
+                    var stopedJobList = jobAgentList.Where(r => r.JobStatus == JobStatus.Stoped).ToList();
+                    foreach (var stopedJob in stopedJobList)
+                    {
+                        jobAgentList.Remove(stopedJob);
+                    }
+
+                    var jobInfo = new List<string>();
+                    foreach (var jobAgent in jobAgentList)
+                    {
+                        jobInfo.Add(jobAgent.GetJobInfo());
+                    }
+
+                    if (jobAgentList.Count < 1)
+                    {
+                        message = $"Transient JobClass:{agentClass} have no running job!";
+                        _logger.LogWarning(message);
+                        return;
+                    }
+                    //获取job详情
+                    message = $"Runing Instance Count:{jobAgentList.Count},JobList:{string.Join(Environment.NewLine,jobInfo)}";
                     return;
                 }
 

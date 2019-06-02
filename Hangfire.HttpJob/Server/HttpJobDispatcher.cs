@@ -42,6 +42,7 @@ namespace Hangfire.HttpJob.Server
                     context.Response.WriteAsync(JsonConvert.SerializeObject(joblist));
                     return Task.FromResult(true);
                 }
+                
                 var jobItem = GetJobItem(context);
                 if (jobItem == null)
                 {
@@ -65,7 +66,14 @@ namespace Hangfire.HttpJob.Server
                         return Task.FromResult(false);
                     }
                 }
-               
+                else if (op.ToLower() == "getbackgroundjobdetail")
+                {
+                    var jobDetail = GetBackGroundJobDetail(jobItem);
+                    context.Response.ContentType ="text/plain";
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
+                    context.Response.WriteAsync(jobDetail);
+                    return Task.FromResult(true);
+                }
                 if (string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -149,6 +157,7 @@ namespace Hangfire.HttpJob.Server
 
         }
 
+
         public HttpJobItem GetJobItem(DashboardContext _context)
         {
             try
@@ -171,30 +180,7 @@ namespace Hangfire.HttpJob.Server
             }
         }
 
-        /// <summary>
-        /// 获取job任务
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public string GetJobdata(string name)
-        {
-            try
-            {
-                using (var connection = JobStorage.Current.GetConnection())
-                {
-                    var RecurringJob = connection.GetRecurringJobs().FirstOrDefault(p => p.Id == name);
-                    if (RecurringJob != null)
-                    {
-                        return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Job.Args.FirstOrDefault()?.ToString()));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("HttpJobDispatcher.GetJobdata", ex);
-            }
-            return "";
-        }
+       
 
         /// <summary>
         /// 添加后台作业
@@ -397,6 +383,70 @@ namespace Hangfire.HttpJob.Server
             {
                 Logger.ErrorException("HttpJobDispatcher.AddHttprecurringjob", ex);
                 return false;
+            }
+        }
+        
+        /// <summary>
+        /// 获取job任务
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public string GetJobdata(string name)
+        {
+            try
+            {
+                using (var connection = JobStorage.Current.GetConnection())
+                {
+                    var RecurringJob = connection.GetRecurringJobs().FirstOrDefault(p => p.Id == name);
+                    if (RecurringJob != null)
+                    {
+                        return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Job.Args.FirstOrDefault()?.ToString()));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("HttpJobDispatcher.GetJobdata", ex);
+            }
+            return "";
+        }
+        /// <summary>
+        /// 获取常规作业的jobAgent类型的JobInfo
+        /// </summary>
+        /// <param name="jobItem"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private string GetBackGroundJobDetail(HttpJobItem jobItem)
+        {
+            try
+            {
+                using (var connection = JobStorage.Current.GetConnection())
+                {
+                    var job = connection.GetJobData(jobItem.JobName);
+                    if (job == null)
+                    {
+                        return "GetJobDetail Err：can not found job by id:" + jobItem.JobName;
+                    }
+                    
+                    var jobItem2 = job.Job.Args.FirstOrDefault();
+                    var httpJobItem = jobItem2 as HttpJobItem;
+                    if (httpJobItem == null)
+                    {
+                        return "GetJobDetail Err：jobData can not found job by id:" + jobItem.JobName;
+                    }
+
+                    if (string.IsNullOrEmpty(httpJobItem.AgentClass))
+                    {
+                        return "GetJobDetail Err：is not AgentJob! job id:" + jobItem.JobName;
+                    }
+
+                    return HttpJob.GetAgentJobDetail(httpJobItem);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("HttpJobDispatcher.GetJobdata", ex);
+                return "GetJobDetail Err：" + ex.Message;
             }
         }
     }

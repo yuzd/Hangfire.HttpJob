@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.HttpJob.Agent.Util;
 
 namespace Hangfire.HttpJob.Agent
 {
@@ -32,12 +33,12 @@ namespace Hangfire.HttpJob.Agent
         /// <summary>
         /// 开始时间
         /// </summary>
-        internal DateTime StartTime { get; set; }
+        internal DateTime? StartTime { get; set; }
 
         /// <summary>
         /// 最后接
         /// </summary>
-        internal DateTime LastEndTime { get; set; }
+        internal DateTime? LastEndTime { get; set; }
 
 
         internal JobStatus JobStatus
@@ -116,7 +117,6 @@ namespace Hangfire.HttpJob.Agent
             try
             {
                 if (this.JobStatus == JobStatus.Running) return;
-                this.LastEndTime = DateTime.MinValue;
                 this.StartTime = DateTime.Now;
                 this.JobStatus = JobStatus.Running;
                 await this.OnStart(this.Param);
@@ -141,9 +141,24 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
+        /// <summary>
+        /// 获取job的详情
+        /// </summary>
+        /// <returns></returns>
         internal string GetJobInfo()
         {
-            return this.GetType().FullName;
+            var list = new List<string>();
+            list.Add($"JobClass:【{this.AgentClass}】");
+            list.Add($"JobType:【{(this.Singleton?"Singleton":"Transient")}】");
+            list.Add($"JobStatus:【{this.jobStatus.ToString()}】");
+            list.Add($"ExcuteParam:【{(this.Param??string.Empty)}】");
+            list.Add($"StartTime:【{(this.StartTime == null?"not start yet!":this.StartTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
+            list.Add($"LastEndTime:【{(this.LastEndTime == null?"not end yet!":this.LastEndTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
+            if (this.jobStatus == JobStatus.Running && this.StartTime!=null)
+            {
+                list.Add($"RunningTime:【{CodingUtil.ParseTimeSeconds((int)(DateTime.Now-this.StartTime.Value).TotalSeconds)}】");
+            }
+            return string.Join(Environment.NewLine,list);
         }
     }
 }

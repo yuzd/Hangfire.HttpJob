@@ -92,7 +92,45 @@ namespace Hangfire.HttpJob.Server
             }
         }
 
+        
+        
+        /// <summary>
+        /// 获取AgentJob的运行详情
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
 
+        public static string GetAgentJobDetail(HttpJobItem item)
+        {
+            if (item.Timeout < 1) item.Timeout = 5000;
+            HttpClient client;
+            if (!string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
+            {
+                // per proxy per HttpClient
+                client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(HangfireHttpJobOptions.Proxy);
+            }
+            else
+            {
+                //per host per HttpClient
+                client = HangfireHttpClientFactory.Instance.GetHttpClient(item.Url);
+            }
+            
+            var request = new HttpRequestMessage(new HttpMethod("Get"), item.Url);
+            request.Headers.Add("x-job-agent-class",item.AgentClass);
+            request.Headers.Add("x-job-agent-action", "detail");
+            if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))
+            {
+                var byteArray = Encoding.ASCII.GetBytes(item.BasicUserName + ":" + item.BasicPassword);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            }
+            
+            
+            var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
+            var httpResponse = client.SendAsync(request, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+            HttpContent content = httpResponse.Content;
+            string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
+            return result;
+        }
         #endregion
 
         #region Private
