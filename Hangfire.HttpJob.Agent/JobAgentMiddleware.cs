@@ -218,7 +218,7 @@ namespace Hangfire.HttpJob.Agent
                         return;
                     }
                     //获取job详情
-                    message = $"Runing Instance Count:{jobAgentList.Count},JobList:{string.Join(Environment.NewLine,jobInfo)}";
+                    message = $"Runing Instance Count:{jobAgentList.Count},JobList:{string.Join("\r\n",jobInfo)}";
                     return;
                 }
 

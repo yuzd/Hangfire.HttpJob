@@ -73,7 +73,7 @@
                     '<h4 class="modal-title">' + config.AddHttpJobButtonName + '</h4>' +
                     '</div>' +
                     '<div class="modal-body">' +
-                    '<div class="editor_holder" style="height: 250px;"></div>' +
+                    '<div class="editor_holder" style="height: 280px;"></div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
@@ -89,13 +89,13 @@
                 '<div class="modal-dialog">' +
                 '<div class="modal-content">' +
                 '<div class="modal-header">' +
-                '<h4 class="modal-title">AgentJob:</h4>' +
+                '<h4 class="modal-title">AgentJob:<span id="jobNameSpan"></span></h4>' +
                 '</div>' +
                 '<div class="modal-body">' +
-                '<div class="jobInfoDiv" style="height: 250px;white-space:normal;word-break:break-all;word-wrap:break-word;overflow-y: auto; overflow-x:hidden;"></div>' +
+                '<div class="jobInfoDiv" style="height: 280px;white-space:normal;word-break:break-all;word-wrap:break-word;overflow-y: auto; overflow-x:hidden;"></div>' +
                 '</div>' +
                 '<div class="modal-footer">' +
-                ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
+                ' <button type="button" class="btn btn-white" id="getJobDetail_close-model">' + config.CloseButtonName + '</button>' +
                 '</div>' +
                 ' </div>' +
                 ' </div>' +
@@ -116,7 +116,7 @@
                     '<h4 class="modal-title">' + config.AddRecurringJobHttpJobButtonName + '</h4>' +
                     '</div>' +
                     '<div class="modal-body">' +
-                    '<div class="editor_holder" style="height: 250px;"></div>' +
+                    '<div class="editor_holder" style="height: 280px;"></div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
@@ -143,7 +143,7 @@
                     '<h4 class="modal-title">' + config.EditRecurringJobButtonName + '</h4>' +
                     '</div>' +
                     '<div class="modal-body">' +
-                    '<div class="editor_holder" style="height: 250px;"></div>' +
+                    '<div class="editor_holder" style="height: 280px;"></div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
@@ -294,29 +294,39 @@
                     }
 
                     var jobId = $(".js-jobs-list-checkbox:checked").val();
-                    
+
                     swal({
-                        title: "Are you sure to get JobDetail?",
-                        type: "success",
-                        showCancelButton: false,
+                        title: "JobAgent",
+                        text: "Are you sure to get JobDetail?",
+                        type: "warning",
+                        showCancelButton: true,
                         closeOnConfirm: false,
                         animation: "slide-from-top",
+                        inputPlaceholder: "start param",
+                        showLoaderOnConfirm: true,
                         confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Just Do it",
+                        confirmButtonText: "Submit",
+                        cancelButtonText: "Cancel"
                     }, function () {
                         $.ajax({
                             type: "post",
                             url: agentJobDeatilButtonUrl,
                             contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
+                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json","Cron":(config.NeedEditRecurringJobButton?"1":"") }),
                             async: true,
                             success: function (returndata) {
-                                $('.jobInfoDiv').html(returndata||'');
+                                swal.close()
+                                if(returndata && returndata.JobName){
+                                    $('#jobNameSpan').html(returndata.JobName);
+                                }
+                                
+                                $('.jobInfoDiv').html(returndata.Info||'');
                                 $('#jobDetailModel').modal({ backdrop: 'static', keyboard: false });
                                 $('#jobDetailModel').modal('show');
                             }
                         });
                     });
+                    
                     e.stopPropagation();
                     e.preventDefault();
                 }
@@ -475,10 +485,14 @@
                 window.location.href = config.AddCronUrl;
             });
             $('#addhttpJob_close-model').click(function () {
+                $('#jobDetailModel').modal('hide');
                 $('#httpJobModal').modal('hide');
                 window.jsonEditor.setText('{}');
             });
-
+            $('#getJobDetail_close-model').click(function () {
+                $('#jobNameSpan').html('');
+                $('#jobDetailModel').modal('hide');
+            });
 
             $('#addhttpJob_save-model').click(function () {
                 var url = $(this).data("url");

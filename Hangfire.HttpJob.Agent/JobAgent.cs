@@ -148,17 +148,21 @@ namespace Hangfire.HttpJob.Agent
         internal string GetJobInfo()
         {
             var list = new List<string>();
-            list.Add($"JobClass:【{this.AgentClass}】");
-            list.Add($"JobType:【{(this.Singleton?"Singleton":"Transient")}】");
-            list.Add($"JobStatus:【{this.jobStatus.ToString()}】");
-            list.Add($"ExcuteParam:【{(this.Param??string.Empty)}】");
+            if (!string.IsNullOrEmpty(this.AgentClass))
+            {
+                list.Add($"JobClass:【{this.AgentClass}】");
+                list.Add($"JobType:【{(this.Singleton?"Singleton":"Transient")}】");
+                list.Add($"JobStatus:【{this.JobStatus.ToString()}】");
+                list.Add($"ExcuteParam:【{(this.Param??string.Empty)}】");
+            }
+            
             list.Add($"StartTime:【{(this.StartTime == null?"not start yet!":this.StartTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
             list.Add($"LastEndTime:【{(this.LastEndTime == null?"not end yet!":this.LastEndTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
-            if (this.jobStatus == JobStatus.Running && this.StartTime!=null)
+            if (this.JobStatus == JobStatus.Running && this.StartTime!=null)
             {
                 list.Add($"RunningTime:【{CodingUtil.ParseTimeSeconds((int)(DateTime.Now-this.StartTime.Value).TotalSeconds)}】");
             }
-            return string.Join(Environment.NewLine,list);
+            return string.Join("\r\n",list);
         }
     }
 }

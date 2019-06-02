@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Hangfire.Common;
 using Hangfire.HttpJob.Support;
 
 
@@ -69,9 +70,9 @@ namespace Hangfire.HttpJob.Server
                 else if (op.ToLower() == "getbackgroundjobdetail")
                 {
                     var jobDetail = GetBackGroundJobDetail(jobItem);
-                    context.Response.ContentType ="text/plain";
+                    context.Response.ContentType ="application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    context.Response.WriteAsync(jobDetail);
+                    context.Response.WriteAsync(JsonConvert.SerializeObject(jobDetail));
                     return Task.FromResult(true);
                 }
                 if (string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
@@ -373,6 +374,7 @@ namespace Hangfire.HttpJob.Server
             {
                 queueName = "DEFAULT";
             }
+            
 
             try
             {
@@ -397,11 +399,20 @@ namespace Hangfire.HttpJob.Server
             {
                 using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var RecurringJob = connection.GetRecurringJobs().FirstOrDefault(p => p.Id == name);
-                    if (RecurringJob != null)
+                    Dictionary<string, string> dictionary = connection.GetAllEntriesFromHash("recurring-job:" + name);
+                    if (dictionary == null || dictionary.Count == 0 )
                     {
-                        return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Job.Args.FirstOrDefault()?.ToString()));
+                        return "";
                     }
+
+                    if (!dictionary.TryGetValue(nameof(Job), out var jobDetail))
+                    {
+                        return "";
+                    }
+                    
+                    var RecurringJob = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
+                    
+                    return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Args.FirstOrDefault()?.ToString()));
                 }
             }
             catch (Exception ex)
@@ -416,37 +427,75 @@ namespace Hangfire.HttpJob.Server
         /// <param name="jobItem"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private string GetBackGroundJobDetail(HttpJobItem jobItem)
+        private JobDetailInfo GetBackGroundJobDetail(HttpJobItem jobItem)
         {
+            var result = new JobDetailInfo();
+            var jobName = string.Empty;
             try
             {
                 using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var job = connection.GetJobData(jobItem.JobName);
-                    if (job == null)
+                    Job job = null;
+
+                    if (string.IsNullOrEmpty(jobItem.Cron))
                     {
-                        return "GetJobDetail Err：can not found job by id:" + jobItem.JobName;
+                        var jobData = connection.GetJobData(jobItem.JobName);
+                        if (jobData == null)
+                        {
+                            result.Info = "GetJobDetail Error：can not found job by id:" + jobItem.JobName;
+                            return result;
+                        }
+                        job = jobData.Job;
+                    }
+                    else
+                    {
+                        Dictionary<string, string> dictionary = connection.GetAllEntriesFromHash("recurring-job:" + jobItem.JobName);
+                        if (dictionary == null || dictionary.Count == 0 )
+                        {
+                            result.Info = "GetJobDetail Error：can not found job by id:" + jobItem.JobName;
+                            return result;
+                        }
+
+                        if (!dictionary.TryGetValue(nameof(Job), out var jobDetail))
+                        {
+                            result.Info = "GetJobDetail Error：can not found job by id:" + jobItem.JobName;
+                            return result;
+                        }
+                        job = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
                     }
                     
-                    var jobItem2 = job.Job.Args.FirstOrDefault();
+                    var jobItem2 = job.Args.FirstOrDefault();
                     var httpJobItem = jobItem2 as HttpJobItem;
                     if (httpJobItem == null)
                     {
-                        return "GetJobDetail Err：jobData can not found job by id:" + jobItem.JobName;
+                        result.Info = $"GetJobDetail Error：jobData can not found job by id:" + jobItem.JobName;
+                        return result;
                     }
 
+                    result.JobName = jobName = httpJobItem.JobName;
                     if (string.IsNullOrEmpty(httpJobItem.AgentClass))
                     {
-                        return "GetJobDetail Err：is not AgentJob! job id:" + jobItem.JobName;
+                        result.Info = $"{(!string.IsNullOrEmpty(jobName) ? "【" + jobName + "】" : string.Empty)} Error：is not AgentJob! ";
+                        return result;
                     }
 
-                    return HttpJob.GetAgentJobDetail(httpJobItem);
+                    var jobInfo = HttpJob.GetAgentJobDetail(httpJobItem);
+                    if (string.IsNullOrEmpty(jobInfo))
+                    {
+                        result.Info = $"{(!string.IsNullOrEmpty(jobName) ? "【" + jobName + "】" : string.Empty)} Error：get null info! ";
+                        return result;
+                    }
+
+                    jobInfo = jobInfo.Replace("\r\n", "<br/>");
+                    result.Info = jobInfo;
+                    return result;
                 }
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("HttpJobDispatcher.GetJobdata", ex);
-                return "GetJobDetail Err：" + ex.Message;
+                Logger.ErrorException("HttpJobDispatcher.GetBackGroundJobDetail", ex);
+                result.Info = $"{(!string.IsNullOrEmpty(jobName) ? "【" + jobName + "】" : string.Empty)} GetJobDetail Error：" + ex.ToString();
+                return result;
             }
         }
     }

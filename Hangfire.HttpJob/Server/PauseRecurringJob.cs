@@ -8,4 +8,11 @@ namespace Hangfire.HttpJob.Server
     {
         public string Id { get; set; }
     }
+
+
+    public class JobDetailInfo
+    {
+        public string JobName { get; set; }
+        public string Info { get; set; }
+    }
 }
