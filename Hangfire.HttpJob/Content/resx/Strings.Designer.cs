@@ -88,6 +88,15 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 AgentJobDetail 的本地化字符串。
+        /// </summary>
+        public static string AgentJobDeatilButton {
+            get {
+                return ResourceManager.GetString("AgentJobDeatilButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 (choose one or many) 的本地化字符串。
         /// </summary>
         public static string Choose {

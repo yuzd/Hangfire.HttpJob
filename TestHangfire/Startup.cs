@@ -129,15 +129,18 @@ namespace TestHangfire
             });
 
             var hangfireReadOnlyPath = JsonConfig.GetSection("HangfireReadOnlyPath").Get<string>();
-            if (string.IsNullOrWhiteSpace(hangfireReadOnlyPath)) hangfireReadOnlyPath = "/job-read";
-            //只读面板，只能读取不能操作
-            app.UseHangfireDashboard(hangfireReadOnlyPath, new DashboardOptions
+            if (!string.IsNullOrWhiteSpace(hangfireReadOnlyPath))
             {
-                IgnoreAntiforgeryToken = true,
-                AppPath = hangfireStartUpPath, //返回时跳转的地址
-                DisplayStorageConnectionString = false, //是否显示数据库连接信息
-                IsReadOnlyFunc = Context => true
-            });
+                //只读面板，只能读取不能操作
+                app.UseHangfireDashboard(hangfireReadOnlyPath, new DashboardOptions
+                {
+                    IgnoreAntiforgeryToken = true,
+                    AppPath = hangfireStartUpPath, //返回时跳转的地址
+                    DisplayStorageConnectionString = false, //是否显示数据库连接信息
+                    IsReadOnlyFunc = Context => true
+                });
+            }
+           
 
             app.Run(async (context) => { await context.Response.WriteAsync("ok."); });
         }

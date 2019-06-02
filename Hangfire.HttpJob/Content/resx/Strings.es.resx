@@ -303,4 +303,7 @@
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
     <value>Stop Job</value>
   </data>
+  <data name="AgentJobDeatilButton" xml:space="preserve">
+    <value>AgentJobDetail</value>
+  </data>
 </root>
