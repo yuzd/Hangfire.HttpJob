@@ -95,7 +95,7 @@ namespace Hangfire.HttpJob.Support
                         return;
                     }
 
-                    if(!string.IsNullOrEmpty(job.JobName))filterContext.BackgroundJob.Id.AddTags(job.JobName);
+                    if (!string.IsNullOrEmpty(job.JobName)) filterContext.BackgroundJob.Id.AddTags(job.JobName);
                 }
 
                 //设置运行时被设置的参数
@@ -103,7 +103,7 @@ namespace Hangfire.HttpJob.Support
                 {
                     var hashKey = CodingUtil.MD5(filterContext.BackgroundJob.Id + ".runtime");
                     var excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
-                    if (excuteDataList.Any())
+                    if (excuteDataList != null && excuteDataList.Any())
                     {
                         filterContext.SetJobParameter("runtimeKey", hashKey);
                         foreach (var keyvalue in excuteDataList)
