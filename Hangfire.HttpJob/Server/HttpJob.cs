@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 
@@ -185,16 +186,23 @@ namespace Hangfire.HttpJob.Server
         }
         private static string BuildExceptionMsg(Exception ex, string prefix = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(GetHtmlFormat(ex.GetType().ToString()));
-            sb.AppendLine("Messgae:" + GetHtmlFormat(ex.Message));
-            sb.AppendLine("StackTrace:<br/>" + GetHtmlFormat(ex.StackTrace));
-            if (ex.InnerException != null)
+            try
             {
-                sb.AppendLine(BuildExceptionMsg(ex.InnerException, prefix + "&nbsp;&nbsp;&nbsp;"));
-            }
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(GetHtmlFormat(ex.GetType().ToString()));
+                sb.AppendLine("Messgae:" + GetHtmlFormat(ex.Message));
+                sb.AppendLine("StackTrace:<br/>" + GetHtmlFormat(ex.StackTrace));
+                if (ex.InnerException != null)
+                {
+                    sb.AppendLine(BuildExceptionMsg(ex.InnerException, prefix + "&nbsp;&nbsp;&nbsp;"));
+                }
 
-            return sb.ToString();
+                return sb.ToString();
+            }
+            catch (Exception e)
+            {
+                return string.Empty;
+            }
         }
         private static string GetHtmlFormat(string v)
         {
@@ -217,6 +225,12 @@ namespace Hangfire.HttpJob.Server
             if (!string.IsNullOrEmpty(item.AgentClass))
             {
                 request.Headers.Add("x-job-agent-class",item.AgentClass);
+
+                var consoleInfo = GetConsoleInfo(context);
+                if (consoleInfo != null)
+                {
+                    request.Headers.Add("x-job-agent-console", JsonConvert.SerializeObject(consoleInfo));
+                }
             }
 
             if (context != null)
@@ -239,6 +253,52 @@ namespace Hangfire.HttpJob.Server
             }
 
             return request;
+        }
+
+        /// <summary>
+        /// AgentJob的话 取得Console的参数
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private static ConsoleInfo GetConsoleInfo(PerformContext context)
+        {
+            try
+            {
+                if (context == null)
+                {
+                    // PerformContext might be null because of refactoring, or during tests
+                    return null;
+                }
+
+                if (!context.Items.ContainsKey("ConsoleContext"))
+                {
+                    // Absence of ConsoleContext means ConsoleServerFilter was not properly added
+                    return null;
+                }
+
+                var consoleContext = context.Items["ConsoleContext"];
+
+                //反射获取私有属性 _consoleId
+
+                var consoleValue = consoleContext?.GetType().GetField("_consoleId", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(consoleContext);
+
+                if (consoleValue == null) return null;
+
+                //反射获取ConsoleId的私有属性 DateValue 值
+
+                var dateValue = consoleValue.GetType().GetProperty("DateValue", BindingFlags.Instance | BindingFlags.Public)?.GetValue(consoleValue);
+
+                return new ConsoleInfo
+                {
+                    HashKey = $"console:refs:{consoleValue}",
+                    SetKey = $"console:{consoleValue}",
+                    StartTime = (DateTime?) dateValue ?? DateTime.Now
+                };
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
         #endregion
     }

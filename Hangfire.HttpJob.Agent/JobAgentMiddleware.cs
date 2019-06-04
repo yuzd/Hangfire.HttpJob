@@ -14,19 +14,21 @@ using Microsoft.Extensions.Options;
 
 namespace Hangfire.HttpJob.Agent
 {
-    internal class JobAgentMiddleware:IMiddleware
+    internal class JobAgentMiddleware : IMiddleware
     {
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
-        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options)
+        private readonly IConsoleStorage _consoleStorage;
+        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, IConsoleStorage consoleStorage)
         {
             _logger = logger;
             _options = options;
+            _consoleStorage = consoleStorage;
         }
 
         private readonly LazyConcurrentDictionary<string, List<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, List<JobAgent>>();
 
-       
+
         public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
         {
             httpContext.Response.ContentType = "text/plain";
@@ -53,6 +55,32 @@ namespace Hangfire.HttpJob.Agent
                     message = $"x-job-agent-action in headers can not be empty!";
                     _logger.LogError(message);
                     return;
+                }
+
+                IHangfireConsole console = httpContext.RequestServices.GetService<IHangfireConsole>();
+
+                ConsoleInfo consoleInfo = null;
+                var agentConsole = httpContext.Request.Headers["x-job-agent-console"].ToString();
+                if (!string.IsNullOrEmpty(agentConsole))
+                {
+                    consoleInfo = agentConsole.ToJson<ConsoleInfo>();
+                }
+
+                if (console != null && consoleInfo != null)
+                {
+                    var initConsole = console as IHangfireConsoleInit;
+                    if (initConsole == null)
+                    {
+                        console = null;
+                    }
+                    else
+                    {
+                        initConsole.Init(consoleInfo);
+                    }
+                }
+                else
+                {
+                    console = null;
                 }
 
                 agentAction = agentAction.ToLower();
@@ -91,8 +119,8 @@ namespace Hangfire.HttpJob.Agent
                             job.Hang = metaData.Hang;
                             job.AgentClass = agentClass;
                         }
-                      
-                        job.Run(requestBody);
+
+                        job.Run(requestBody, console);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
                         return;
@@ -113,7 +141,7 @@ namespace Hangfire.HttpJob.Agent
                             return;
                         }
 
-                        job.Stop();
+                        job.Stop(console);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
                         return;
@@ -145,17 +173,17 @@ namespace Hangfire.HttpJob.Agent
                     {
                         jobAgentList.Remove(stopedJob);
                     }
-                    
+
                     jobAgentList.Add(job);
-                    job.Run(requestBody);
+                    job.Run(requestBody, console);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
-                   
+
                     return;
                 }
                 else if (agentAction.Equals("stop"))
                 {
-                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count<1)
+                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count < 1)
                     {
                         message = $"Transient JobClass:{agentClass} have no running job!";
                         _logger.LogWarning(message);
@@ -175,8 +203,8 @@ namespace Hangfire.HttpJob.Agent
                             stopedJobList.Add(runingJob);
                             continue;
                         }
-                        
-                        runingJob.Stop();
+
+                        runingJob.Stop(console);
                         instanceCount++;
                     }
 
@@ -184,7 +212,7 @@ namespace Hangfire.HttpJob.Agent
                     {
                         jobAgentList.Remove(stopedJob);
                     }
-                    
+
                     transitentJob.TryRemove(agentClass, out _);
                     message = $"JobClass:{agentClass},Instance Count:{instanceCount} stop success!";
                     _logger.LogInformation(message);
@@ -192,7 +220,7 @@ namespace Hangfire.HttpJob.Agent
                 }
                 else if (agentAction.Equals("detail"))
                 {
-                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count<1)
+                    if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count < 1)
                     {
                         message = $"Transient JobClass:{agentClass} have no running job!";
                         _logger.LogWarning(message);
@@ -218,7 +246,7 @@ namespace Hangfire.HttpJob.Agent
                         return;
                     }
                     //获取job详情
-                    message = $"Runing Instance Count:{jobAgentList.Count},JobList:{string.Join("\r\n",jobInfo)}";
+                    message = $"Runing Instance Count:{jobAgentList.Count},JobList:{string.Join("\r\n", jobInfo)}";
                     return;
                 }
 
@@ -257,8 +285,8 @@ namespace Hangfire.HttpJob.Agent
                     return false;
                 }
                 var creds = ParseAuthHeader(authHeader);
-                if (creds == null || creds.Length!=2) return false;
-                if (!creds[0].Equals(jobAgent.BasicUserName) ||  !creds[1].Equals(jobAgent.BasicUserPwd))
+                if (creds == null || creds.Length != 2) return false;
+                if (!creds[0].Equals(jobAgent.BasicUserName) || !creds[1].Equals(jobAgent.BasicUserPwd))
                 {
                     return false;
                 }
@@ -327,8 +355,8 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        
+
     }
-    
-    
+
+
 }

@@ -19,14 +19,14 @@ namespace TestHangfireAgent.Jobs
             _logger = logger;
             _logger.LogInformation($"Create {nameof(TestTransientJob)} Instance Success");
         }
-        protected override async Task OnStart(string param)
+        protected override async Task OnStart(JobContext jobContext)
         {
             _logger.LogWarning("ManagedThreadId:" + Thread.CurrentThread.ManagedThreadId);
             await Task.Delay(5000);
-            _logger.LogWarning(nameof(OnStart) + (param ?? string.Empty));
+            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
         }
 
-        protected override void OnStop()
+        protected override void OnStop(JobContext jobContext)
         {
             _logger.LogInformation("OnStop");
         }

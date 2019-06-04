@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent", "H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfireAgent", "Test\TestHangfireAgent\TestHangfireAgent.csproj", "{67740B21-2AC0-44F4-84B3-969AF7EEC87B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Tags.Mysql", "Hangfire.Tags.Mysql\Hangfire.Tags.Mysql.csproj", "{FE512525-EAD6-4236-ABFC-B0A64D526F51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Tags.Mysql", "Hangfire.Tags.Mysql\Hangfire.Tags.Mysql.csproj", "{FE512525-EAD6-4236-ABFC-B0A64D526F51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.HttpJob.Agent.MysqlConsole", "AgentLogClient\Hangfire.HttpJob.Agent.MysqlLog\Hangfire.HttpJob.Agent.MysqlConsole.csproj", "{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{FE512525-EAD6-4236-ABFC-B0A64D526F51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE512525-EAD6-4236-ABFC-B0A64D526F51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE512525-EAD6-4236-ABFC-B0A64D526F51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
