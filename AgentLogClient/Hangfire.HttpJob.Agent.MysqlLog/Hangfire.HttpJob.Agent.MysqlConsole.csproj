@@ -9,11 +9,11 @@
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <Description>agent job console to hangfire dashbord</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="1.50.5" />
+    <PackageReference Include="Dapper" Version="1.60.6" />
     <PackageReference Include="MySqlConnector" Version="0.56.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
