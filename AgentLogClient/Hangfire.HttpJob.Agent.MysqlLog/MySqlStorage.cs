@@ -17,7 +17,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
         public MySqlStorage(IOptions<MySqlStorageOptions> options)
         {
             if (options == null || options.Value == null) throw new ArgumentNullException(nameof(MySqlStorageOptions));
-            _connectionString = options.Value.DbConnectionString;
+            _connectionString = options.Value.HangfireDb;
             _options = options.Value;
             if (_connectionString == null) throw new ArgumentNullException("connectionString");
 

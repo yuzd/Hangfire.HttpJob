@@ -100,7 +100,6 @@ namespace Hangfire.HttpJob.Agent
                         Console = console
                     };
                     this.OnStop(jobContext);
-                    this.JobStatus = JobStatus.Stoped;
                 }
                 catch (Exception e)
                 {
@@ -115,6 +114,7 @@ namespace Hangfire.HttpJob.Agent
                         //ignore
                     }
                 }
+                this.JobStatus = JobStatus.Stoped;
             }
             
         }
@@ -134,7 +134,6 @@ namespace Hangfire.HttpJob.Agent
                 {
                     _mainThread.WaitOne();
                 }
-                this.JobStatus = JobStatus.Stoped;
             }
             catch (Exception e)
             {
@@ -149,6 +148,7 @@ namespace Hangfire.HttpJob.Agent
                     //ignore
                 }
             }
+            this.JobStatus = JobStatus.Stoped;
         }
 
         /// <summary>

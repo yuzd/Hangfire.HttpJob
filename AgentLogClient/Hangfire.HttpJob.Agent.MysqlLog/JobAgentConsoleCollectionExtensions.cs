@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using Hangfire.HttpJob.Agent.Config;
-using Hangfire.HttpJob.Agent.MysqlConsole.Config;
+﻿using Hangfire.HttpJob.Agent.MysqlConsole.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
@@ -38,19 +34,21 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
             }
             catch (Exception exception)
             {
-                logger.LogCritical(evt, exception, "Failed to configure Hangfire.HttpJob.Agent.MysqlConsole middleware");
+                logger.LogCritical(evt, exception, "【Hangfire.HttpJob.Agent.MysqlConsole】 - Failed to configure Hangfire.HttpJob.Agent.MysqlConsole middleware");
             }
 
             if (options.Value == null)
             {
-                logger.LogCritical(evt, "Hangfire.HttpJob.Agent.MysqlConsole：： MySqlStorageOptions can not be null");
+                logger.LogCritical(evt, "【Hangfire.HttpJob.Agent.MysqlConsole】 - MySqlStorageOptions can not be null");
                 return app;
             }
 
-            if (string.IsNullOrEmpty(options.Value.DbConnectionString))
+            if (string.IsNullOrEmpty(options.Value.HangfireDb))
             {
-                throw new ArgumentException(nameof(MySqlStorageOptions.DbConnectionString));
+                throw new ArgumentException(nameof(MySqlStorageOptions.HangfireDb));
             }
+
+            logger.LogInformation(evt, "【Hangfire.HttpJob.Agent.MysqlConsole】 - Registered MysqlConsole middleware Success!");
 
             return app;
         }

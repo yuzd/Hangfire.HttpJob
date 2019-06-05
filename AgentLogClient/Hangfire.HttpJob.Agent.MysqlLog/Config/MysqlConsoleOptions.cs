@@ -17,7 +17,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole.Config
         }
         public void Configure(MySqlStorageOptions options)
         {
-            configuration.GetSection("JobAgent:Console").Bind(options);
+            configuration.GetSection("JobAgent:HangfireConsole").Bind(options);
         }
 
     }

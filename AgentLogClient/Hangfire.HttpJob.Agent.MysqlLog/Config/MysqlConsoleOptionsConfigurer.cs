@@ -18,9 +18,9 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole.Config
             options.TablePrefix = prefix;
             return this;
         }
-        public MysqlConsoleServiceConfigurer DbConnectionString(string db)
+        public MysqlConsoleServiceConfigurer HangfireDb(string db)
         {
-            options.DbConnectionString = db;
+            options.HangfireDb = db;
             return this;
         }
     }
