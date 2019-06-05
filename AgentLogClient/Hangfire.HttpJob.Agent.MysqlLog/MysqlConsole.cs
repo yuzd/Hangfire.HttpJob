@@ -21,7 +21,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
         {
             if (this.ConsoleInfo == null || string.IsNullOrEmpty(message)) return;
             if (string.IsNullOrEmpty(this.ConsoleInfo.HashKey) || string.IsNullOrEmpty(this.ConsoleInfo.SetKey)) return;
-
+            message = "【JobAgent】" + message;
             lock (this)
             {
                 string value;
