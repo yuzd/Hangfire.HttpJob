@@ -105,19 +105,9 @@ namespace Hangfire.HttpJob.Server
                         result = AddHttpbackgroundjob(jobItem);
                         break;
                     case "recurringjob":
-                        if (string.IsNullOrEmpty(jobItem.Cron))
-                        {
-                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return Task.FromResult(false);
-                        }
                         result = AddHttprecurringjob(jobItem);
                         break;
                     case "editrecurringjob":
-                        if (string.IsNullOrEmpty(jobItem.Cron))
-                        {
-                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return Task.FromResult(false);
-                        }
                         result = AddHttprecurringjob(jobItem);
                         break;
                     case "pausejob":
@@ -181,13 +171,14 @@ namespace Hangfire.HttpJob.Server
             }
         }
 
-       
+
 
         /// <summary>
         /// 添加后台作业
         /// </summary>
         /// <param name="jobItem"></param>
         /// <returns></returns>
+        [JobHistorySaveTimeFilter(TimeSpanType.Second,30)]
         public bool AddHttpbackgroundjob(HttpJobItem jobItem)
         {
             try
@@ -209,7 +200,7 @@ namespace Hangfire.HttpJob.Server
                    var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem , jobItem.JobName + (!string.IsNullOrEmpty(jobItem.AgentClass) ? "| JobAgent |" : ""), "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
 
                    //自己触发完成后再把自己添加一遍
-                   BackgroundJob.ContinueJobWith(jobId,()=> AddHttpbackgroundjob(jobItem));
+                   BackgroundJob.ContinueJobWith(jobId,()=> AddHttpbackgroundjob(jobItem), JobContinuationOptions.OnAnyFinishedState);
                    return true;
                 }
 
@@ -378,6 +369,13 @@ namespace Hangfire.HttpJob.Server
 
             try
             {
+                //支持添加一个 只能手动出发的
+                if (string.IsNullOrEmpty(jobItem.Cron))
+                {
+                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
+                    return true;
+                }
+
                 RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
                 return true;
             }

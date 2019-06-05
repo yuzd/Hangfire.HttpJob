@@ -26,7 +26,7 @@ namespace Hangfire.HttpJob.Server
         #region Public
 
 
-        [AutomaticRetrySet(Attempts = 3, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        [AutomaticRetrySet(Attempts = 3, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [DisplayName("[{1} | {2} | Retry:{3}]")]
         [JobFilter(timeoutInSeconds: 3600)]
@@ -80,6 +80,7 @@ namespace Hangfire.HttpJob.Server
                 if (!item.EnableRetry)
                 {
                     SendFailMail(item, string.Join("<br/>", logList), ex);
+                    context.SetJobParameter("jobErr", ex.Message);
                     return;
                 }
                 //获取重试次数
@@ -87,6 +88,7 @@ namespace Hangfire.HttpJob.Server
                 if (count == "3")//重试达到三次的时候发邮件通知
                 {
                     SendFailMail(item, string.Join("<br/>", logList), ex);
+                    context.SetJobParameter("jobErr", ex.Message);
                     return;
                 }
                 throw;

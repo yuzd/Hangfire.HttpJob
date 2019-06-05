@@ -34,6 +34,9 @@ namespace Hangfire.HttpJob.Server
 
         public int Timeout { get; set; }
 
+        /// <summary>
+        /// -1 代表手动 0代表 立即执行 >0 代表延迟分钟数
+        /// </summary>
         public int DelayFromMinutes { get; set; }
         public string Cron { get; set; }
         public string JobName { get; set; }

@@ -306,4 +306,7 @@
   <data name="AgentJobDeatilButton" xml:space="preserve">
     <value>AgentJobDetail</value>
   </data>
+  <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
+    <value>The ContinueJob Can‘t Start, Please Delete Or Retry this job! </value>
+  </data>
 </root>
