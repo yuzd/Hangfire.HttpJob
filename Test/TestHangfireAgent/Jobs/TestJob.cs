@@ -22,6 +22,7 @@ namespace TestHangfireAgent.Jobs
             jobContext.Console.WriteLine("开始等待10秒");
             await Task.Delay(1000 * 10);
             jobContext.Console.WriteLine("结束等待10秒");
+            jobContext.Console.WriteLine("哈哈哈哈",ConsoleFontColor.Cyan);
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
         }
 

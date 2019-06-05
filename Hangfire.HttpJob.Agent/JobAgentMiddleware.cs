@@ -18,12 +18,12 @@ namespace Hangfire.HttpJob.Agent
     {
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
-        private readonly IConsoleStorage _consoleStorage;
-        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, IConsoleStorage consoleStorage)
+        private readonly ILoggerFactory _loggerFactory;
+        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
             _logger = logger;
             _options = options;
-            _consoleStorage = consoleStorage;
         }
 
         private readonly LazyConcurrentDictionary<string, List<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, List<JobAgent>>();
@@ -57,32 +57,6 @@ namespace Hangfire.HttpJob.Agent
                     return;
                 }
 
-                IHangfireConsole console = httpContext.RequestServices.GetService<IHangfireConsole>();
-
-                ConsoleInfo consoleInfo = null;
-                var agentConsole = httpContext.Request.Headers["x-job-agent-console"].ToString();
-                if (!string.IsNullOrEmpty(agentConsole))
-                {
-                    consoleInfo = agentConsole.ToJson<ConsoleInfo>();
-                }
-
-                if (console != null && consoleInfo != null)
-                {
-                    var initConsole = console as IHangfireConsoleInit;
-                    if (initConsole == null)
-                    {
-                        console = null;
-                    }
-                    else
-                    {
-                        initConsole.Init(consoleInfo);
-                    }
-                }
-                else
-                {
-                    console = null;
-                }
-
                 agentAction = agentAction.ToLower();
                 var requestBody = GetJobItem(httpContext);
                 var agentClassType = GetAgentType(agentClass);
@@ -99,6 +73,8 @@ namespace Hangfire.HttpJob.Agent
                     _logger.LogWarning(message);
                     return;
                 }
+
+
 
                 if (!metaData.Transien)
                 {
@@ -120,6 +96,7 @@ namespace Hangfire.HttpJob.Agent
                             job.AgentClass = agentClass;
                         }
 
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                         job.Run(requestBody, console);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
@@ -140,7 +117,7 @@ namespace Hangfire.HttpJob.Agent
                             _logger.LogWarning(message);
                             return;
                         }
-
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                         job.Stop(console);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
@@ -175,6 +152,7 @@ namespace Hangfire.HttpJob.Agent
                     }
 
                     jobAgentList.Add(job);
+                    var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                     job.Run(requestBody, console);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
@@ -203,7 +181,7 @@ namespace Hangfire.HttpJob.Agent
                             stopedJobList.Add(runingJob);
                             continue;
                         }
-
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                         runingJob.Stop(console);
                         instanceCount++;
                     }
@@ -355,7 +333,51 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
+        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType)
+        {
+            IHangfireConsole console = null;
+            try
+            {
+                //默认每次都是有一个新的实例
+                console = httpContext.RequestServices.GetService<IHangfireConsole>();
 
+                ConsoleInfo consoleInfo = null;
+                var agentConsole = httpContext.Request.Headers["x-job-agent-console"].ToString();
+                if (!string.IsNullOrEmpty(agentConsole))
+                {
+                    consoleInfo = agentConsole.ToJson<ConsoleInfo>();
+                }
+
+                if (console != null && consoleInfo != null)
+                {
+                    var initConsole = console as IHangfireConsoleInit;
+                    if (initConsole == null)
+                    {
+                        console = null;
+                    }
+                    else
+                    {
+                        initConsole.Init(consoleInfo);
+                    }
+                }
+                else
+                {
+                    console = null;
+                }
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+
+            if (console == null)
+            {
+                var jobLogger = _loggerFactory.CreateLogger(jobType);
+                console = new LoggerConsole(jobLogger);
+            }
+
+            return console;
+        }
     }
 
 

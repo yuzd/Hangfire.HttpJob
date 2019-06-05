@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace Hangfire.HttpJob.Agent.MysqlConsole.Config
 {
 
-    public class MysqlConsoleOptionsConfigurer : IConfigureOptions<MySqlStorageOptions>
+    internal class MysqlConsoleOptionsConfigurer : IConfigureOptions<MySqlStorageOptions>
     {
         private readonly IConfiguration configuration;
 

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
-    public class MysqlConsole : IHangfireConsole, IHangfireConsoleInit
+    internal class MysqlConsole : IHangfireConsole, IHangfireConsoleInit
     {
         private double _lastTimeOffset;
         private const int ValueFieldLimit = 256;
@@ -17,7 +17,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
             _lastTimeOffset = 0;
         }
 
-        public void WriteLine(string message)
+        public void WriteLine(string message,ConsoleFontColor fontColor = null)
         {
             if (this.ConsoleInfo == null || string.IsNullOrEmpty(message)) return;
             if (string.IsNullOrEmpty(this.ConsoleInfo.HashKey) || string.IsNullOrEmpty(this.ConsoleInfo.SetKey)) return;
@@ -30,6 +30,11 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                 {
                     Message = message
                 };
+
+                if (fontColor != null)
+                {
+                    line.TextColor = fontColor.ToString();
+                }
 
                 line.TimeOffset = Math.Round((DateTime.UtcNow - ConsoleInfo.StartTime).TotalSeconds, 3);
                 if (_lastTimeOffset >= line.TimeOffset)
