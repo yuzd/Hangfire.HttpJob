@@ -18,16 +18,16 @@ namespace TestHangfireAgent.Jobs
             _logger = logger;
             _logger.LogInformation($"Create {nameof(TestHangJob)} Instance Success");
         }
-        protected override async Task OnStart(string param)
+        protected override async Task OnStart(JobContext jobContext)
         {
             await Task.Delay(1000 * 10);
            
-            _logger.LogWarning(nameof(OnStart) + (param ?? string.Empty));
+            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
             throw new Exception("ddddd");
         }
 
-        protected override void OnStop()
+        protected override void OnStop(JobContext jobContext)
         {
             _logger.LogInformation("OnStop");
         }

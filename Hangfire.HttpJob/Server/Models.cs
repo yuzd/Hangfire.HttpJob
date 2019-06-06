@@ -15,4 +15,12 @@ namespace Hangfire.HttpJob.Server
         public string JobName { get; set; }
         public string Info { get; set; }
     }
+
+
+    public class ConsoleInfo
+    {
+        public string SetKey { get; set; }
+        public string HashKey { get; set; }
+        public DateTime StartTime { get; set; }
+    }
 }

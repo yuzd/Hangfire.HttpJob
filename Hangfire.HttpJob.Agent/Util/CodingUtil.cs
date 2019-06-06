@@ -1,9 +1,24 @@
 using System;
+using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Agent.Util
 {
     internal static class CodingUtil
     {
+
+
+        public static T ToJson<T>(this string str)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(str);
+            }
+            catch (Exception )
+            {
+                return default(T);
+            }
+
+        }
 
         ///<summary>
         ///由秒数得到日期几天几小时。。。

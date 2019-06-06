@@ -306,4 +306,7 @@
   <data name="AgentJobDeatilButton" xml:space="preserve">
     <value>查询Job状态</value>
   </data>
+  <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
+    <value>子任务不能执行,请将重试该任务直到成功或者直接删除该任务!</value>
+  </data>
 </root>

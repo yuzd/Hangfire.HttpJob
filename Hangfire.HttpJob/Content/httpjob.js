@@ -421,7 +421,7 @@
                                 var tdArr = $(this).children();
                                 var ss = tdArr.eq(3).text();
                                 if (ss.indexOf('| multiple |') >= 0) {
-                                    tdArr.eq(2).text('multiple');
+                                    tdArr.eq(2).html('<span class="label label-warning text-uppercase" title="" data-original-title="over the next 100 years">Multiple</span>');
                                     $(this).css("color", "blue");
                                 }
                             });

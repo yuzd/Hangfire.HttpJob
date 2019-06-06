@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Agent;
+using Hangfire.HttpJob.Agent.MysqlConsole;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,7 @@ namespace TestHangfireAgent
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHangfireHttpJobAgent();
+            services.AddJobAgentConsoleToMysql();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -30,7 +32,7 @@ namespace TestHangfireAgent
             #endregion
 
             app.UseHangfireHttpJobAgent();
-
+            app.UseJobAgentConsoleToMysql();
         }
     }
 }

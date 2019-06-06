@@ -53,12 +53,12 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        protected abstract Task OnStart(string param);
-        protected abstract void OnStop();
+        protected abstract Task OnStart(JobContext jobContext);
+        protected abstract void OnStop(JobContext jobContext);
         protected abstract void OnException(Exception ex);
 
 
-        internal void Run(string param)
+        internal void Run(string param,IHangfireConsole console)
         {
             if (this.JobStatus == JobStatus.Running) return;
             lock (this)
@@ -66,12 +66,17 @@ namespace Hangfire.HttpJob.Agent
                 if (this.JobStatus == JobStatus.Running) return;
                 _mainThread = new ManualResetEvent(false);
                 this.Param = param;
-                this.thd = new Thread(async () => { await this.start(); });
+                JobContext jobContext = new JobContext
+                {
+                    Param = param,
+                    Console = console
+                };
+                this.thd = new Thread(async () => { await this.start(jobContext); });
                 this.thd.Start();
             }
         }
 
-        internal void Stop()
+        internal void Stop(IHangfireConsole console)
         {
             if (this.JobStatus == JobStatus.Stoped || this.JobStatus == JobStatus.Stopping)
                 return;
@@ -89,8 +94,12 @@ namespace Hangfire.HttpJob.Agent
                     }
 
                     this.JobStatus = JobStatus.Stopping;
-                    this.OnStop();
-                    this.JobStatus = JobStatus.Stoped;
+                    JobContext jobContext = new JobContext
+                    {
+                        Param = this.Param,
+                        Console = console
+                    };
+                    this.OnStop(jobContext);
                 }
                 catch (Exception e)
                 {
@@ -105,6 +114,7 @@ namespace Hangfire.HttpJob.Agent
                         //ignore
                     }
                 }
+                this.JobStatus = JobStatus.Stoped;
             }
             
         }
@@ -112,19 +122,18 @@ namespace Hangfire.HttpJob.Agent
         /// <summary>
         /// job运行 在一个独立的线程中运行
         /// </summary>
-        private async Task start()
+        private async Task start(JobContext jobContext)
         {
             try
             {
                 if (this.JobStatus == JobStatus.Running) return;
                 this.StartTime = DateTime.Now;
                 this.JobStatus = JobStatus.Running;
-                await this.OnStart(this.Param);
+                await this.OnStart(jobContext);
                 if (Hang)
                 {
                     _mainThread.WaitOne();
                 }
-                this.JobStatus = JobStatus.Stoped;
             }
             catch (Exception e)
             {
@@ -139,6 +148,7 @@ namespace Hangfire.HttpJob.Agent
                     //ignore
                 }
             }
+            this.JobStatus = JobStatus.Stoped;
         }
 
         /// <summary>

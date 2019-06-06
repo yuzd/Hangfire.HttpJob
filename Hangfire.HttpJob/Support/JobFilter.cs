@@ -2,6 +2,7 @@
 using System.Linq;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.HttpJob.Content.resx;
 using Hangfire.HttpJob.Server;
 using Hangfire.Logging;
 using Hangfire.Server;
@@ -61,6 +62,7 @@ namespace Hangfire.HttpJob.Support
                 var hashKey = filterContext.GetJobParameter<string>("runtimeKey");
                 if (!string.IsNullOrEmpty(hashKey))
                 {
+                    filterContext.SetJobParameter("runtimeKey", string.Empty);
                     using (var tran = filterContext.Connection.CreateWriteTransaction())
                     {
                         tran.RemoveHash(hashKey);
@@ -95,7 +97,7 @@ namespace Hangfire.HttpJob.Support
                         return;
                     }
 
-                    if(!string.IsNullOrEmpty(job.JobName))filterContext.BackgroundJob.Id.AddTags(job.JobName);
+                    if (!string.IsNullOrEmpty(job.JobName)) filterContext.BackgroundJob.Id.AddTags(job.JobName);
                 }
 
                 //设置运行时被设置的参数
@@ -103,7 +105,7 @@ namespace Hangfire.HttpJob.Support
                 {
                     var hashKey = CodingUtil.MD5(filterContext.BackgroundJob.Id + ".runtime");
                     var excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
-                    if (excuteDataList.Any())
+                    if (excuteDataList != null && excuteDataList.Any())
                     {
                         filterContext.SetJobParameter("runtimeKey", hashKey);
                         foreach (var keyvalue in excuteDataList)
@@ -138,12 +140,20 @@ namespace Hangfire.HttpJob.Support
 
         public void OnStateElection(ElectStateContext context)
         {
-            if (context.CandidateState is FailedState failedState)
+            var jobResult = context.GetJobParameter<string>("jobErr");//不跑出异常也能将job置成Fail
+            if (!string.IsNullOrEmpty(jobResult))
             {
-                logger.WarnFormat(
-                    "[OnStateElection] BackgroundJob.Id `{0}` Failed，Exception `{1}`",
-                    context.BackgroundJob.Id,
-                    failedState.Exception.ToString());
+                context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
+                var jobItem = context.BackgroundJob.Job.Args.FirstOrDefault();
+                var httpJobItem = jobItem as HttpJobItem;
+                if (httpJobItem != null && httpJobItem.DelayFromMinutes.Equals(-1))
+                {
+                    context.CandidateState = new ErrorState(jobResult,Strings.MultiBackgroundJobFailToContinue);
+                }
+                else
+                {
+                    context.CandidateState = new ErrorState(jobResult);
+                }
             }
         }
 

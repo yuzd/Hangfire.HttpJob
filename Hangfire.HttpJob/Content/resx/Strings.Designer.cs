@@ -439,6 +439,15 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 The ContinueJob Can‘t Start, Please Delete Or Retry this job!  的本地化字符串。
+        /// </summary>
+        public static string MultiBackgroundJobFailToContinue {
+            get {
+                return ResourceManager.GetString("MultiBackgroundJobFailToContinue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 NoSpecific 的本地化字符串。
         /// </summary>
         public static string NoSpecific {
