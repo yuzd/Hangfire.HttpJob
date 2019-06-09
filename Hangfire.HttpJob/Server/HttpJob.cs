@@ -36,22 +36,26 @@ namespace Hangfire.HttpJob.Server
             try
             {
                 if (context == null) return;
-                var runTimeData = context.GetJobParameter<string>("Data");
-                if (!string.IsNullOrEmpty(runTimeData)) item.Data = runTimeData;
+                context.Items.TryGetValue("Data", out var runTimeDataItem);
+                var runTimeData = runTimeDataItem as string;
+                if (!string.IsNullOrEmpty(runTimeData))
+                {
+                    item.Data = runTimeData;
+                }
                 if (item.Timeout < 1) item.Timeout = 5000;
-                context.SetTextColor(ConsoleTextColor.Yellow);
-                context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                RunWithTry(()=>context.SetTextColor(ConsoleTextColor.Yellow));
+                RunWithTry(()=>context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                context.WriteLine($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
+                RunWithTry(()=>context.WriteLine($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}"));
                 logList.Add($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
-                context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】");
+                RunWithTry(()=>context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】"));
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;
                 if (!string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
                 {
                     // per proxy per HttpClient
                     client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(HangfireHttpJobOptions.Proxy);
-                    context.WriteLine($"Proxy:{HangfireHttpJobOptions.Proxy}");
+                    RunWithTry(()=>context.WriteLine($"Proxy:{HangfireHttpJobOptions.Proxy}"));
                     logList.Add($"Proxy:{HangfireHttpJobOptions.Proxy}");
                 }
                 else
@@ -64,33 +68,35 @@ namespace Hangfire.HttpJob.Server
                 var httpResponse = client.SendAsync(httpMesage, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
-                context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}");
+                RunWithTry(()=>context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}"));
                 logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode}");
-                context.WriteLine($"{Strings.JobResult}:{result}");
+                RunWithTry(()=>context.WriteLine($"{Strings.JobResult}:{result}"));
                 logList.Add($"{Strings.JobResult}:{result}");
-                context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                RunWithTry(()=>context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 SendSuccessMail(item, string.Join("<br/>", logList));
             }
             catch (Exception ex)
             {
-                context.SetTextColor(ConsoleTextColor.Red);
+                RunWithTry(()=>context.SetTextColor(ConsoleTextColor.Red));
                 Logger.ErrorException("HttpJob.Excute=>" + item, ex);
-                context.WriteLine(ex.Message);
+                RunWithTry(()=>context.WriteLine(ex.ToString()));
                 if (!item.EnableRetry)
                 {
                     SendFailMail(item, string.Join("<br/>", logList), ex);
-                    context.SetJobParameter("jobErr", ex.Message);
+                    AddErrToJob(context, ex);
                     return;
                 }
                 //获取重试次数
-                var count = context.GetJobParameter<string>("RetryCount") ?? string.Empty;
+                var count = RunWithTry<string>(()=>context.GetJobParameter<string>("RetryCount")) ?? string.Empty;
                 if (count == "3")//重试达到三次的时候发邮件通知
                 {
                     SendFailMail(item, string.Join("<br/>", logList), ex);
-                    context.SetJobParameter("jobErr", ex.Message);
+                    AddErrToJob(context, ex);
                     return;
                 }
+                
+                context.Items.Add("RetryCount",count);
                 throw;
             }
         }
@@ -237,7 +243,8 @@ namespace Hangfire.HttpJob.Server
 
             if (context != null)
             {
-                var action = context.GetJobParameter<string>("Action");
+                context.Items.TryGetValue("Action", out var actionItem);
+                var action = actionItem as string ;
                 if (!string.IsNullOrEmpty(action))
                 {
                     request.Headers.Add("x-job-agent-action", action);
@@ -301,6 +308,39 @@ namespace Hangfire.HttpJob.Server
             {
                 return null;
             }
+        }
+
+
+        private static T RunWithTry<T>(Func<T> action)
+        {
+            try
+            {
+                return action();
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("RunWithTry",e);
+            }
+
+            return default(T);
+        }
+        
+        private static void RunWithTry(Action action)
+        {
+            try
+            { 
+                action();
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("RunWithTry",e);
+            }
+        }
+
+        private static void AddErrToJob(PerformContext context,Exception ex)
+        {
+            context.SetJobParameter("jobErr",ex.Message);
+            
         }
         #endregion
     }

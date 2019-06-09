@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -51,22 +52,44 @@ namespace Hangfire.HttpJob.Support
             {
                 throw new InvalidOperationException("can not found DistributedLock in filterContext");
             }
-            //释放系统自带的分布式锁
-            var distributedLock = (IDisposable)filterContext.Items["DistributedLock"];
-            distributedLock.Dispose();
-
-
+           
             //删除设置运行时被设置的参数
             try
             {
-                var hashKey = filterContext.GetJobParameter<string>("runtimeKey");
-                if (!string.IsNullOrEmpty(hashKey))
+                if (filterContext.Items.TryGetValue("runtimeKey", out var hashKey))
                 {
-                    filterContext.SetJobParameter("runtimeKey", string.Empty);
-                    using (var tran = filterContext.Connection.CreateWriteTransaction())
+                    if (!filterContext.Items.ContainsKey("RetryCount"))//执行出错需要retry的时候才会有
                     {
-                        tran.RemoveHash(hashKey);
-                        tran.Commit();
+                        //代表是运行期间没有throw 直接删除
+                        filterContext.Items.Remove("runtimeKey");
+                        var hashKeyStr = hashKey as string; 
+                        if (!string.IsNullOrEmpty(hashKeyStr))
+                        {
+                            using (var tran = filterContext.Connection.CreateWriteTransaction())
+                            {
+                                tran.RemoveHash(hashKeyStr);
+                                tran.Commit();
+                            }
+                        }
+                    }
+                    
+                }
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+            
+            try
+            {
+                if (filterContext.Items.TryGetValue("runtimeKey_dic", out var hashDic))
+                {
+                    if (hashDic is Dictionary<string, string> dic)
+                    {
+                        foreach (var item in dic)
+                        {
+                            filterContext.Items.Remove(item.Key);
+                        }
                     }
                 }
             }
@@ -75,6 +98,9 @@ namespace Hangfire.HttpJob.Support
                 //ignore
             }
 
+            //释放系统自带的分布式锁
+            var distributedLock = (IDisposable)filterContext.Items["DistributedLock"];
+            distributedLock.Dispose();
         }
 
         public void OnPerforming(PerformingContext filterContext)
@@ -88,7 +114,7 @@ namespace Hangfire.HttpJob.Support
                 var job = jobItem as HttpJobItem;
                 if (job != null)
                 {
-                    var isCronJob = !string.IsNullOrEmpty(job.Cron);
+                    var isCronJob = !string.IsNullOrEmpty(job.Cron) || (!string.IsNullOrEmpty(job.QueueName)&&job.QueueName.ToLower().Equals("recurring"));
                     var key = isCronJob ? job.JobName : filterContext.BackgroundJob.Id;
                     var conts = filterContext.Connection.GetAllItemsFromSet($"JobPauseOf:{key}");
                     if (conts.Contains("true"))
@@ -107,10 +133,12 @@ namespace Hangfire.HttpJob.Support
                     var excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
                     if (excuteDataList != null && excuteDataList.Any())
                     {
-                        filterContext.SetJobParameter("runtimeKey", hashKey);
+                        filterContext.Items.Add("runtimeKey", hashKey);
+                        //一次性的数据
+                        filterContext.Items.Add("runtimeKey_dic", excuteDataList);
                         foreach (var keyvalue in excuteDataList)
                         {
-                            filterContext.SetJobParameter(keyvalue.Key, keyvalue.Value);
+                            filterContext.Items.Add(keyvalue.Key, keyvalue.Value);
                         }
                     }
                 }
@@ -140,20 +168,38 @@ namespace Hangfire.HttpJob.Support
 
         public void OnStateElection(ElectStateContext context)
         {
-            var jobResult = context.GetJobParameter<string>("jobErr");//不跑出异常也能将job置成Fail
-            if (!string.IsNullOrEmpty(jobResult))
+            try
             {
-                context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
                 var jobItem = context.BackgroundJob.Job.Args.FirstOrDefault();
                 var httpJobItem = jobItem as HttpJobItem;
-                if (httpJobItem != null && httpJobItem.DelayFromMinutes.Equals(-1))
+                if (httpJobItem == null) return;
+                
+                var jobResult = context.GetJobParameter<string>("jobErr");//不跑出异常也能将job置成Fail
+                if (!string.IsNullOrEmpty(jobResult))
                 {
-                    context.CandidateState = new ErrorState(jobResult,Strings.MultiBackgroundJobFailToContinue);
+                    context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
+                    if (httpJobItem != null && httpJobItem.DelayFromMinutes.Equals(-1))
+                    {
+                        context.CandidateState = new ErrorState(jobResult,Strings.MultiBackgroundJobFailToContinue);
+                    }
+                    else
+                    {
+                        context.CandidateState = new ErrorState(jobResult);
+                    }
+                    
+                    
+//                    if (httpJobItem.DelayFromMinutes == -1)
+//                    {
+//                        context.CandidateState = new DeletedState
+//                        {
+//                            Reason = "Start Continue Job"
+//                        };
+//                    }
                 }
-                else
-                {
-                    context.CandidateState = new ErrorState(jobResult);
-                }
+            }
+            catch (Exception)
+            {
+                //ignore
             }
         }
 

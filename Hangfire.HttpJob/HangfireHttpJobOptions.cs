@@ -74,7 +74,7 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 接收者邮箱 只会发送系统错误的
         /// </summary>
-        public List<string> AlertMailList { get; set; }
+        public List<string> AlertMailList { get; set; } = new List<string>();
 
         /// <summary>
         /// SMTP地址

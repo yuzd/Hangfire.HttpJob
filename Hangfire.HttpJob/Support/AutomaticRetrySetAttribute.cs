@@ -129,7 +129,10 @@ namespace Hangfire.HttpJob.Support
             var jobdta = context.BackgroundJob.Job.Args.FirstOrDefault();
             if (jobdta == null) return;
             var httpjob = jobdta as HttpJobItem;
-            if (httpjob!=null &&!httpjob.EnableRetry) { return; }
+            if (httpjob != null && !httpjob.EnableRetry)
+            {
+                return;
+            }
             var failedState = context.CandidateState as FailedState;
             if (failedState == null)
             {
@@ -142,8 +145,21 @@ namespace Hangfire.HttpJob.Support
             if (retryAttempt <= Attempts)
             {
                 ScheduleAgainLater(context, retryAttempt, failedState);
+                return;
             }
-            else if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
+
+            try
+            {
+                //删除Runtime数据 代表的是需要重试 但是已经重试到最大次数了
+                var hashKey = CodingUtil.MD5(context.BackgroundJob.Id + ".runtime");
+                context.Transaction.RemoveHash(hashKey);
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+            
+            if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
             {
                 TransitionToDeleted(context, failedState);
             }
@@ -158,12 +174,12 @@ namespace Hangfire.HttpJob.Support
             }
         }
 
+        
         /// <inheritdoc />
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            var jobdta = context.BackgroundJob.Job.Args.FirstOrDefault();
-            var httpjob = JsonConvert.DeserializeObject<HttpJobItem>(jobdta.ToString());
-            if (!httpjob.EnableRetry) { return; }
+            var httpjob = context.BackgroundJob.Job.Args.FirstOrDefault() as HttpJobItem;
+            if (httpjob == null || !httpjob.EnableRetry) { return; }
             if (context.NewState is ScheduledState &&
                 context.NewState.Reason != null &&
                 context.NewState.Reason.StartsWith("Retry attempt"))
@@ -189,9 +205,8 @@ namespace Hangfire.HttpJob.Support
         /// <param name="failedState">Object which contains details about the current failed state.</param>
         private void ScheduleAgainLater(ElectStateContext context, int retryAttempt, FailedState failedState)
         {
-            var jobdta = context.BackgroundJob.Job.Args.FirstOrDefault();
-            var httpjob = JsonConvert.DeserializeObject<HttpJobItem>(jobdta.ToString());
-            if (!httpjob.EnableRetry) { return; }
+            var httpjob = context.BackgroundJob.Job.Args.FirstOrDefault() as HttpJobItem;
+            if (httpjob ==null || !httpjob.EnableRetry) { return; }
             context.SetJobParameter("RetryCount", retryAttempt);
             int delayInSeconds;
 
