@@ -6,7 +6,7 @@
     <Description>httpjob for Hangfire</Description>
     <PackageLicenseUrl>https://github.com/yuzd/Hangfire.HttpJob/blob/master/License.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>2.1.6</Version>
+    <Version>2.1.7</Version>
     <Authors>yuzd</Authors>
   </PropertyGroup>
 
