@@ -104,12 +104,18 @@ namespace TestHangfire
 
             var hangfireStartUpPath = JsonConfig.GetSection("HangfireStartUpPath").Get<string>();
             if (string.IsNullOrWhiteSpace(hangfireStartUpPath)) hangfireStartUpPath = "/job";
-            app.UseHangfireDashboard(hangfireStartUpPath, new DashboardOptions
+
+            var dashbordConfig = new DashboardOptions
             {
                 AppPath = "#",
                 DisplayStorageConnectionString = false,
-                IsReadOnlyFunc = Context => false,
-                Authorization = new[]
+                IsReadOnlyFunc = Context => false
+            };
+            var dashbordUserName = JsonConfig.GetSection("HangfireUserName").Get<string>();
+            var dashbordPwd = JsonConfig.GetSection("HangfirePwd").Get<string>();
+            if (!string.IsNullOrEmpty(dashbordPwd) && !string.IsNullOrEmpty(dashbordUserName))
+            {
+                dashbordConfig.Authorization = new[]
                 {
                     new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
                     {
@@ -120,13 +126,14 @@ namespace TestHangfire
                         {
                             new BasicAuthAuthorizationUser
                             {
-                                Login = JsonConfig.GetSection("HangfireUserName").Get<string>(),
-                                PasswordClear = JsonConfig.GetSection("HangfirePwd").Get<string>()
+                                Login = dashbordUserName,
+                                PasswordClear = dashbordPwd
                             }
                         }
                     })
-                }
-            });
+                };
+            }
+            app.UseHangfireDashboard(hangfireStartUpPath, dashbordConfig);
 
             var hangfireReadOnlyPath = JsonConfig.GetSection("HangfireReadOnlyPath").Get<string>();
             if (!string.IsNullOrWhiteSpace(hangfireReadOnlyPath))
