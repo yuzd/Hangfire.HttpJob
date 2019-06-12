@@ -125,6 +125,8 @@ Usage
 	BasicPassword = "test"
     });
 ```
+注意如果使用Client新增Job的话 需要
+![image](https://images4.c-ctrip.com/target/zb0b15000000xs2mt81B5.png)
 
 How to add Hangfire.HttpJob by restful api
 ================================
