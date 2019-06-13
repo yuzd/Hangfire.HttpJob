@@ -225,8 +225,9 @@ namespace Hangfire.HttpJob.Server
             {
                 if (!string.IsNullOrEmpty(item.Data))
                 {
-                    var bytes = Encoding.UTF8.GetBytes(item.Data);
-                    request.Content = new ByteArrayContent(bytes, 0, bytes.Length);
+                    //var bytes = Encoding.UTF8.GetBytes(item.Data);
+                    request.Content = new StringContent(item.Data, Encoding.UTF8, item.ContentType);
+                    //request.Content = new ByteArrayContent(bytes, 0, bytes.Length);
                 }
             }
 
