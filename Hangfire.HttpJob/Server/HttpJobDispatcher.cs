@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.HttpJob.Support;
@@ -43,13 +44,13 @@ namespace Hangfire.HttpJob.Server
                     context.Response.WriteAsync(JsonConvert.SerializeObject(joblist));
                     return Task.FromResult(true);
                 }
-                
+
                 var jobItem = GetJobItem(context);
                 if (jobItem == null)
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return Task.FromResult(false);
-                } 
+                }
                 if (op.ToLower() == "getrecurringjob")
                 {
                     var strdata = GetJobdata(jobItem.JobName);
@@ -70,7 +71,7 @@ namespace Hangfire.HttpJob.Server
                 else if (op.ToLower() == "getbackgroundjobdetail")
                 {
                     var jobDetail = GetBackGroundJobDetail(jobItem);
-                    context.Response.ContentType ="application/json";
+                    context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.OK;
                     context.Response.WriteAsync(JsonConvert.SerializeObject(jobDetail));
                     return Task.FromResult(true);
@@ -153,16 +154,58 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var context = _context.GetHttpContext();
+                Stream body = null;
+                if (_context is AspNetCoreDashboardContext)
+                {
+                    var context = _context.GetHttpContext();
+                    body = context.Request.Body;
+                }
+                else
+                {
+                    //兼容netframework
+
+                    var contextType = _context.Request.GetType();
+                    
+                    //private readonly IOwinContext _context;
+                    var owinContext = contextType.GetField("_context", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(_context.Request);
+
+                    if (owinContext == null)
+                    {
+                        Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
+                        return null;
+                    }
+
+                    var request = owinContext.GetType().GetProperty("Request")?.GetValue(owinContext);
+
+                    if (request == null)
+                    {
+                        Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
+                        return null;
+                    }
+
+                    body = request.GetType().GetProperty("Body")?.GetValue(request) as Stream;
+                    if (body == null)
+                    {
+                        Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{ request.GetType().FullName}");
+                        return null;
+                    }
+                }
+
+                if (body == null)
+                {
+                    return null;
+                }
+
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    context.Request.Body.CopyTo(ms);
+                    body.CopyTo(ms);
                     ms.Flush();
                     ms.Seek(0, SeekOrigin.Begin);
                     var sr = new StreamReader(ms);
                     var requestBody = sr.ReadToEnd();
                     return Newtonsoft.Json.JsonConvert.DeserializeObject<HttpJobItem>(requestBody);
                 }
+
             }
             catch (Exception ex)
             {
@@ -178,7 +221,7 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         /// <param name="jobItem"></param>
         /// <returns></returns>
-        [JobHistorySaveTimeFilter(TimeSpanType.Second,30)]
+        [JobHistorySaveTimeFilter(TimeSpanType.Second, 30)]
         public bool AddHttpbackgroundjob(HttpJobItem jobItem)
         {
             try
@@ -197,11 +240,11 @@ namespace Hangfire.HttpJob.Server
                 if (jobItem.DelayFromMinutes == -1) //约定
                 {
                     //代表设置的是智能自己触发的延迟job
-                   var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem , jobItem.JobName + (!string.IsNullOrEmpty(jobItem.AgentClass) ? "| JobAgent |" : ""), "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
+                    var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName + (!string.IsNullOrEmpty(jobItem.AgentClass) ? "| JobAgent |" : ""), "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
 
-                   //自己触发完成后再把自己添加一遍
-                   BackgroundJob.ContinueJobWith(jobId,()=> AddHttpbackgroundjob(jobItem), JobContinuationOptions.OnAnyFinishedState);
-                   return true;
+                    //自己触发完成后再把自己添加一遍
+                    BackgroundJob.ContinueJobWith(jobId, () => AddHttpbackgroundjob(jobItem), JobContinuationOptions.OnAnyFinishedState);
+                    return true;
                 }
 
                 if (jobItem.DelayFromMinutes == 0)
@@ -355,8 +398,7 @@ namespace Hangfire.HttpJob.Server
                 var queues = server.Queues.ToList();
                 if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
                 {
-                    Logger.Error("HttpJobDispatcher.AddHttprecurringjob Error => HttpJobItem.QueueName not exist!");
-                    return false;
+                    Logger.Warn("HttpJobDispatcher.AddHttprecurringjob Error => HttpJobItem.QueueName not exist, Use DEFAULT extend!");
                 }
             }
 
@@ -365,7 +407,7 @@ namespace Hangfire.HttpJob.Server
             {
                 queueName = "DEFAULT";
             }
-            
+
 
             try
             {
@@ -385,7 +427,7 @@ namespace Hangfire.HttpJob.Server
                 return false;
             }
         }
-        
+
         /// <summary>
         /// 获取job任务
         /// </summary>
@@ -398,7 +440,7 @@ namespace Hangfire.HttpJob.Server
                 using (var connection = JobStorage.Current.GetConnection())
                 {
                     Dictionary<string, string> dictionary = connection.GetAllEntriesFromHash("recurring-job:" + name);
-                    if (dictionary == null || dictionary.Count == 0 )
+                    if (dictionary == null || dictionary.Count == 0)
                     {
                         return "";
                     }
@@ -407,9 +449,9 @@ namespace Hangfire.HttpJob.Server
                     {
                         return "";
                     }
-                    
+
                     var RecurringJob = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
-                    
+
                     return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Args.FirstOrDefault()?.ToString()));
                 }
             }
@@ -448,7 +490,7 @@ namespace Hangfire.HttpJob.Server
                     else
                     {
                         Dictionary<string, string> dictionary = connection.GetAllEntriesFromHash("recurring-job:" + jobItem.JobName);
-                        if (dictionary == null || dictionary.Count == 0 )
+                        if (dictionary == null || dictionary.Count == 0)
                         {
                             result.Info = "GetJobDetail Error：can not found job by id:" + jobItem.JobName;
                             return result;
@@ -461,7 +503,7 @@ namespace Hangfire.HttpJob.Server
                         }
                         job = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
                     }
-                    
+
                     var jobItem2 = job.Args.FirstOrDefault();
                     var httpJobItem = jobItem2 as HttpJobItem;
                     if (httpJobItem == null)
