@@ -17,7 +17,7 @@ namespace Hangfire.HttpJob.Agent
 
         private  ManualResetEvent _mainThread ;
 
-        private JobStatus jobStatus;
+        private JobStatus jobStatus = JobStatus.Default;
 
 
         /// <summary>
@@ -25,8 +25,22 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         public string Param { get; private set; }
         internal string AgentClass { get; set; }
+        /// <summary>
+        /// 多例job结束事件
+        /// </summary>
+        internal event EventHandler<TransitentJobDisposeArgs> TransitentJobDisposeEvent;
+        /// <summary>
+        /// 唯一标示
+        /// </summary>
+        internal string Guid { get; set; }
 
-        internal volatile bool Singleton = false;
+        /// <summary>
+        /// 默认是单例
+        /// </summary>
+        internal volatile bool Singleton = true;
+        /// <summary>
+        /// 默认是非Hang
+        /// </summary>
 
         internal volatile bool Hang = false;
 
@@ -115,6 +129,7 @@ namespace Hangfire.HttpJob.Agent
                     }
                 }
                 this.JobStatus = JobStatus.Stoped;
+                this.DisposeJob();
             }
             
         }
@@ -149,6 +164,7 @@ namespace Hangfire.HttpJob.Agent
                 }
             }
             this.JobStatus = JobStatus.Stoped;
+            this.DisposeJob();
         }
 
         /// <summary>
@@ -173,6 +189,15 @@ namespace Hangfire.HttpJob.Agent
                 list.Add($"RunningTime:【{CodingUtil.ParseTimeSeconds((int)(DateTime.Now-this.StartTime.Value).TotalSeconds)}】");
             }
             return string.Join("\r\n",list);
+        }
+
+        private void DisposeJob()
+        {
+            if (!this.Singleton)
+            {
+                TransitentJobDisposeEvent?.Invoke(null,new TransitentJobDisposeArgs(this.AgentClass,this.Guid));
+            }
+            _mainThread?.Dispose();
         }
     }
 }

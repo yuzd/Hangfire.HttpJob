@@ -19,15 +19,18 @@ namespace Hangfire.HttpJob.Agent
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
         private readonly ILoggerFactory _loggerFactory;
+        
+        private readonly LazyConcurrentDictionary transitentJob = new LazyConcurrentDictionary();
         public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             _logger = logger;
             _options = options;
+            transitentJob = new LazyConcurrentDictionary();
         }
 
-        private readonly LazyConcurrentDictionary<string, List<JobAgent>> transitentJob = new LazyConcurrentDictionary<string, List<JobAgent>>();
-
+       
+       
 
         public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
         {
@@ -88,10 +91,8 @@ namespace Hangfire.HttpJob.Agent
                             _logger.LogWarning(message);
                             return;
                         }
-
-                        if (job.JobStatus == JobStatus.Default)
+                        else if (job.JobStatus == JobStatus.Default)
                         {
-                            job.Singleton = true;
                             job.Hang = metaData.Hang;
                             job.AgentClass = agentClass;
                         }
@@ -100,6 +101,7 @@ namespace Hangfire.HttpJob.Agent
                         job.Run(requestBody, console);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
+                        
                         return;
                     }
                     else if (agentAction.Equals("stop"))
@@ -143,15 +145,10 @@ namespace Hangfire.HttpJob.Agent
                     job.Singleton = false;
                     job.AgentClass = agentClass;
                     job.Hang = metaData.Hang;
-
-                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new List<JobAgent>());
-                    var stopedJobList = jobAgentList.Where(r => r.JobStatus == JobStatus.Stoped).ToList();
-                    foreach (var stopedJob in stopedJobList)
-                    {
-                        jobAgentList.Remove(stopedJob);
-                    }
-
-                    jobAgentList.Add(job);
+                    job.Guid = Guid.NewGuid().ToString("N");
+                    job.TransitentJobDisposeEvent +=  transitentJob.JobRemove;
+                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string,JobAgent>());
+                    jobAgentList.TryAdd(job.Guid,job);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                     job.Run(requestBody, console);
                     message = $"Transient JobClass:{agentClass} run success!";
@@ -171,24 +168,23 @@ namespace Hangfire.HttpJob.Agent
                     var stopedJobList = new List<JobAgent>();
                     foreach (var runingJob in jobAgentList)
                     {
-                        if (runingJob.JobStatus == JobStatus.Stopping)
+                        if (runingJob.Value.JobStatus == JobStatus.Stopping)
                         {
                             continue;
                         }
-
-                        if (runingJob.JobStatus == JobStatus.Stoped)
+                        if (runingJob.Value.JobStatus == JobStatus.Stoped)
                         {
-                            stopedJobList.Add(runingJob);
+                            stopedJobList.Add(runingJob.Value);
                             continue;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        runingJob.Stop(console);
+                        runingJob.Value.Stop(console);
                         instanceCount++;
                     }
 
                     foreach (var stopedJob in stopedJobList)
                     {
-                        jobAgentList.Remove(stopedJob);
+                        jobAgentList.TryRemove(stopedJob.Guid,out _);
                     }
 
                     transitentJob.TryRemove(agentClass, out _);
@@ -205,26 +201,29 @@ namespace Hangfire.HttpJob.Agent
                         return;
                     }
 
-                    var stopedJobList = jobAgentList.Where(r => r.JobStatus == JobStatus.Stoped).ToList();
-                    foreach (var stopedJob in stopedJobList)
-                    {
-                        jobAgentList.Remove(stopedJob);
-                    }
-
                     var jobInfo = new List<string>();
+                    var stopedJobList = new List<JobAgent>();
                     foreach (var jobAgent in jobAgentList)
                     {
-                        jobInfo.Add(jobAgent.GetJobInfo());
+                        if (jobAgent.Value.JobStatus == JobStatus.Stoped)
+                        {
+                            stopedJobList.Add(jobAgent.Value);
+                            continue;
+                        }
+                        jobInfo.Add(jobAgent.Value.GetJobInfo());
                     }
-
-                    if (jobAgentList.Count < 1)
+                    foreach (var stopedJob in stopedJobList)
+                    {
+                        jobAgentList.TryRemove(stopedJob.Guid,out _);
+                    }
+                    if (jobInfo.Count < 1)
                     {
                         message = $"Transient JobClass:{agentClass} have no running job!";
                         _logger.LogWarning(message);
                         return;
                     }
                     //获取job详情
-                    message = $"Runing Instance Count:{jobAgentList.Count},JobList:{string.Join("\r\n", jobInfo)}";
+                    message = $"Runing Instance Count:{jobInfo.Count},JobList:{string.Join("\r\n", jobInfo)}";
                     return;
                 }
 
