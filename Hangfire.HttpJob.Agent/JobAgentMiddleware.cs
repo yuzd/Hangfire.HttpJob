@@ -19,8 +19,7 @@ namespace Hangfire.HttpJob.Agent
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
         private readonly ILoggerFactory _loggerFactory;
-        
-        private readonly LazyConcurrentDictionary transitentJob = new LazyConcurrentDictionary();
+        private readonly LazyConcurrentDictionary transitentJob;
         public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
