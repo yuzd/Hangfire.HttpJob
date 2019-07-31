@@ -36,7 +36,9 @@ namespace Hangfire.HttpJob.Server
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return Task.FromResult(false);
                 }
-                if (op.ToLower() == "getjoblist")
+
+                op = op.ToLower();
+                if (op == "getjoblist")
                 {
                     var joblist = GetRecurringJobs();
                     context.Response.ContentType = "application/json";
@@ -51,7 +53,7 @@ namespace Hangfire.HttpJob.Server
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return Task.FromResult(false);
                 }
-                if (op.ToLower() == "getrecurringjob")
+                if (op == "getrecurringjob")
                 {
                     var strdata = GetJobdata(jobItem.JobName);
                     if (!string.IsNullOrEmpty(strdata))
@@ -68,7 +70,7 @@ namespace Hangfire.HttpJob.Server
                         return Task.FromResult(false);
                     }
                 }
-                else if (op.ToLower() == "getbackgroundjobdetail")
+                else if (op == "getbackgroundjobdetail")
                 {
                     var jobDetail = GetBackGroundJobDetail(jobItem);
                     context.Response.ContentType = "application/json";
@@ -95,7 +97,7 @@ namespace Hangfire.HttpJob.Server
                 }
 
                 var result = false;
-                switch (op.ToLower())
+                switch (op)
                 {
                     case "backgroundjob":
                         if (jobItem.DelayFromMinutes < -1)
@@ -103,13 +105,23 @@ namespace Hangfire.HttpJob.Server
                             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                             return Task.FromResult(false);
                         }
-                        result = AddHttpbackgroundjob(jobItem);
+                        var jobId = AddHttpbackgroundjob(jobItem);
+                        if (!string.IsNullOrEmpty(jobId))
+                        {
+                            context.Response.ContentType = "application/json";
+                            context.Response.StatusCode = (int)HttpStatusCode.OK;
+                            context.Response.WriteAsync(jobId);
+                            return Task.FromResult(false);
+                        }
                         break;
                     case "recurringjob":
                         result = AddHttprecurringjob(jobItem);
                         break;
                     case "editrecurringjob":
                         result = AddHttprecurringjob(jobItem);
+                        break;
+                    case "deljob":
+                        result = DelJob(jobItem);
                         break;
                     case "pausejob":
                         result = PauseOrRestartJob(jobItem.JobName);
@@ -148,6 +160,7 @@ namespace Hangfire.HttpJob.Server
             }
 
         }
+
 
 
         public HttpJobItem GetJobItem(DashboardContext _context)
@@ -222,7 +235,7 @@ namespace Hangfire.HttpJob.Server
         /// <param name="jobItem"></param>
         /// <returns></returns>
         [JobHistorySaveTimeFilter(TimeSpanType.Second, 30)]
-        public bool AddHttpbackgroundjob(HttpJobItem jobItem)
+        public string AddHttpbackgroundjob(HttpJobItem jobItem)
         {
             try
             {
@@ -244,22 +257,20 @@ namespace Hangfire.HttpJob.Server
 
                     //自己触发完成后再把自己添加一遍
                     BackgroundJob.ContinueJobWith(jobId, () => AddHttpbackgroundjob(jobItem), JobContinuationOptions.OnAnyFinishedState);
-                    return true;
+                    return jobId;
                 }
 
                 if (jobItem.DelayFromMinutes == 0)
                 {
-                    BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
-                    return true;
+                    return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
                 }
-
-                BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
-                return true;
+                
+                return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.AddHttpbackgroundjob", ex);
-                return false;
+                return null;
             }
         }
         /// <summary>
@@ -378,6 +389,32 @@ namespace Hangfire.HttpJob.Server
             }
             return pauselist;
         }
+
+
+        /// <summary>
+        /// 删除周期性job
+        /// </summary>
+        /// <param name="jobItem"></param>
+        /// <returns></returns>
+        private bool DelJob(HttpJobItem jobItem)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(jobItem.Data) && jobItem.Data == "backgroundjob")
+                {
+                    return BackgroundJob.Delete(jobItem.JobName);
+                }
+               
+                RecurringJob.RemoveIfExists(jobItem.JobName);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
         /// <summary>
         /// 添加周期性作业
         /// </summary>
