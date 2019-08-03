@@ -100,7 +100,8 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = backgroundJob.EnableRetry,
                 BasicUserName = backgroundJob.BasicUserName,
                 BasicPassword = backgroundJob.BasicPassword,
-                AgentClass = backgroundJob.AgentClass
+                AgentClass = backgroundJob.AgentClass,
+                Headers = backgroundJob.Headers
             };
             return jobItem;
         }
@@ -194,7 +195,8 @@ namespace Hangfire.HttpJob.Client
                 EnableRetry = recurringJob.EnableRetry,
                 BasicUserName = recurringJob.BasicUserName,
                 BasicPassword = recurringJob.BasicPassword,
-                AgentClass = recurringJob.AgentClass
+                AgentClass = recurringJob.AgentClass,
+                Headers = recurringJob.Headers
             };
             return jobItem;
         }
