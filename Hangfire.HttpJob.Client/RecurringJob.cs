@@ -91,5 +91,10 @@ namespace Hangfire.HttpJob.Client
         /// 代理设置
         /// </summary>
         public string AgentClass { get; set; }
+        
+        /// <summary>
+        /// Header
+        /// </summary>
+        public Dictionary<string,string> Headers { get; set; } = new Dictionary<string, string>();
     }
 }

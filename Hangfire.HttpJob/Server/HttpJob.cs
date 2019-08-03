@@ -231,6 +231,15 @@ namespace Hangfire.HttpJob.Server
                 }
             }
 
+            if (item.Headers!=null && item.Headers.Count>0)
+            {
+                foreach (var header in item.Headers)
+                {
+                    if (string.IsNullOrEmpty(header.Key)) continue;
+                    request.Headers.Add(header.Key,header.Value);
+                }
+            }
+
             if (!string.IsNullOrEmpty(item.AgentClass))
             {
                 request.Headers.Add("x-job-agent-class",item.AgentClass);

@@ -81,6 +81,11 @@ namespace Hangfire.HttpJob.Client
         /// 传了class就代表是agentjob
         /// </summary>
         public string AgentClass { get; set; }
+        
+        /// <summary>
+        /// Header
+        /// </summary>
+        public Dictionary<string,string> Headers { get; set; } = new Dictionary<string, string>();
 
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
