@@ -95,21 +95,34 @@ namespace Hangfire.HttpJob.Client
         /// 发送请求
         /// </summary>
         /// <returns></returns>
-        public async Task<HangfireAddJobResult> PostAsync()
+        public async Task<T> PostAsync<T>() where T: HangfirJobResult,new()
         {
-            var result = new HangfireAddJobResult();
+            var result = new T();
             try
             {
                 var client = _httpPostOption.HttpClient ?? HangfireJobClient.HangfireJobHttpClientFactory.GetHttpClient(_hangfireUrl);
                 var httpMesage = PrepareHttpRequestMessage();
+                if (_httpPostOption.TimeOut < 1) _httpPostOption.TimeOut = 5000;
                 var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_httpPostOption.TimeOut));
                 var httpResponse = await client.SendAsync(httpMesage, cts.Token);
+
+                if (httpResponse.StatusCode == HttpStatusCode.OK)
+                {
+                    if (result is AddBackgroundHangfirJobResult br)
+                    {
+                        br.JobId = await httpResponse.Content.ReadAsStringAsync();
+                    }
+                    result.IsSuccess = true;
+                    return result;
+                }
+
                 if (httpResponse.StatusCode != HttpStatusCode.NoContent)
                 {
                     result.IsSuccess = false;
                     result.ErrMessage = httpResponse.StatusCode.ToString();
                     return result;
                 }
+               
             }
             catch (Exception ex)
             {
@@ -119,14 +132,12 @@ namespace Hangfire.HttpJob.Client
                 return result;
             }
 
-            return new HangfireAddJobResult
-            {
-                IsSuccess = true
-            };
+            result.IsSuccess = true;
+            return result;
         }
-        public HangfireAddJobResult Post()
+        public T Post<T>() where T : HangfirJobResult, new()
         {
-            return PostAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            return PostAsync<T>().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
 

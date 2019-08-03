@@ -15,6 +15,7 @@ namespace Hangfire.HttpJob.Client
         {
             var client = new HttpClient(handler);
             client.DefaultRequestHeaders.ConnectionClose = false;
+            client.Timeout = TimeSpan.FromHours(1);
             client.DefaultRequestHeaders.Add("UserAgent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
             return client;
         }

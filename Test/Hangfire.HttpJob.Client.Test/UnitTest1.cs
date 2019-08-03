@@ -7,7 +7,7 @@ namespace Hangfire.HttpJob.Client.Test
     public class UnitTest1
     {
         [TestMethod]
-        public void TestMethod1()
+        public void TestAddBackgroundJob()
         {
             var serverUrl = "http://localhost:5000/job";
             var result = HangfireJobClient.AddBackgroundJob(serverUrl, new BackgroundJob
@@ -24,10 +24,13 @@ namespace Hangfire.HttpJob.Client.Test
                 BasicPassword = "test"
             });
             Assert.IsTrue(result.IsSuccess);
+            Assert.IsTrue(result.JobId!=null);
+            TestRemoveBackgroundJob(result.JobId);
+
         }
 
         [TestMethod]
-        public void TestMethod2()
+        public void TestAddRecurringJob()
         {
             var serverUrl = "http://localhost:5000/job";
             var result = HangfireJobClient.AddRecurringJob(serverUrl, new RecurringJob()
@@ -40,6 +43,29 @@ namespace Hangfire.HttpJob.Client.Test
                 SendSucMail = true,
                 Cron = "40 17 * * *"
             }, new HangfireServerPostOption
+            {
+                BasicUserName = "admin",
+                BasicPassword = "test"
+            });
+            Assert.IsTrue(result.IsSuccess);
+        }
+
+        public void TestRemoveBackgroundJob(string jobId)
+        {
+            var serverUrl = "http://localhost:5000/job";
+            var result = HangfireJobClient.RemoveBackgroundJob(serverUrl, jobId, new HangfireServerPostOption
+            {
+                BasicUserName = "admin",
+                BasicPassword = "test"
+            });
+            Assert.IsTrue(result.IsSuccess);
+        }
+
+        [TestMethod]
+        public void TestRemoveRecurringJob()
+        {
+            var serverUrl = "http://localhost:5000/job";
+            var result = HangfireJobClient.RemoveRecurringJob(serverUrl, "≤‚ ‘5µ„40÷¥––", new HangfireServerPostOption
             {
                 BasicUserName = "admin",
                 BasicPassword = "test"
