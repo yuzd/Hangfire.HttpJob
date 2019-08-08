@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -72,7 +73,7 @@ namespace Hangfire.HttpJob.Agent
         protected abstract void OnException(Exception ex);
 
 
-        internal void Run(string param,IHangfireConsole console)
+        internal void Run(string param,IHangfireConsole console,ConcurrentDictionary<string,string> headers)
         {
             if (this.JobStatus == JobStatus.Running) return;
             lock (this)
@@ -83,14 +84,15 @@ namespace Hangfire.HttpJob.Agent
                 JobContext jobContext = new JobContext
                 {
                     Param = param,
-                    Console = console
+                    Console = console,
+                    Headers = headers
                 };
                 this.thd = new Thread(async () => { await this.start(jobContext); });
                 this.thd.Start();
             }
         }
 
-        internal void Stop(IHangfireConsole console)
+        internal void Stop(IHangfireConsole console, ConcurrentDictionary<string, string> headers)
         {
             if (this.JobStatus == JobStatus.Stoped || this.JobStatus == JobStatus.Stopping)
                 return;
@@ -111,7 +113,8 @@ namespace Hangfire.HttpJob.Agent
                     JobContext jobContext = new JobContext
                     {
                         Param = this.Param,
-                        Console = console
+                        Console = console,
+                        Headers = headers
                     };
                     this.OnStop(jobContext);
                 }

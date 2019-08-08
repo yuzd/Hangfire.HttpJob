@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -231,6 +232,7 @@ namespace Hangfire.HttpJob.Server
                 }
             }
 
+            var headerKeys = string.Empty;
             if (item.Headers!=null && item.Headers.Count>0)
             {
                 foreach (var header in item.Headers)
@@ -238,12 +240,17 @@ namespace Hangfire.HttpJob.Server
                     if (string.IsNullOrEmpty(header.Key)) continue;
                     request.Headers.Add(header.Key,header.Value);
                 }
+
+                headerKeys = string.Join("；", item.Headers.Keys);
             }
 
             if (!string.IsNullOrEmpty(item.AgentClass))
             {
                 request.Headers.Add("x-job-agent-class",item.AgentClass);
-
+                if (!string.IsNullOrEmpty(headerKeys))
+                {
+                    request.Headers.Add("x-job-agent-header", headerKeys);
+                }
                 var consoleInfo = GetConsoleInfo(context);
                 if (consoleInfo != null)
                 {

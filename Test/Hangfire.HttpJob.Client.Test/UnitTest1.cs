@@ -72,5 +72,30 @@ namespace Hangfire.HttpJob.Client.Test
             });
             Assert.IsTrue(result.IsSuccess);
         }
+
+        [TestMethod]
+        public void TestAddBackgroundJobWithHeaders()
+        {
+            var serverUrl = "http://localhost:5000/job";
+            var result = HangfireJobClient.AddBackgroundJob(serverUrl, new BackgroundJob
+            {
+                JobName = "≤‚ ‘api",
+                Method = "Get",
+                Url = "http://localhost:5000/testaaa",
+                Mail = new List<string> { "1877682825@qq.com" },
+                SendSucMail = true,
+                DelayFromMinutes = 1,
+                Headers = new Dictionary<string, string>
+                {
+                    {"token" , "aaaa" }
+                }
+            }, new HangfireServerPostOption
+            {
+                BasicUserName = "admin",
+                BasicPassword = "test"
+            });
+            Assert.IsTrue(result.IsSuccess);
+            Assert.IsTrue(result.JobId != null);
+        }
     }
 }
