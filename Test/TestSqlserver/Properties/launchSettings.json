@@ -3,8 +3,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:12688",
-      "sslPort": 0
+      "applicationUrl": "http://localhost:57485",
+      "sslPort": 44308
     }
   },
   "profiles": {
@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "TestHangfire": {
+    "TestSqlserver": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

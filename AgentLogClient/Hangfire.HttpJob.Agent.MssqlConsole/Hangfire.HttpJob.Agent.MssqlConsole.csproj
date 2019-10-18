@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>yuz</Authors>
+    <Company>yuzd</Company>
+    <Product></Product>
+    <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
+    <Description>agent job console to hangfire dashbord</Description>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.60.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
+  </ItemGroup>
+</Project>
