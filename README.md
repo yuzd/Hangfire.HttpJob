@@ -20,6 +20,10 @@ Hangfire.HttpJob for Hangfire
 
 03.how to use HttpJob.Agent
 
+04.how to use in sqlserver
+
+05.how to config mail service to report job result
+
 https://github.com/yuzd/Hangfire.HttpJob/wiki
 
 Installation
