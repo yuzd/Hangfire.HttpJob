@@ -30,7 +30,7 @@ namespace Hangfire.HttpJob.Support
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(this.Server) || string.IsNullOrWhiteSpace(this.User) || string.IsNullOrWhiteSpace(this.Password)) return null;
+                if (string.IsNullOrWhiteSpace(this.Server)) return null;
 
                 var client = new SmtpClient();
                 client.Timeout = 5000;
