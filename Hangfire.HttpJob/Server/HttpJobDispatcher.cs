@@ -18,7 +18,7 @@ namespace Hangfire.HttpJob.Server
     public class HttpJobDispatcher : IDashboardDispatcher
     {
         private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
-        public Task Dispatch(DashboardContext context)
+        public async Task Dispatch(DashboardContext context)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
@@ -27,14 +27,14 @@ namespace Hangfire.HttpJob.Server
                 if (!"POST".Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 var op = context.Request.GetQuery("op");
                 if (string.IsNullOrEmpty(op))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 op = op.ToLower();
@@ -43,15 +43,15 @@ namespace Hangfire.HttpJob.Server
                     var joblist = GetRecurringJobs();
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    context.Response.WriteAsync(JsonConvert.SerializeObject(joblist));
-                    return Task.FromResult(true);
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(joblist));
+                    return;
                 }
 
-                var jobItem = GetJobItem(context);
+                var jobItem = await GetJobItem(context);
                 if (jobItem == null)
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return Task.FromResult(false);
+                    return;
                 }
                 if (op == "getrecurringjob")
                 {
@@ -60,14 +60,14 @@ namespace Hangfire.HttpJob.Server
                     {
                         context.Response.ContentType = "application/json";
                         context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.WriteAsync(strdata);
-                        return Task.FromResult(true);
+                        await context.Response.WriteAsync(strdata);
+                        return;
                     }
                     else
                     {
                         context.Response.ContentType = "application/json";
                         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.FromResult(false);
+                        return;
                     }
                 }
                 else if (op == "getbackgroundjobdetail")
@@ -75,13 +75,13 @@ namespace Hangfire.HttpJob.Server
                     var jobDetail = GetBackGroundJobDetail(jobItem);
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    context.Response.WriteAsync(JsonConvert.SerializeObject(jobDetail));
-                    return Task.FromResult(true);
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(jobDetail));
+                    return;
                 }
                 if (string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 if (string.IsNullOrEmpty(jobItem.JobName))
@@ -93,7 +93,7 @@ namespace Hangfire.HttpJob.Server
                 if (string.IsNullOrEmpty(jobItem.JobName))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 var result = false;
@@ -103,15 +103,15 @@ namespace Hangfire.HttpJob.Server
                         if (jobItem.DelayFromMinutes < -1)
                         {
                             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return Task.FromResult(false);
+                            return;
                         }
                         var jobId = AddHttpbackgroundjob(jobItem);
                         if (!string.IsNullOrEmpty(jobId))
                         {
                             context.Response.ContentType = "application/json";
                             context.Response.StatusCode = (int)HttpStatusCode.OK;
-                            context.Response.WriteAsync(jobId);
-                            return Task.FromResult(false);
+                            await context.Response.WriteAsync(jobId);
+                            return;
                         }
                         break;
                     case "recurringjob":
@@ -134,20 +134,20 @@ namespace Hangfire.HttpJob.Server
                         break;
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                        return Task.FromResult(false);
+                        return ;
                 }
 
                 if (result)
                 {
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                    return Task.FromResult(true);
+                    return ;
                 }
                 else
                 {
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    return Task.FromResult(false);
+                    return;
                 }
 
             }
@@ -156,14 +156,14 @@ namespace Hangfire.HttpJob.Server
                 Logger.ErrorException("HttpJobDispatcher.Dispatch", ex);
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                return Task.FromResult(false);
+                return;
             }
 
         }
 
 
 
-        public HttpJobItem GetJobItem(DashboardContext _context)
+        public async Task<HttpJobItem> GetJobItem(DashboardContext _context)
         {
             try
             {
@@ -211,11 +211,11 @@ namespace Hangfire.HttpJob.Server
 
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    body.CopyTo(ms);
-                    ms.Flush();
+                    await body.CopyToAsync(ms);
+                    await ms.FlushAsync();
                     ms.Seek(0, SeekOrigin.Begin);
                     var sr = new StreamReader(ms);
-                    var requestBody = sr.ReadToEnd();
+                    var requestBody = await sr.ReadToEndAsync();
                     return Newtonsoft.Json.JsonConvert.DeserializeObject<HttpJobItem>(requestBody);
                 }
 
