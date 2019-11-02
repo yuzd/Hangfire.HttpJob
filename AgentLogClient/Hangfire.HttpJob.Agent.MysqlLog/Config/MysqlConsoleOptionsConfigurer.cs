@@ -23,5 +23,11 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole.Config
             options.HangfireDb = db;
             return this;
         }
+
+        public MysqlConsoleServiceConfigurer ExpireAtDays(int days)
+        {
+            options.ExpireAtDays = days;
+            return this;
+        }
     }
 }

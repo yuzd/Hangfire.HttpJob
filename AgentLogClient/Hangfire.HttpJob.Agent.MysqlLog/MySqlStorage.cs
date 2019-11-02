@@ -19,6 +19,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
             if (options == null || options.Value == null) throw new ArgumentNullException(nameof(MySqlStorageOptions));
             _connectionString = options.Value.HangfireDb;
             _options = options.Value;
+            if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (_connectionString == null) throw new ArgumentNullException("connectionString");
 
             if (IsConnectionString(_connectionString))
@@ -119,10 +120,10 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                 foreach (var keyValuePair in keyValuePairs)
                 {
                     connection.Execute(
-                        $"insert into {_options.TablePrefix}_Hash (`Key`, Field, Value) " +
-                        "value (@key, @field, @value) " +
+                        $"insert into {_options.TablePrefix}_Hash (`Key`, Field, Value,ExpireAt) " +
+                        "value (@key, @field, @value,@ExpireAt) " +
                         "on duplicate key update Value = @value",
-                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
+                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = DateTime.Now.AddDays(_options.ExpireAtDays) });
                 }
             });
         }
@@ -138,10 +139,10 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
             UseTransaction(connection =>
             {
                 connection.Execute(
-                    $"INSERT INTO `{_options.TablePrefix}_Set` (`Key`, `Value`, `Score`) " +
-                    "VALUES (@Key, @Value, @Score) " +
+                    $"INSERT INTO `{_options.TablePrefix}_Set` (`Key`, `Value`, `Score`,`ExpireAt`) " +
+                    "VALUES (@Key, @Value, @Score,@ExpireAt) " +
                     "ON DUPLICATE KEY UPDATE `Score` = @Score",
-                    new { key, value, score });
+                    new { Key = key, Value =value, Score=score, ExpireAt=DateTime.Now.AddDays(_options.ExpireAtDays) });
             });
         }
         public void Dispose()

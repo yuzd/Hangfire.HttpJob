@@ -3,6 +3,7 @@ using Hangfire.HttpJob.Dashboard;
 using Hangfire.HttpJob.Server;
 using Hangfire.HttpJob.Support;
 using System.Reflection;
+using Hangfire.Common;
 using Hangfire.HttpJob.Dashboard.Pages;
 
 namespace Hangfire.HttpJob
@@ -14,6 +15,7 @@ namespace Hangfire.HttpJob
             if (options == null) options = new HangfireHttpJobOptions();
             var assembly = typeof(HangfireHttpJobOptions).GetTypeInfo().Assembly;
 
+            JobFilterProviders.Providers.Add(new QueueProviderFilter());
 
             //处理http请求
             DashboardRoutes.Routes.Add("/httpjob", new HttpJobDispatcher());

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using Hangfire.HttpJob.Content.resx;
+using Hangfire.States;
 
 namespace Hangfire.HttpJob
 {
@@ -29,6 +30,7 @@ namespace Hangfire.HttpJob
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";
         public string DefaultRecurringQueueName { get; set; }
+        public string DefaultBackGroundJobQueueName { get; set; } = EnqueuedState.DefaultQueue;
 
 
         /// <summary>

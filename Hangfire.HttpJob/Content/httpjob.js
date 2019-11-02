@@ -7,6 +7,19 @@
 
         HttpJob.prototype._initialize = function () {
 
+            $(".table tbody").find('tr').each(function () {
+                var tdArr = $(this).children();
+                var ss = tdArr.eq(2).text();
+                if (ss.indexOf('| JobAgent |') >= 0) {
+                    tdArr.eq(2).append('<span class="label label-warning text-uppercase" title="" data-original-title="JobAgent">JobAgent</span>');
+                }
+
+                var ss2 = tdArr.eq(4).text();
+                if (ss2.indexOf('| JobAgent |') >= 0) {
+                    tdArr.eq(4).append('<span class="label label-success text-uppercase" title="" data-original-title="JobAgent">JobAgent</span>');
+                }
+            });
+
             var config = window.Hangfire.httpjobConfig;
             if (!config) return;
 
@@ -57,7 +70,7 @@
                 mode: 'code'
             };
 
-            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
+            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
             var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton)   {
@@ -416,20 +429,10 @@
                     data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
                     async: true,
                     success: function (returndata) {
-                        if (config.NeedAddNomalHttpJobButton) {
-                            $(".table tbody").find('tr').each(function () {
-                                var tdArr = $(this).children();
-                                var ss = tdArr.eq(3).text();
-                                if (ss.indexOf('| multiple |') >= 0) {
-                                    tdArr.eq(2).html('<span class="label label-warning text-uppercase" title="" data-original-title="over the next 100 years">Multiple</span>');
-                                    $(this).css("color", "blue");
-                                }
-                            });
-                        }
-
                         if (config.NeedEditRecurringJobButton) {
                             if (!returndata) return;
                             if (returndata.length < 1) return;
+
 
                             $(".table tbody").find('tr').each(function () {
                                 var tdArr = $(this).children();
@@ -446,6 +449,9 @@
                     }
                 });
             }
+
+  
+
             //编辑任务
             $("#EditJob").click(function () {
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {

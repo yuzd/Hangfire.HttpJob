@@ -61,7 +61,8 @@ namespace TestSqlserver
                         User = JsonConfig.GetSection("HangfireMail:User").Get<string>(),
                         Password = JsonConfig.GetSection("HangfireMail:Password").Get<string>(),
                     },
-                    DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>()
+                    DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
+                    DefaultBackGroundJobQueueName = "DEFAULT"
                 });
         }
 

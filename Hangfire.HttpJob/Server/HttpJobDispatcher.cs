@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.HttpJob.Support;
+using Hangfire.States;
 
 
 namespace Hangfire.HttpJob.Server
@@ -234,33 +235,17 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         /// <param name="jobItem"></param>
         /// <returns></returns>
-        [JobHistorySaveTimeFilter(TimeSpanType.Second, 30)]
         public string AddHttpbackgroundjob(HttpJobItem jobItem)
         {
             try
             {
-                // 普通作业
-                // 单纯的httpjob 有设置延迟
-                // 单纯的httpjob 没有设置延迟  但是不可以不设置延迟 所以就设置一个非常大的延迟 比如100年后
-                // 以agent模式开发的job 有设置延迟
-                // 以agent模式开发的job 没有设置延迟
-                // 没有设置延迟 代表的只可以自己触发
                 var queueName = !string.IsNullOrEmpty(jobItem.AgentClass) ? "JobAgent" : jobItem.QueueName;
                 if (string.IsNullOrEmpty(queueName))
                 {
-                    queueName = "DEFAULT";
+                    queueName = EnqueuedState.DefaultQueue;
                 }
-                if (jobItem.DelayFromMinutes == -1) //约定
-                {
-                    //代表设置的是智能自己触发的延迟job
-                    var jobId = BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName + (!string.IsNullOrEmpty(jobItem.AgentClass) ? "| JobAgent |" : ""), "multiple", jobItem.EnableRetry, null), DateTimeOffset.Now.AddYears(100));
-
-                    //自己触发完成后再把自己添加一遍
-                    BackgroundJob.ContinueJobWith(jobId, () => AddHttpbackgroundjob(jobItem), JobContinuationOptions.OnAnyFinishedState);
-                    return jobId;
-                }
-
-                if (jobItem.DelayFromMinutes == 0)
+                
+                if (jobItem.DelayFromMinutes <= 0)
                 {
                     return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
                 }
@@ -424,7 +409,7 @@ namespace Hangfire.HttpJob.Server
         {
             if (string.IsNullOrEmpty(jobItem.QueueName))
             {
-                jobItem.QueueName = "DEFAULT";
+                jobItem.QueueName = EnqueuedState.DefaultQueue;
             }
             else
             {
@@ -435,14 +420,14 @@ namespace Hangfire.HttpJob.Server
                 var queues = server.Queues.ToList();
                 if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
                 {
-                    Logger.Warn("HttpJobDispatcher.AddHttprecurringjob Error => HttpJobItem.QueueName not exist, Use DEFAULT extend!");
+                    Logger.Warn($"HttpJobDispatcher.AddHttprecurringjob Error => HttpJobItem.QueueName：`{jobItem.QueueName}` not exist, Use DEFAULT extend!");
                 }
             }
 
             var queueName = !string.IsNullOrEmpty(jobItem.AgentClass) ? "JobAgent" : jobItem.QueueName;
             if (string.IsNullOrEmpty(queueName))
             {
-                queueName = "DEFAULT";
+                queueName = EnqueuedState.DefaultQueue;
             }
 
 

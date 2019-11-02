@@ -26,11 +26,19 @@ namespace Hangfire.HttpJob.Server
 
         #region Public
 
-
+        /// <summary>
+        /// 发起HTTP调度
+        /// </summary>
+        /// <param name="item">job详情</param>
+        /// <param name="jobName">job名称</param>
+        /// <param name="queuename">指定queue名称(Note: Hangfire queue names need to be lower case)</param>
+        /// <param name="isretry">是否http调用出错重试</param>
+        /// <param name="context">上下文</param>
         [AutomaticRetrySet(Attempts = 3, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [DisplayName("[{1} | {2} | Retry:{3}]")]
         [JobFilter(timeoutInSeconds: 3600)]
+        
         public static void Excute(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
         {
             var logList = new List<string>();
@@ -47,8 +55,8 @@ namespace Hangfire.HttpJob.Server
                 RunWithTry(()=>context.SetTextColor(ConsoleTextColor.Yellow));
                 RunWithTry(()=>context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                RunWithTry(()=>context.WriteLine($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}"));
-                logList.Add($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{queuename ?? "DEFAULT"}");
+                RunWithTry(()=>context.WriteLine($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT":item.QueueName)}"));
+                logList.Add($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}");
                 RunWithTry(()=>context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】"));
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;

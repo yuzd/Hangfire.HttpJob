@@ -8,6 +8,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
     {
         public string TablePrefix { get; set; } = "Hangfire";
         public string HangfireDb { get; set; } 
+        public int ExpireAtDays { get; set; } = 7;
 
     }
 }

@@ -16,7 +16,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
         public MssqlStorage(IOptions<MssqlStorageOptions> options)
         {
             _options = options?.Value ?? throw new ArgumentNullException(nameof(MssqlStorageOptions));
-
+            if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (string.IsNullOrEmpty(_options.HangfireDb))
             {
                 throw new ArgumentNullException(nameof(MssqlStorageOptions.HangfireDb));
@@ -38,15 +38,11 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
                 foreach (var keyValuePair in keyValuePairs)
                 {
                     string sql =
-                        $@";merge [{_options.TablePrefix}].Hash with (holdlock) as Target
-using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
-on Target.[Key] = Source.[Key] and Target.Field = Source.Field
-when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+                        $" insert into [{_options.TablePrefix}].Hash ([Key], Field, Value,ExpireAt) values (@key, @field, @value,@ExpireAt);";
 
                     connection.Execute(
                        sql,
-                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
+                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value, ExpireAt = DateTime.Now.AddDays(_options.ExpireAtDays) });
                 }
             });
 
@@ -56,16 +52,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         public void AddToSet(string key, string value, double score)
         {
             string addSql =
-                $@";merge [{_options.TablePrefix}].[Set] with (holdlock) as Target
-using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
-on Target.[Key] = Source.[Key] and Target.Value = Source.Value
-when matched then update set Score = Source.Score
-when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
+                $"insert into [{_options.TablePrefix}].[Set] ([Key], Value, Score,ExpireAt) values (@key, @value, @score,@ExpireAt);";
 
             UseConnection(connection =>
             {
                 connection.Execute(addSql,
-                    new { key, value, score });
+                    new { key = key, value= value, score =score, ExpireAt  = DateTime.Now.AddDays(_options.ExpireAtDays)});
             });
 
         }
