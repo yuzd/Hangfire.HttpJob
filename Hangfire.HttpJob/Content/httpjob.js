@@ -176,11 +176,11 @@
 
             //暂停和启用任务
 
-            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="PauseJob">' +
+            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
                 '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
             
-            var getAgentJobDeatilButton =  '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="JobDetail">' +
+            var getAgentJobDeatilButton =  '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="JobDetail">' +
                 '<span class="glyphicon glyphicon-stop"> ' + (config.AgentJobDeatilButton) + '</span>' +
                 '</button>';
             
@@ -189,16 +189,33 @@
             $('.page-header').append(button);
             $('.page-header').append(EditRecurringJobutton);
             $('.page-header').append(AddCronButton);
-            $('.btn-toolbar-top').append(PauseButton);
-            $('.btn-toolbar-top').append(getAgentJobDeatilButton);
+           
+           
             $(document.body).append(divModel);
             $(document.body).append(jobDetailModel);
-            if (config.NeedAddNomalHttpJobButton) {
-                var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="StopJob">' +
+            if (config.NeedEditRecurringJobButton) {
+
+                //启动或暂停
+                $('.btn-toolbar-top').append(PauseButton);
+
+                //带参数执行
+                var PauseAgentButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="StartAgentJob">' +
+                    '<span class="glyphicon glyphicon-stop"> ' + (config.StartBackgroudJobButtonName) + '</span>' +
+                    '</button>';
+
+                $('.btn-toolbar-top').append(PauseAgentButton);
+
+
+                //停止
+                var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="stop agent job..." disabled id="StopJob">' +
                     '<span class="glyphicon glyphicon-stop"> ' + config.StopBackgroudJobButtonName + '</span>' +
                     '</button>';
                 $('.btn-toolbar-top').append(StopButton);
+
+                $('.btn-toolbar-top').append(getAgentJobDeatilButton);
+
             }
+
             var container = $('.editor_holder')[0];
 
             try {
@@ -232,55 +249,55 @@
                     e.stopPropagation();
                     e.preventDefault();
                     return;
-                } else {
-                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) {
-                        swal({
-                            title: "",
-                            text: "Select One Job Only!",
-                            type: "error"
-                        });
-                        e.stopPropagation();
-                        e.preventDefault();
-                        return;
-                    }
+                } 
 
-                    var jobId = $(".js-jobs-list-checkbox:checked").val();
-                    var text = $($(".js-jobs-list-checkbox:checked")[0]).parent().parent().find('.job-method').text();
-                    if (!text || text.indexOf('| JobAgent |') < 0) {
-                        swal({
-                            title: "",
-                            text: "Selected Job is not a jobAgent!",
-                            type: "error"
-                        });
-                        e.stopPropagation();
-                        e.preventDefault();
-                        return;
-                    }
+                if ($("input[type=checkbox]:checked").length > 1) {
                     swal({
-                        title: "Are you sure want to stop?",
-                        type: "success",
-                        showCancelButton: false,
-                        closeOnConfirm: false,
-                        animation: "slide-from-top",
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Submit",
-                    }, function () {
-                        $.ajax({
-                            type: "post",
-                            url: stopBackgroudJobUrl,
-                            contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
-                            async: true,
-                            success: function (returndata) {
-                                $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
-                                    window.location.reload();
-                                });
-                            }
-                        });
+                        title: "",
+                        text: "Select One Job Only!",
+                        type: "error"
                     });
                     e.stopPropagation();
                     e.preventDefault();
+                    return;
                 }
+
+                var jobId = $(".js-jobs-list-checkbox:checked").val();
+                var text = $($($(".js-jobs-list-checkbox:checked")[0]).parent().parent()).children().eq(4).text();
+                if (!text || text.indexOf('| JobAgent |') < 0) {
+                    swal({
+                        title: "",
+                        text: "Selected Job is not a jobAgent!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+                swal({
+                    title: "Are you sure want to stop?",
+                    type: "success",
+                    showCancelButton: false,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Submit",
+                }, function () {
+                    $.ajax({
+                        type: "post",
+                        url: stopBackgroudJobUrl,
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
+                        async: true,
+                        success: function (returndata) {
+                            $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
+                                window.location.reload();
+                            });
+                        }
+                    });
+                });
+                e.stopPropagation();
+                e.preventDefault();
             });
             
             //获取agentJob的执行情况
@@ -294,58 +311,130 @@
                     e.stopPropagation();
                     e.preventDefault();
                     return;
-                } else {
-                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) {
-                        swal({
-                            title: "",
-                            text: "Select One Job Only!",
-                            type: "error"
-                        });
-                        e.stopPropagation();
-                        e.preventDefault();
-                        return;
-                    }
+                }
 
-                    var jobId = $(".js-jobs-list-checkbox:checked").val();
-
+                if ($("input[type=checkbox]:checked").length > 1) {
                     swal({
-                        title: "JobAgent",
-                        text: "Are you sure to get JobDetail?",
-                        type: "warning",
-                        showCancelButton: true,
-                        closeOnConfirm: false,
-                        animation: "slide-from-top",
-                        inputPlaceholder: "start param",
-                        showLoaderOnConfirm: true,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Submit",
-                        cancelButtonText: "Cancel"
-                    }, function () {
-                        $.ajax({
-                            type: "post",
-                            url: agentJobDeatilButtonUrl,
-                            contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json","Cron":(config.NeedEditRecurringJobButton?"1":"") }),
-                            async: true,
-                            success: function (returndata) {
-                                swal.close()
-                                if(returndata && returndata.JobName){
-                                    $('#jobNameSpan').html(returndata.JobName);
-                                }
-                                
-                                $('.jobInfoDiv').html(returndata.Info||'');
-                                $('#jobDetailModel').modal({ backdrop: 'static', keyboard: false });
-                                $('#jobDetailModel').modal('show');
-                            }
-                        });
+                        title: "",
+                        text: "Select One Job Only!",
+                        type: "error"
                     });
-                    
                     e.stopPropagation();
                     e.preventDefault();
+                    return;
                 }
+
+                var jobId = $(".js-jobs-list-checkbox:checked").val();
+
+                var text = $($($(".js-jobs-list-checkbox:checked")[0]).parent().parent()).children().eq(4).text();
+                if (!text || text.indexOf('| JobAgent |') < 0) {
+                    swal({
+                        title: "",
+                        text: "Selected Job is not a jobAgent!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
+                swal({
+                    title: "JobAgent",
+                    text: "Are you sure to get JobDetail?",
+                    type: "warning",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    inputPlaceholder: "start param",
+                    showLoaderOnConfirm: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Submit",
+                    cancelButtonText: "Cancel"
+                }, function () {
+                    $.ajax({
+                        type: "post",
+                        url: agentJobDeatilButtonUrl,
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json", "Cron": (config.NeedEditRecurringJobButton ? "1" : "") }),
+                        async: true,
+                        success: function (returndata) {
+                            swal.close()
+                            if (returndata && returndata.JobName) {
+                                $('#jobNameSpan').html(returndata.JobName);
+                            }
+
+                            $('.jobInfoDiv').html(returndata.Info || '');
+                            $('#jobDetailModel').modal({ backdrop: 'static', keyboard: false });
+                            $('#jobDetailModel').modal('show');
+                        }
+                    });
+                });
+
+                e.stopPropagation();
+                e.preventDefault();
             });
             
-            
+            $('#StartAgentJob').click(function (e) {
+                if (!$(".js-jobs-list-checkbox").is(':checked')) {
+                    swal({
+                        title: "",
+                        text: "Select Job Item First!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                } 
+
+                if ($("input[type=checkbox]:checked").length > 1) {
+                    swal({
+                        title: "",
+                        text: "Select One Job Only!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+                var jobId = $(".js-jobs-list-checkbox:checked").val();
+                swal({
+                    title: "Start Job",
+                    text: "Are you sure want to start?",
+                    type: "input",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    inputPlaceholder: "start param",
+                    showLoaderOnConfirm: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Submit",
+                    cancelButtonText: "Cancel"
+                }, function (inputValue) {
+                    if (inputValue === false) return false;
+                    $.ajax({
+                        type: "post",
+                        url: startBackgroudJobUrl,
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "Data": inputValue, "ContentType": "application/json" }),
+                        async: true,
+                        success: function (returndata) {
+
+                            $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
+                                swal({
+                                    title: "Success",
+                                    text: "start job success",
+                                    type: "success"
+                                });
+                                window.location.reload();
+                            });
+
+                        }
+                    });
+                });
+                e.stopPropagation();
+                e.preventDefault();
+            });
+
             //暂停任务
             $("#PauseJob").click(function (e) {
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {
@@ -357,70 +446,31 @@
                     e.stopPropagation();
                     e.preventDefault();
                     return;
-                } else {
-                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) {
-                        swal({
-                            title: "",
-                            text: "Select One Job Only!",
-                            type: "error"
-                        });
-                        e.stopPropagation();
-                        e.preventDefault();
-                        return;
-                    }
-                    var jobId = $(".js-jobs-list-checkbox:checked").val();
-                    if (config.NeedAddNomalHttpJobButton) {
-                        swal({
-                            title: "Start Job",
-                            text: "Are you sure want to start?",
-                            type: "input",
-                            showCancelButton: true,
-                            closeOnConfirm: false,
-                            animation: "slide-from-top",
-                            inputPlaceholder: "start param",
-                            showLoaderOnConfirm: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Submit",
-                            cancelButtonText: "Cancel"
-                        }, function (inputValue) {
-                            if (inputValue === false) return false;
-                            $.ajax({
-                                type: "post",
-                                url: startBackgroudJobUrl,
-                                contentType: "application/json; charset=utf-8",
-                                data: JSON.stringify({ "JobName": jobId , "URL": "baseurl", "Data": inputValue, "ContentType": "application/json" }),
-                                async: true,
-                                success: function (returndata) {
+                } 
 
-                                    $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
-                                        swal({
-                                            title: "Success",
-                                            text: "start job success",
-                                            type: "success"
-                                        });
-                                        window.location.reload();
-                                    });
-
-                                }
-                            });
-                        });
-                        e.stopPropagation();
-                        e.preventDefault();
-                    } else {
-                        $.ajax({
-                            type: "post",
-                            url: pauseurl,
-                            contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
-                            async: true,
-                            success: function (returndata) {
-                            }
-                        });
-                    }
-
+                if ($("input[type=checkbox]:checked").length > 1) {
+                    swal({
+                        title: "",
+                        text: "Select One Job Only!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
                 }
+                var jobId = $(".js-jobs-list-checkbox:checked").val();
+                $.ajax({
+                    type: "post",
+                    url: pauseurl,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
+                    async: true,
+                    success: function (returndata) {
+                        window.location.reload();
+                    }
+                });
             });
-            GetJobList();
+            //GetJobList();
             function GetJobList() {
                 $.ajax({
                     type: "post",
@@ -461,30 +511,30 @@
                         type: "error"
                     });
                     return;
-                } else {
-                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) {
-                        swal({
-                            title: "",
-                            text: "Select One Job Only!",
-                            type: "error"
-                        });
-                        return;
-                    }
-                    $(".modal-title").html(config.EditRecurringJobButtonName);
-                    $.ajax({
-                        type: "post",
-                        url: editgeturl,
-                        contentType: "application/json; charset=utf-8",
-                        data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
-                        async: true,
-                        success: function (returndata) {
-                            window.jsonEditor.setText(JSON.stringify(returndata));
-                            window.jsonEditor.format();
-                            $('#httpJobModal').modal('show');
-                        }
+                } 
 
+                if ($("input[type=checkbox]:checked").length > 1) {
+                    swal({
+                        title: "",
+                        text: "Select One Job Only!",
+                        type: "error"
                     });
+                    return;
                 }
+                $(".modal-title").html(config.EditRecurringJobButtonName);
+                $.ajax({
+                    type: "post",
+                    url: editgeturl,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
+                    async: true,
+                    success: function (returndata) {
+                        window.jsonEditor.setText(JSON.stringify(returndata));
+                        window.jsonEditor.format();
+                        $('#httpJobModal').modal('show');
+                    }
+
+                });
             });
             //打开cron表达式页面
             $("#AddCron").click(function () {

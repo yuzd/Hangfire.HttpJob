@@ -24,7 +24,6 @@ namespace TestSqlserverHangfireAgent.Jobs
            
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
-            throw new Exception("ddddd");
         }
 
         protected override void OnStop(JobContext jobContext)

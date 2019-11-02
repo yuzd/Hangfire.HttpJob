@@ -320,21 +320,55 @@ namespace Hangfire.HttpJob.Server
             {
                 using (var connection = JobStorage.Current.GetConnection())
                 {
+                    Dictionary<string, string> dictionary = connection.GetAllEntriesFromHash("recurring-job:" + jobname);
+                    if (dictionary == null || dictionary.Count == 0)
+                    {
+                        return false;
+                    }
+
+                    if (!dictionary.TryGetValue(nameof(Job), out var jobDetail))
+                    {
+                        return false;
+                    }
+
+                    var RecurringJob = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
+
+                    var job = CodingUtil.FromJson<HttpJobItem>(RecurringJob.Args.FirstOrDefault()?.ToString());
+
+                    if (job == null) return false;
+                    
                     using (var tran = connection.CreateWriteTransaction())
                     {
+                        //拿到所有的设置
                         var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
+
+                        //有就先清掉
+                        foreach (var pair in conts)
+                        {
+                            tran.RemoveFromSet($"JobPauseOf:{jobname}", pair);
+                        }
+
+                        var cron = conts.FirstOrDefault(r => r.StartsWith("Cron:"));
+                        if (!string.IsNullOrEmpty(cron)) cron = cron.Replace("Cron:", "");
+                        //如果包含有true 的 说明已经设置了 暂停 要把改成 启动 并且拿到 Cron 进行更新
                         if (conts.Contains("true"))
                         {
-                            tran.RemoveFromSet($"JobPauseOf:{jobname}", "true");
                             tran.AddToSet($"JobPauseOf:{jobname}", "false");
-                            tran.Commit();
+                            if (!string.IsNullOrEmpty(cron))
+                            {
+                                job.Cron = cron;
+                                AddHttprecurringjob(job);
+                            }
                         }
                         else
                         {
-                            tran.RemoveFromSet($"JobPauseOf:{jobname}", "false");
                             tran.AddToSet($"JobPauseOf:{jobname}", "true");
-                            tran.Commit();
+                            tran.AddToSet($"JobPauseOf:{jobname}","Cron:" +job.Cron);
+                            job.Cron = "";
+                            AddHttprecurringjob(job);
                         }
+
+                        tran.Commit();
                     }
                 }
                 return true;

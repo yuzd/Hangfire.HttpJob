@@ -301,7 +301,7 @@
     <value>Start With Param</value>
   </data>
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
-    <value>Stop Job</value>
+    <value>Stop AgentJob</value>
   </data>
   <data name="AgentJobDeatilButton" xml:space="preserve">
     <value>AgentJobDetail</value>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Support
 {
@@ -22,6 +23,18 @@ namespace Hangfire.HttpJob.Support
                 ret += b[i].ToString("x").PadLeft(2, '0');
             }
             return ret;
+        }
+
+        public static T FromJson<T>(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(json);
+            }
+            catch (Exception)
+            {
+                return default(T);
+            }
         }
     }
 }

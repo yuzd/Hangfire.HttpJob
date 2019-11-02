@@ -241,7 +241,7 @@
     <value>不指定</value>
   </data>
   <data name="PauseJobButtonName" xml:space="preserve">
-    <value>停止或开始任务</value>
+    <value>暂停或开始</value>
   </data>
   <data name="QueuenName" xml:space="preserve">
     <value>队列名称</value>
@@ -298,13 +298,13 @@
     <value>任务结束</value>
   </data>
   <data name="StartBackgroudJobButtonName" xml:space="preserve">
-    <value>带参数执行</value>
+    <value>带参数运行</value>
   </data>
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
-    <value>停止Job</value>
+    <value>停止AgentJob</value>
   </data>
   <data name="AgentJobDeatilButton" xml:space="preserve">
-    <value>查询Job状态</value>
+    <value>查询AgentJob状态</value>
   </data>
   <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
     <value>子任务不能执行,请将重试该任务直到成功或者直接删除该任务!</value>

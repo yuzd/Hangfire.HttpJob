@@ -112,11 +112,12 @@ namespace Hangfire.HttpJob.Support
             {
                 var jobItem = filterContext.BackgroundJob.Job.Args.FirstOrDefault();
                 var job = jobItem as HttpJobItem;
+                var jobKey = string.Empty;
                 if (job != null)
                 {
-                    var isCronJob = !string.IsNullOrEmpty(job.Cron) || (!string.IsNullOrEmpty(job.QueueName)&&job.QueueName.ToLower().Equals("recurring"));
-                    var key = isCronJob ? job.JobName : filterContext.BackgroundJob.Id;
-                    var conts = filterContext.Connection.GetAllItemsFromSet($"JobPauseOf:{key}");
+                    var isCronJob = !string.IsNullOrEmpty(job.Cron);
+                    jobKey = isCronJob ? job.JobName : filterContext.BackgroundJob.Id;
+                    var conts = filterContext.Connection.GetAllItemsFromSet($"JobPauseOf:{jobKey}");
                     if (conts.Contains("true"))
                     {
                         filterContext.Canceled = true;//任务被暂停不执行直接跳过
@@ -129,7 +130,7 @@ namespace Hangfire.HttpJob.Support
                 //设置运行时被设置的参数
                 try
                 {
-                    var hashKey = CodingUtil.MD5(filterContext.BackgroundJob.Id + ".runtime");
+                    var hashKey = CodingUtil.MD5(jobKey + ".runtime");
                     var excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
                     if (excuteDataList != null && excuteDataList.Any())
                     {
@@ -146,6 +147,7 @@ namespace Hangfire.HttpJob.Support
                 {
                     //ignore
                 }
+
 
                 //申请分布式锁
                 var distributedLock = filterContext.Connection.AcquireDistributedLock(jobresource, locktimeout);
