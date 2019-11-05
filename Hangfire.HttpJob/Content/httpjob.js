@@ -239,19 +239,10 @@
                 $('#httpJobModal').modal('show');
             });
 
+            //JobAgent停止
             $('#StopJob').click(function (e) {
-                if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    swal({
-                        title: "",
-                        text: "Select Job Item First!",
-                        type: "error"
-                    });
-                    e.stopPropagation();
-                    e.preventDefault();
-                    return;
-                } 
 
-                if ($("input[type=checkbox]:checked").length > 1) {
+                if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
                         text: "Select One Job Only!",
@@ -263,6 +254,22 @@
                 }
 
                 var jobId = $(".js-jobs-list-checkbox:checked").val();
+                if (!jobId) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
+                //var corn = $($($(".js-jobs-list-checkbox:checked")[0]).parent().parent()).children().eq(2).text().indexOf('0 0 31 2 *');
+                //if (corn != -1) {
+                //    //已经暂停了
+
+                //}
                 var text = $($($(".js-jobs-list-checkbox:checked")[0]).parent().parent()).children().eq(4).text();
                 if (!text || text.indexOf('| JobAgent |') < 0) {
                     swal({
@@ -302,18 +309,8 @@
             
             //获取agentJob的执行情况
             $("#JobDetail").click(function (e) {
-                if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    swal({
-                        title: "",
-                        text: "Select Job Item First!",
-                        type: "error"
-                    });
-                    e.stopPropagation();
-                    e.preventDefault();
-                    return;
-                }
 
-                if ($("input[type=checkbox]:checked").length > 1) {
+                if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
                         text: "Select One Job Only!",
@@ -325,6 +322,16 @@
                 }
 
                 var jobId = $(".js-jobs-list-checkbox:checked").val();
+                if (!jobId) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
 
                 var text = $($($(".js-jobs-list-checkbox:checked")[0]).parent().parent()).children().eq(4).text();
                 if (!text || text.indexOf('| JobAgent |') < 0) {
@@ -375,18 +382,8 @@
             });
             
             $('#StartAgentJob').click(function (e) {
-                if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    swal({
-                        title: "",
-                        text: "Select Job Item First!",
-                        type: "error"
-                    });
-                    e.stopPropagation();
-                    e.preventDefault();
-                    return;
-                } 
 
-                if ($("input[type=checkbox]:checked").length > 1) {
+                if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
                         text: "Select One Job Only!",
@@ -397,6 +394,17 @@
                     return;
                 }
                 var jobId = $(".js-jobs-list-checkbox:checked").val();
+                if (!jobId) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
                 swal({
                     title: "Start Job",
                     text: "Are you sure want to start?",
@@ -437,18 +445,8 @@
 
             //暂停任务
             $("#PauseJob").click(function (e) {
-                if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    swal({
-                        title: "",
-                        text: "Select Job Item First!",
-                        type: "error"
-                    });
-                    e.stopPropagation();
-                    e.preventDefault();
-                    return;
-                } 
-
-                if ($("input[type=checkbox]:checked").length > 1) {
+               
+                if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
                         text: "Select One Job Only!",
@@ -459,6 +457,17 @@
                     return;
                 }
                 var jobId = $(".js-jobs-list-checkbox:checked").val();
+                if (!jobId) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
                 $.ajax({
                     type: "post",
                     url: pauseurl,
@@ -504,16 +513,7 @@
 
             //编辑任务
             $("#EditJob").click(function () {
-                if (!$(".js-jobs-list-checkbox").is(':checked')) {
-                    swal({
-                        title: "",
-                        text: "Select Job Item First!",
-                        type: "error"
-                    });
-                    return;
-                } 
-
-                if ($("input[type=checkbox]:checked").length > 1) {
+                if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
                         text: "Select One Job Only!",
@@ -521,12 +521,24 @@
                     });
                     return;
                 }
+                var jobId = $(".js-jobs-list-checkbox:checked").val();
+                if (!jobId) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
                 $(".modal-title").html(config.EditRecurringJobButtonName);
                 $.ajax({
                     type: "post",
                     url: editgeturl,
                     contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
+                    data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
                     async: true,
                     success: function (returndata) {
                         window.jsonEditor.setText(JSON.stringify(returndata));
