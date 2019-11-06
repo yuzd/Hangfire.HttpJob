@@ -467,14 +467,15 @@ namespace Hangfire.HttpJob.Server
 
             try
             {
-                //支持添加一个 只能手动出发的
+                var timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone??TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
-                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
+                    //支持添加一个 只能手动出发的
+                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never, timeZone, jobItem.QueueName.ToLower());
                     return true;
                 }
 
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron, timeZone, jobItem.QueueName.ToLower());
                 return true;
             }
             catch (Exception ex)

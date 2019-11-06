@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using Hangfire.HttpJob.Content.resx;
 using Hangfire.States;
@@ -16,6 +17,35 @@ namespace Hangfire.HttpJob
         /// 默认保留7天执行记录
         /// </summary>
         public int JobExpirationTimeoutDay { get; set; } = 7;
+   
+        /// <summary>
+        /// 设置默认的执行backgroundjob的queue名称
+        /// </summary>
+        public string DefaultRecurringQueueName { get; set; }
+
+        /// <summary>
+        /// 设置默认的执行周期性job的queue名称
+        /// </summary>
+        public string DefaultBackGroundJobQueueName { get; set; } = EnqueuedState.DefaultQueue;
+
+        /// <summary>
+        /// 时区设置
+        /// </summary>
+        public TimeZoneInfo RecurringJobTimeZone { get; set; }
+
+        /// <summary>
+        /// 代理设置
+        /// </summary>
+        public string Proxy { get; set; }
+
+        /// <summary>
+        /// 邮件配置
+        /// </summary>
+        public MailOption MailOption { get; set; } = new MailOption();
+
+
+
+        #region 按钮名称和标题等自定义展示名称
 
         public string AddHttpJobButtonName { get; set; } = Strings.AddHttpJobButtonName;
         public string AddRecurringJobHttpJobButtonName { get; set; } = Strings.AddRecurringJobHttpJobButtonName;
@@ -25,13 +55,10 @@ namespace Hangfire.HttpJob
         public string StartBackgroudJobButtonName { get; set; } = Strings.StartBackgroudJobButtonName;
         public string StopBackgroudJobButtonName { get; set; } = Strings.StopBackgroudJobButtonName;
         public string AgentJobDeatilButton { get; set; } = Strings.AgentJobDeatilButton;
-        
+
         public string SearchPlaceholder { get; set; } = Strings.SearchPlaceholder;
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";
-        public string DefaultRecurringQueueName { get; set; }
-        public string DefaultBackGroundJobQueueName { get; set; } = EnqueuedState.DefaultQueue;
-
 
         /// <summary>
         /// cron表达式按钮名称
@@ -39,7 +66,10 @@ namespace Hangfire.HttpJob
         public string AddCronButtonName { get; set; } = Strings.AddCronButtonName;
 
         public string PauseJobButtonName { get; set; } = Strings.PauseJobButtonName;
+
         public string EditRecurringJobButtonName { get; set; } = Strings.EditRecurringJobButtonName;
+
+
 
         /// <summary>
         /// 更改Dashboard标题
@@ -55,18 +85,8 @@ namespace Hangfire.HttpJob
         /// </summary>
         public string DashboardFooter { get; set; } = "Github";
 
+        #endregion
 
-        /// <summary>
-        /// 代理设置
-        /// </summary>
-        public string Proxy { get; set; }
-
-        /// <summary>
-        /// 邮件配置
-        /// </summary>
-        public MailOption MailOption { get; set; } = new MailOption();
-
-       
     }
 
 

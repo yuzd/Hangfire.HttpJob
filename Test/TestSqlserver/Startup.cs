@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using TimeZoneConverter;
 
 namespace TestSqlserver
 {
@@ -62,12 +63,14 @@ namespace TestSqlserver
                         Password = JsonConfig.GetSection("HangfireMail:Password").Get<string>(),
                     },
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
-                    DefaultBackGroundJobQueueName = "DEFAULT"
+                    DefaultBackGroundJobQueueName = "DEFAULT",
+                    RecurringJobTimeZone = TZConvert.GetTimeZoneInfo("Asia/Shanghai") //这里指定了添加周期性job时的时区
+                    //RecurringJobTimeZone = TimeZoneInfo.Local
                 });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logging)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory logging)
         {
             #region NLOG
 

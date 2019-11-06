@@ -66,7 +66,8 @@ namespace TestHangfire
                         Password = JsonConfig.GetSection("HangfireMail:Password").Get<string>(),
                     },
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
-                    DefaultBackGroundJobQueueName = "DEFAULT"
+                    DefaultBackGroundJobQueueName = "DEFAULT",
+                    RecurringJobTimeZone = TimeZoneInfo.Local
                 })
                 .UseTagsWithMysql(sqlOptions: mysqlOption);
         }
