@@ -134,7 +134,8 @@ namespace Hangfire.HttpJob.Support
                     var excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
                     if ((excuteDataList == null || !excuteDataList.Any()) && !string.IsNullOrEmpty(job.AgentClass))
                     {
-                        excuteDataList = filterContext.Connection.GetAllEntriesFromHash(CodingUtil.MD5(job.JobName + ".runtime"));
+                        hashKey = CodingUtil.MD5(job.JobName + ".runtime");
+                        excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
                     }
 
                     if (excuteDataList != null && excuteDataList.Any())
