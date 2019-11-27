@@ -309,4 +309,7 @@
   <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
     <value>子任务不能执行,请将重试该任务直到成功或者直接删除该任务!</value>
   </data>
+  <data name="LimitReached" xml:space="preserve">
+    <value>错误重试已达到上限!</value>
+  </data>
 </root>

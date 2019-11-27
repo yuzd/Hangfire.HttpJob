@@ -309,4 +309,7 @@
   <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
     <value>The ContinueJob Can‘t Start, Please Delete Or Retry this job! </value>
   </data>
+  <data name="LimitReached" xml:space="preserve">
+    <value>Error retry limit reached</value>
+  </data>
 </root>

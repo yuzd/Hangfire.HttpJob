@@ -27,7 +27,7 @@ namespace Hangfire.HttpJob
             DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.cron.js"));
             DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.httpjob.js"));
             DashboardRoutes.Routes.Append(jsPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.sweetalert2.min.js"));
-            
+
 
 
             var cssPath = DashboardRoutes.Routes.Contains("/css[0-9]+") ? "/css[0-9]+" : "/css[0-9]{3}";
@@ -36,6 +36,10 @@ namespace Hangfire.HttpJob
             DashboardRoutes.Routes.Append(cssPath, new DynamicCssDispatcher(options));
 
             if (options.GlobalHttpTimeOut < 2000) options.GlobalHttpTimeOut = 2000;
+            if (options.CheckHttpResponseStatusCode == null)
+            {
+                options.CheckHttpResponseStatusCode = code => ((int)code) < 400;
+            }
             Server.HttpJob.HangfireHttpJobOptions = options;
 
             return config;

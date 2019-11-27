@@ -67,7 +67,8 @@ namespace TestHangfire
                     },
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
                     DefaultBackGroundJobQueueName = "DEFAULT",
-                    RecurringJobTimeZone = TimeZoneInfo.Local
+                    RecurringJobTimeZone = TimeZoneInfo.Local,
+                    // CheckHttpResponseStatusCode = code => (int)code < 400   //===》(default)
                 })
                 .UseTagsWithMysql(sqlOptions: mysqlOption);
         }

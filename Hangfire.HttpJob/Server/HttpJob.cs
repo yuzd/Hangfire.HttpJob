@@ -79,6 +79,18 @@ namespace Hangfire.HttpJob.Server
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
                 RunWithTry(()=>context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}"));
                 logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode}");
+
+                //检查HttpResponse StatusCode
+                if (HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode))
+                {
+                    RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
+                    logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");
+                }
+                else
+                {
+                    throw new HttpStatusCodeException(httpResponse.StatusCode);
+                }
+
                 RunWithTry(()=>context.WriteLine($"{Strings.JobResult}:{result}"));
                 logList.Add($"{Strings.JobResult}:{result}");
                 RunWithTry(()=>context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
@@ -100,6 +112,8 @@ namespace Hangfire.HttpJob.Server
                 var count = RunWithTry<string>(()=>context.GetJobParameter<string>("RetryCount")) ?? string.Empty;
                 if (count == "3")//重试达到三次的时候发邮件通知
                 {
+                    RunWithTry(() => context.WriteLine(Strings.LimitReached));
+                    logList.Add(Strings.LimitReached);
                     SendFailMail(item, string.Join("<br/>", logList), ex);
                     AddErrToJob(context, ex);
                     return;

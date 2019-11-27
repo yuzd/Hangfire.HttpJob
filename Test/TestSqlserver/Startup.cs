@@ -64,8 +64,9 @@ namespace TestSqlserver
                     },
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
                     DefaultBackGroundJobQueueName = "DEFAULT",
-                    RecurringJobTimeZone = TZConvert.GetTimeZoneInfo("Asia/Shanghai") //这里指定了添加周期性job时的时区
-                    //RecurringJobTimeZone = TimeZoneInfo.Local
+                    RecurringJobTimeZone = TZConvert.GetTimeZoneInfo("Asia/Shanghai"), //这里指定了添加周期性job时的时区
+                    // RecurringJobTimeZone = TimeZoneInfo.Local
+                    // CheckHttpResponseStatusCode = code => (int)code < 400   //===》(default)
                 });
         }
 
@@ -139,7 +140,11 @@ namespace TestSqlserver
             }
 
 
-            app.Run(async (context) => { await context.Response.WriteAsync("ok."); });
+            app.Run(async (context) =>
+            {
+                //context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("ok.");
+            });
         }
     }
 }
