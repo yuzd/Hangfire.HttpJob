@@ -73,9 +73,18 @@ namespace Hangfire.HttpJob.Client
         public string Mail { get; set; }
 
         /// <summary>
+        /// 错误尝试次数自定义
+        /// </summary>
+        public int RetryTimes { get; set; }
+        /// <summary>
         /// 开启失败重启
         /// </summary>
         public bool EnableRetry { get; set; }
+
+        /// <summary>
+        /// 失败重试区间 半角逗号隔开
+        /// </summary>
+        public string RetryDelaysInSeconds { get; set; }
 
         /// <summary>
         /// 传了class就代表是agentjob

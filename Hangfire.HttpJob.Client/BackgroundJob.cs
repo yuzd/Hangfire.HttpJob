@@ -79,6 +79,16 @@ namespace Hangfire.HttpJob.Client
         public bool EnableRetry { get; set; }
 
         /// <summary>
+        /// 错误尝试次数自定义
+        /// </summary>
+        public int RetryTimes { get; set; }
+
+        /// <summary>
+        /// 失败重试区间 半角逗号隔开
+        /// </summary>
+        public string RetryDelaysInSeconds { get; set; }
+
+        /// <summary>
         /// basic 验证用户名
         /// </summary>
         public string BasicUserName { get; set; }

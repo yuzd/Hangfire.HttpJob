@@ -6,7 +6,7 @@
         }
 
         HttpJob.prototype._initialize = function () {
-
+            var config = window.Hangfire.httpjobConfig;
             $(".table tbody").find('tr').each(function () {
                 var tdArr = $(this).children();
                 var ss = tdArr.eq(2).text();
@@ -18,9 +18,13 @@
                 if (ss2.indexOf('| JobAgent |') >= 0) {
                     tdArr.eq(4).append('<span class="label label-success text-uppercase" title="" data-original-title="JobAgent">JobAgent</span>');
                 }
+
+                if (config.NeedAddRecurringHttpJobButton) {
+                    tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="JobAgent" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text()+'" target="_blank">Tag</a>');
+                }
             });
 
-            var config = window.Hangfire.httpjobConfig;
+         
             if (!config) return;
 
             if (config.DashboardName) {
@@ -70,8 +74,8 @@
                 mode: 'code'
             };
 
-            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
-            var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
+            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
+            var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton)   {
                 button =

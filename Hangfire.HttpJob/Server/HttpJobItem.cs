@@ -84,6 +84,16 @@ namespace Hangfire.HttpJob.Server
         public bool EnableRetry { get; set; }
 
         /// <summary>
+        /// 失败重试区间 半角逗号隔开
+        /// </summary>
+        public string RetryDelaysInSeconds { get; set; }
+
+        /// <summary>
+        /// 错误尝试次数自定义
+        /// </summary>
+        public int RetryTimes { get; set; }
+
+        /// <summary>
         /// basicAuth认证
         /// </summary>
         public string BasicUserName { get; set; }
@@ -154,7 +164,17 @@ namespace Hangfire.HttpJob.Server
         /// 开启失败重启
         /// </summary>
         public bool EnableRetry { get; set; }
-        
+
+        /// <summary>
+        /// 失败重试区间 半角逗号隔开
+        /// </summary>
+        public string RetryDelaysInSeconds { get; set; }
+
+        /// <summary>
+        /// 错误尝试次数自定义
+        /// </summary>
+        public int RetryTimes { get; set; }
+
         /// <summary>
         /// Header
         /// </summary>

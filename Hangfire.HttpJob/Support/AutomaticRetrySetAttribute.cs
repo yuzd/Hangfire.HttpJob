@@ -51,7 +51,7 @@ namespace Hangfire.HttpJob.Support
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of automatic retry attempts.
+        /// Gets or sets the maximum number of automatic retry attempts.设置次数
         /// </summary>
         /// <value>Any non-negative number.</value>
         /// <exception cref="ArgumentOutOfRangeException">The value in a set operation is less than zero.</exception>
@@ -73,7 +73,7 @@ namespace Hangfire.HttpJob.Support
         }
 
         /// <summary>
-        /// Gets or sets the delays between attempts.
+        /// Gets or sets the delays between attempts.设置重试区间
         /// </summary>
         /// <value>An array of non-negative numbers.</value>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
@@ -139,12 +139,17 @@ namespace Hangfire.HttpJob.Support
                 // This filter accepts only failed job state.
                 return;
             }
-            //var job = context.BackgroundJob.Job.Args.FirstOrDefault();
-            var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
 
-            if (retryAttempt <= Attempts)
+            var retryTimesLimit = Attempts;
+            var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
+            if (httpjob != null && httpjob.RetryTimes > 0)
             {
-                ScheduleAgainLater(context, retryAttempt, failedState);
+                //自定义设置了超时配置
+                retryTimesLimit = httpjob.RetryTimes;
+            }
+            if (retryAttempt <= retryTimesLimit)
+            {
+                ScheduleAgainLater(context, retryAttempt, retryTimesLimit,failedState);
                 return;
             }
 
@@ -159,7 +164,7 @@ namespace Hangfire.HttpJob.Support
                 //ignore
             }
             
-            if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
+            if (retryAttempt > retryTimesLimit && OnAttemptsExceeded == AttemptsExceededAction.Delete)
             {
                 TransitionToDeleted(context, failedState);
             }
@@ -202,19 +207,39 @@ namespace Hangfire.HttpJob.Support
         /// </summary>
         /// <param name="context">The state context.</param>
         /// <param name="retryAttempt">The count of retry attempts made so far.</param>
+        /// <param name="totalLimit">max limit set</param>
         /// <param name="failedState">Object which contains details about the current failed state.</param>
-        private void ScheduleAgainLater(ElectStateContext context, int retryAttempt, FailedState failedState)
+        private void ScheduleAgainLater(ElectStateContext context, int retryAttempt,int totalLimit, FailedState failedState)
         {
             var httpjob = context.BackgroundJob.Job.Args.FirstOrDefault() as HttpJobItem;
             if (httpjob ==null || !httpjob.EnableRetry) { return; }
             context.SetJobParameter("RetryCount", retryAttempt);
             int delayInSeconds;
 
-            if (_delaysInSeconds != null)
+            var delayArr = _delaysInSeconds;
+            if (!string.IsNullOrEmpty(httpjob.RetryDelaysInSeconds))
             {
-                delayInSeconds = retryAttempt <= _delaysInSeconds.Length
-                    ? _delaysInSeconds[retryAttempt - 1]
-                    : _delaysInSeconds.Last();
+                var delayArrStr = httpjob.RetryDelaysInSeconds.Replace("，","").Split(new string[] { ","},StringSplitOptions.RemoveEmptyEntries);
+                if (delayArrStr.Any())
+                {
+                    try
+                    {
+                        var tempArr = delayArrStr.Select(int.Parse).ToArray();
+                        if (tempArr.Any()) delayArr = tempArr;
+                    }
+                    catch (Exception)
+                    {
+                       //ignore
+                    }
+                   
+                }
+            }
+
+            if (delayArr != null)
+            {
+                delayInSeconds = retryAttempt <= delayArr.Length
+                    ? delayArr[retryAttempt - 1]
+                    : delayArr.Last();
             }
             else
             {
@@ -231,7 +256,7 @@ namespace Hangfire.HttpJob.Support
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
 
-            var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
+            var reason = $"Delay {delayInSeconds}s Retry attempt {retryAttempt} of {totalLimit}: {exceptionMessage}";
 
             context.CandidateState = delay == TimeSpan.Zero
                 ? (IState)new EnqueuedState { Reason = reason }
@@ -240,7 +265,7 @@ namespace Hangfire.HttpJob.Support
             if (LogEvents)
             {
                 _logger.WarnException(
-                    $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Retry attempt {retryAttempt} of {Attempts} will be performed in {delay}.",
+                    $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Retry attempt {retryAttempt} of {totalLimit} will be performed in {delayInSeconds}s.",
                     failedState.Exception);
             }
         }
