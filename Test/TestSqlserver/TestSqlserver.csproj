@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.Tags.SqlServer" Version="0.8.0" />
+    <PackageReference Include="Hangfire.Tags.SqlServer" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="HangFire.SqlServer" Version="1.7.6" />
+    <PackageReference Include="HangFire.SqlServer" Version="1.7.9" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.5.0" />
     <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
     <PackageReference Include="TimeZoneConverter" Version="3.2.0" />
