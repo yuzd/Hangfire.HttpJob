@@ -183,3 +183,6 @@ How to add Hangfire.HttpJob  in Dashbord
 ![image](https://images4.c-ctrip.com/target/zb0c14000000wimqtC772.png)
 ## Email notify
 ![image](https://images4.c-ctrip.com/target/zb0514000000wihim765F.png)
+
+## Thanks for the Rider IDE provided by JetBrains
+[![](https://images4.c-ctrip.com/target/zb021d000001ed9clDFB6.png)](https://www.jetbrains.com/?from=Hangfire.HttpJob)
