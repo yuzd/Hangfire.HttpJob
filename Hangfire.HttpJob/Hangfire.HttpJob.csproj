@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>httpjob for Hangfire(基于hangfire的webjob调度服务)</Description>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>3.0.7</Version>
+    <Version>3.0.8</Version>
     <Authors>yuzd</Authors>
   </PropertyGroup>
 

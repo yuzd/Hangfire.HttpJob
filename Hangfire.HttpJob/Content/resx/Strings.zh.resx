@@ -301,10 +301,10 @@
     <value>带参数运行</value>
   </data>
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
-    <value>停止AgentJob</value>
+    <value>停止</value>
   </data>
   <data name="AgentJobDeatilButton" xml:space="preserve">
-    <value>查询AgentJob状态</value>
+    <value>查询状态</value>
   </data>
   <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
     <value>子任务不能执行,请将重试该任务直到成功或者直接删除该任务!</value>
