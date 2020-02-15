@@ -8,7 +8,7 @@
     <Copyright>zdyu</Copyright>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <Authors>yuzd</Authors>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
