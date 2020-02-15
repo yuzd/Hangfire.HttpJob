@@ -9,6 +9,68 @@ namespace Hangfire.HttpJob.Client
 
 
     /// <summary>
+    /// 后台子Job
+    /// </summary>
+    public class HttpChildJob
+    {
+        public HttpChildJob()
+        {
+            Method = "Post";
+            ContentType = "application/json";
+            Timeout = 20000;
+        }
+        
+        /// <summary>
+        /// 请求Url
+        /// </summary>
+        public string Url { get; set; }
+
+        /// <summary>
+        /// 请求参数
+        /// </summary>
+        public string Method { get; set; } 
+        
+        /// <summary>
+        /// 参数
+        /// </summary>
+        public object Data { get; set; }
+
+        /// <summary>
+        /// 请求类型
+        /// </summary>
+        public string ContentType { get; set; }
+
+        /// <summary>
+        /// 超时 单位毫秒
+        /// </summary>
+        public int Timeout { get; set; }
+        
+        /// <summary>
+        /// basic 验证用户名
+        /// </summary>
+        public string BasicUserName { get; set; }
+
+        /// <summary>
+        /// basic 验证密码
+        /// </summary>
+        public string BasicPassword { get; set; }
+
+        /// <summary>
+        /// 代理设置
+        /// </summary>
+        public string AgentClass { get; set; }
+        
+        /// <summary>
+        /// Header
+        /// </summary>
+        public Dictionary<string,string> Headers { get; set; } =new Dictionary<string, string>();
+        
+        public HttpChildJob Success { get; set; }
+        
+        public HttpChildJob Fail { get; set; }
+    }
+    
+    /// <summary>
     /// 延迟job
     /// </summary>
     public class BackgroundJob
@@ -107,5 +169,8 @@ namespace Hangfire.HttpJob.Client
         /// Header
         /// </summary>
         public Dictionary<string,string> Headers { get; set; } =new Dictionary<string, string>();
+
+        public HttpChildJob Success { get; set; }
+        public HttpChildJob Fail { get; set; }
     }
 }

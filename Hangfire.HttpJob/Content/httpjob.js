@@ -480,6 +480,13 @@
                     async: true,
                     success: function (returndata) {
                         window.location.reload();
+                    },
+                    fail:function (errText) {
+                        swal({
+                            title: "",
+                            text: errText.responseText  || "fail！",
+                            type: "error"
+                        });
                     }
                 });
             });
@@ -547,7 +554,14 @@
                     success: function (returndata) {
                         window.jsonEditor.setText(JSON.stringify(returndata));
                         window.jsonEditor.format();
-                        $('#httpJobModal').modal('show');
+                        $('#httpJobModal').modal('show');   
+                    },
+                    fail:function (errText) {
+                        swal({
+                            title: "",
+                            text: errText.responseText  || "edit job fail！",
+                            type: "error"
+                        });
                     }
 
                 });
@@ -602,10 +616,10 @@
                         location.reload();
                     });
 
-                }).fail(function () {
+                }).fail(function (errText) {
                     swal({
                         title: "",
-                        text: "Add job fail！",
+                        text: errText.responseText || "Add job fail！",
                         type: "error"
                     });
                 });

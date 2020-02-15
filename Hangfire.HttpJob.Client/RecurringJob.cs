@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hangfire.HttpJob.Client
 {
+    
     /// <summary>
     /// 循环job
     /// </summary>
@@ -106,5 +107,8 @@ namespace Hangfire.HttpJob.Client
         /// Header
         /// </summary>
         public Dictionary<string,string> Headers { get; set; } = new Dictionary<string, string>();
+        
+        public HttpChildJob Success { get; set; }
+        public HttpChildJob Fail { get; set; }
     }
 }

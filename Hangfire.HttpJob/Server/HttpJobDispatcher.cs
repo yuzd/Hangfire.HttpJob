@@ -19,6 +19,7 @@ namespace Hangfire.HttpJob.Server
     public class HttpJobDispatcher : IDashboardDispatcher
     {
         private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
+
         public async Task Dispatch(DashboardContext context)
         {
             if (context == null)
@@ -27,143 +28,254 @@ namespace Hangfire.HttpJob.Server
             {
                 if (!"POST".Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    context.Response.StatusCode = (int) HttpStatusCode.MethodNotAllowed;
                     return;
                 }
 
+                //操作类型
                 var op = context.Request.GetQuery("op");
                 if (string.IsNullOrEmpty(op))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                     return;
                 }
 
                 op = op.ToLower();
-                if (op == "getjoblist")
+
+                if (op == "getrecurringjob") // dashbord 上获取周期性job详情
                 {
-                    var joblist = GetRecurringJobs();
-                    context.Response.ContentType = "application/json";
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    await context.Response.WriteAsync(JsonConvert.SerializeObject(joblist));
+                    await GetRecurringJobDetail(context);
+                    return;
+                }
+                else if (op == "getbackgroundjobdetail") // dashbord 上获取Agent job详情
+                {
+                    await DoGetBackGroundJobDetail(context);
+                    return;
+                }
+                else if (op == "deljob") // 删除job
+                {
+                    await DelJob(context);
+                    return;
+                }
+                else if (op == "pausejob") // 暂停或开始job
+                {
+                    await DoPauseOrRestartJob(context);
+                    return;
+                }
+                else if (op == "backgroundjob") //新增后台任务job
+                {
+                    await AddBackgroundjob(context);
+                    return;
+                }
+                else if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
+                {
+                    await AddRecurringJob(context);
+                    return;
+                }
+                else if (op == "startbackgroudjob")
+                {
+                    await StartBackgroudJob(context);
+                    return;
+                }
+                else if (op == "stopbackgroudjob")
+                {
+                    await StopBackgroudJob(context);
                     return;
                 }
 
-                var jobItem = await GetJobItem(context);
-                if (jobItem == null)
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return;
-                }
-                if (op == "getrecurringjob")
-                {
-                    var strdata = GetJobdata(jobItem.JobName);
-                    if (!string.IsNullOrEmpty(strdata))
-                    {
-                        context.Response.ContentType = "application/json";
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        await context.Response.WriteAsync(strdata);
-                        return;
-                    }
-                    else
-                    {
-                        context.Response.ContentType = "application/json";
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return;
-                    }
-                }
-                else if (op == "getbackgroundjobdetail")
-                {
-                    var jobDetail = GetBackGroundJobDetail(jobItem);
-                    context.Response.ContentType = "application/json";
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    await context.Response.WriteAsync(JsonConvert.SerializeObject(jobDetail));
-                    return;
-                }
-                if (string.IsNullOrEmpty(jobItem.Url) || string.IsNullOrEmpty(jobItem.ContentType) || jobItem.Url.ToLower().Equals("http://"))
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(jobItem.JobName))
-                {
-                    var jobName = context.Request.Path.Split('/').LastOrDefault() ?? string.Empty;
-                    jobItem.JobName = jobName;
-                }
-
-                if (string.IsNullOrEmpty(jobItem.JobName))
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return;
-                }
-
-                var result = false;
-                switch (op)
-                {
-                    case "backgroundjob":
-                        if (jobItem.DelayFromMinutes < -1)
-                        {
-                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return;
-                        }
-                        var jobId = AddHttpbackgroundjob(jobItem);
-                        if (!string.IsNullOrEmpty(jobId))
-                        {
-                            context.Response.ContentType = "application/json";
-                            context.Response.StatusCode = (int)HttpStatusCode.OK;
-                            await context.Response.WriteAsync(jobId);
-                            return;
-                        }
-                        break;
-                    case "recurringjob":
-                        result = AddHttprecurringjob(jobItem);
-                        break;
-                    case "editrecurringjob":
-                        result = AddHttprecurringjob(jobItem);
-                        break;
-                    case "deljob":
-                        result = DelJob(jobItem);
-                        break;
-                    case "pausejob":
-                        result = PauseOrRestartJob(jobItem.JobName);
-                        break;
-                    case "startbackgroudjob":
-                        result = StartBackgroudJob(jobItem);
-                        break;
-                    case "stopbackgroudjob":
-                        result = StopBackgroudJob(jobItem);
-                        break;
-                    default:
-                        context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                        return ;
-                }
-
-                if (result)
-                {
-                    context.Response.ContentType = "application/json";
-                    context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                    return ;
-                }
-                else
-                {
-                    context.Response.ContentType = "application/json";
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    return;
-                }
-
+                context.Response.StatusCode = (int) HttpStatusCode.MethodNotAllowed;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.Dispatch", ex);
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// 新增周期性job
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private async Task AddRecurringJob(DashboardContext context)
+        {
+            var jobItemRt = await GetCheckedJobItem(context);
+            if (!string.IsNullOrEmpty(jobItemRt.Item2))
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await context.Response.WriteAsync(jobItemRt.Item2);
                 return;
             }
 
+            var result = AddHttprecurringjob(jobItemRt.Item1);
+            if (result)
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+                return;
+            }
+            else
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                return;
+            }
         }
 
 
+        /// <summary>
+        /// 新增后台任务job
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private async Task AddBackgroundjob(DashboardContext context)
+        {
+            var jobItemRt = await GetCheckedJobItem(context);
+            if (!string.IsNullOrEmpty(jobItemRt.Item2))
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await context.Response.WriteAsync(jobItemRt.Item2);
+                return;
+            }
 
+            var jobItem = jobItemRt.Item1;
+            if (jobItem.DelayFromMinutes < -1)
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await context.Response.WriteAsync("DelayFromMinutes invaild");
+                return;
+            }
+
+            var jobId = AddHttpbackgroundjob(jobItem);
+            if (!string.IsNullOrEmpty(jobId))
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int) HttpStatusCode.OK;
+                await context.Response.WriteAsync(jobId);
+                return;
+            }
+
+            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            await context.Response.WriteAsync("add fail");
+            return;
+        }
+
+        /// <summary>
+        /// 通用的检查并获取jobItem
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task<(HttpJobItem, string)> GetCheckedJobItem(DashboardContext context)
+        {
+            var jobItem = await GetJobItem(context);
+            if (jobItem == null)
+            {
+                return (null, "get job data fail");
+            }
+
+            string CheckHttpJobItem(HttpJobItem item,bool isParent)
+            {
+                if (string.IsNullOrEmpty(item.Url) || item.Url.ToLower().Equals("http://"))
+                {
+                    return ("Url invaild");
+                }
+
+                if (string.IsNullOrEmpty(item.ContentType))
+                {
+                    return ("ContentType invaild");
+                }
+                
+
+                if (isParent)
+                {
+                    if (string.IsNullOrEmpty(item.JobName))
+                    {
+                        var jobName = item.Url.Split('/').LastOrDefault() ?? string.Empty;
+                        item.JobName = jobName;
+                    }
+
+                    if (string.IsNullOrEmpty(item.JobName))
+                    {
+                        return ("JobName invaild");
+                    }
+                }
+                
+                return string.Empty;
+            }
+
+            var list = new List<HttpJobItem>();
+
+            void AddAllJobItem(HttpJobItem item, List<HttpJobItem> listOut)
+            {
+                listOut.Add(item);
+                if (item.Success != null)
+                {
+                    AddAllJobItem(item.Success, listOut);
+                }
+
+                if (item.Fail != null)
+                {
+                    AddAllJobItem(item.Fail, listOut);
+                }
+            }
+
+            AddAllJobItem(jobItem, list);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var checkResult = CheckHttpJobItem(list[i],i == 0);
+                if (!string.IsNullOrEmpty(checkResult))
+                {
+                    return (null, checkResult);
+                }
+            }
+
+            return (jobItem, null);
+        }
+
+
+        /// <summary>
+        /// 获取周期性job详情
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task GetRecurringJobDetail(DashboardContext context)
+        {
+            var jobItem = await GetJobItem(context);
+
+            if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await context.Response.WriteAsync("invalid request body");
+                return;
+            }
+
+            var strdata = GetJobdata(jobItem.JobName);
+            if (!string.IsNullOrEmpty(strdata))
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int) HttpStatusCode.OK;
+                await context.Response.WriteAsync(strdata);
+                return;
+            }
+            else
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                await context.Response.WriteAsync($"jobName:{jobItem.JobName} not found");
+                return;
+            }
+        }
+
+
+        /// <summary>
+        /// 获取jobDetail
+        /// </summary>
+        /// <param name="_context"></param>
+        /// <returns></returns>
         public async Task<HttpJobItem> GetJobItem(DashboardContext _context)
         {
             try
@@ -179,7 +291,7 @@ namespace Hangfire.HttpJob.Server
                     //兼容netframework
 
                     var contextType = _context.Request.GetType();
-                    
+
                     //private readonly IOwinContext _context;
                     var owinContext = contextType.GetField("_context", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(_context.Request);
 
@@ -200,7 +312,7 @@ namespace Hangfire.HttpJob.Server
                     body = request.GetType().GetProperty("Body")?.GetValue(request) as Stream;
                     if (body == null)
                     {
-                        Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{ request.GetType().FullName}");
+                        Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
                         return null;
                     }
                 }
@@ -219,7 +331,6 @@ namespace Hangfire.HttpJob.Server
                     var requestBody = await sr.ReadToEndAsync();
                     return Newtonsoft.Json.JsonConvert.DeserializeObject<HttpJobItem>(requestBody);
                 }
-
             }
             catch (Exception ex)
             {
@@ -227,7 +338,6 @@ namespace Hangfire.HttpJob.Server
                 return null;
             }
         }
-
 
 
         /// <summary>
@@ -244,13 +354,14 @@ namespace Hangfire.HttpJob.Server
                 {
                     queueName = EnqueuedState.DefaultQueue;
                 }
-                
+
                 if (jobItem.DelayFromMinutes <= 0)
                 {
                     return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
                 }
-                
-                return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
+
+                return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null),
+                    TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
             }
             catch (Exception ex)
             {
@@ -258,16 +369,31 @@ namespace Hangfire.HttpJob.Server
                 return null;
             }
         }
+
         /// <summary>
         /// 执行job
         /// </summary>
-        /// <param name="jobItem"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public bool StartBackgroudJob(HttpJobItem jobItem)
+        public async Task StartBackgroudJob(DashboardContext context)
         {
             try
             {
-                if (string.IsNullOrEmpty(jobItem.Data)) return true;
+                var jobItem = await GetJobItem(context);
+
+                if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
+                {
+                    context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsync("invalid request body");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(jobItem.Data))
+                {
+                    context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+                    return;
+                }
+
                 using (var connection = JobStorage.Current.GetConnection())
                 {
                     var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
@@ -280,41 +406,63 @@ namespace Hangfire.HttpJob.Server
                         tran.Commit();
                     }
                 }
-                return true;
+
+                context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+                return;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.StartBackgroudJob", ex);
-                return false;
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(ex.Message);
             }
         }
-        public bool StopBackgroudJob(HttpJobItem jobItem)
+
+        /// <summary>
+        /// 发出jobAgent停止命令
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public async Task StopBackgroudJob(DashboardContext context)
         {
             try
             {
+                var jobItem = await GetJobItem(context);
+
+                if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
+                {
+                    context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsync("invalid request body");
+                    return;
+                }
+
                 using (var connection = JobStorage.Current.GetConnection())
                 {
                     var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
                     using (var tran = connection.CreateWriteTransaction())
                     {
-                        tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("Action", "stop") });
+                        tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>> {new KeyValuePair<string, string>("Action", "stop")});
                         tran.Commit();
                     }
                 }
-                return true;
+
+                context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+                return;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.StopBackgroudJob", ex);
-                return false;
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(ex.Message);
             }
         }
+
         /// <summary>
         /// 停止或者暂停项目
         /// </summary>
         /// <param name="jobname"></param>
         /// <returns></returns>
-        public bool PauseOrRestartJob(string jobname)
+        public string PauseOrRestartJob(string jobname)
         {
             try
             {
@@ -323,20 +471,20 @@ namespace Hangfire.HttpJob.Server
                     Dictionary<string, string> dictionary = connection.GetAllEntriesFromHash("recurring-job:" + jobname);
                     if (dictionary == null || dictionary.Count == 0)
                     {
-                        return false;
+                        return "not found recurring-job:" + jobname;
                     }
 
                     if (!dictionary.TryGetValue(nameof(Job), out var jobDetail))
                     {
-                        return false;
+                        return "not found recurring-job:" + jobname;
                     }
 
                     var RecurringJob = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
 
                     var job = CodingUtil.FromJson<HttpJobItem>(RecurringJob.Args.FirstOrDefault()?.ToString());
 
-                    if (job == null) return false;
-                    
+                    if (job == null) return "fail parse recurring-job:" + jobname;
+
                     using (var tran = connection.CreateWriteTransaction())
                     {
                         //拿到所有的设置
@@ -363,7 +511,7 @@ namespace Hangfire.HttpJob.Server
                         else
                         {
                             tran.AddToSet($"JobPauseOf:{jobname}", "true");
-                            tran.AddToSet($"JobPauseOf:{jobname}","Cron:" +job.Cron);
+                            tran.AddToSet($"JobPauseOf:{jobname}", "Cron:" + job.Cron);
                             job.Cron = "";
                             AddHttprecurringjob(job);
                         }
@@ -371,68 +519,87 @@ namespace Hangfire.HttpJob.Server
                         tran.Commit();
                     }
                 }
-                return true;
+
+                return string.Empty;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.PauseOrRestartJob", ex);
-                return false;
+                return ex.Message;
             }
-        }
-        /// <summary>
-        /// 获取已经暂停的任务
-        /// </summary>
-        /// <returns></returns>
-        public List<PauseRecurringJob> GetRecurringJobs()
-        {
-            var pauselist = new List<PauseRecurringJob>();
-            try
-            {
-                using (var connection = JobStorage.Current.GetConnection())
-                {
-                    var joblist = connection.GetRecurringJobs();
-                    joblist.ForEach(k =>
-                    {
-                        var conts = connection.GetAllItemsFromSet($"JobPauseOf:{k.Id}");
-                        if (conts.Contains("true"))
-                        {
-                            var pauseinfo = new PauseRecurringJob() { Id = k.Id };
-                            pauselist.Add(pauseinfo);
-                        }
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("HttpJobDispatcher.GetRecurringJobs", ex);
-            }
-            return pauselist;
         }
 
+
+        /// <summary>
+        /// 暂停或开始job
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task DoPauseOrRestartJob(DashboardContext context)
+        {
+            var jobItem = await GetJobItem(context);
+            if (string.IsNullOrEmpty(jobItem.JobName))
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await context.Response.WriteAsync("jobName invaild");
+                return;
+            }
+
+            var result = PauseOrRestartJob(jobItem.JobName);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(result);
+                return;
+            }
+
+            context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+        }
 
         /// <summary>
         /// 删除周期性job
         /// </summary>
-        /// <param name="jobItem"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        private bool DelJob(HttpJobItem jobItem)
+        private async Task DelJob(DashboardContext context)
         {
             try
             {
+                var jobItem = await GetJobItem(context);
+                if (string.IsNullOrEmpty(jobItem.JobName))
+                {
+                    context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsync("jobName invaild");
+                    return;
+                }
+
                 if (!string.IsNullOrEmpty(jobItem.Data) && jobItem.Data == "backgroundjob")
                 {
-                    return BackgroundJob.Delete(jobItem.JobName);
+                    //删除backgroundjob
+                    var result = BackgroundJob.Delete(jobItem.JobName);
+                    if (!result)
+                    {
+                        context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                        await context.Response.WriteAsync($"remove:{jobItem.JobName} fail");
+                        return;
+                    }
+
+                    context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+                    return;
                 }
-               
+
+                //删除周期性job
                 RecurringJob.RemoveIfExists(jobItem.JobName);
-                return true;
+                context.Response.StatusCode = (int) HttpStatusCode.NoContent;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(ex.Message);
+                return;
             }
         }
-
 
         /// <summary>
         /// 添加周期性作业
@@ -467,15 +634,17 @@ namespace Hangfire.HttpJob.Server
 
             try
             {
-                var timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone??TimeZoneInfo.Local;
+                var timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的
-                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never, timeZone, jobItem.QueueName.ToLower());
+                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
+                        timeZone, jobItem.QueueName.ToLower());
                     return true;
                 }
 
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron, timeZone, jobItem.QueueName.ToLower());
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
+                    timeZone, jobItem.QueueName.ToLower());
                 return true;
             }
             catch (Exception ex)
@@ -516,16 +685,31 @@ namespace Hangfire.HttpJob.Server
             {
                 Logger.ErrorException("HttpJobDispatcher.GetJobdata", ex);
             }
+
             return "";
         }
+
         /// <summary>
-        /// 获取常规作业的jobAgent类型的JobInfo
+        /// 获取jobAgent类型的JobInfo
         /// </summary>
-        /// <param name="jobItem"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private JobDetailInfo GetBackGroundJobDetail(HttpJobItem jobItem)
+        private async Task DoGetBackGroundJobDetail(DashboardContext context)
         {
+            var jobDetail = await GetBackGroundJobDetail(context);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int) HttpStatusCode.OK;
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(jobDetail));
+        }
+
+        /// <summary>
+        /// 获取jobAgent类型的JobInfo
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task<JobDetailInfo> GetBackGroundJobDetail(DashboardContext context)
+        {
+            var jobItem = await GetJobItem(context);
             var result = new JobDetailInfo();
             var jobName = string.Empty;
             try
@@ -542,6 +726,7 @@ namespace Hangfire.HttpJob.Server
                             result.Info = "GetJobDetail Error：can not found job by id:" + jobItem.JobName;
                             return result;
                         }
+
                         job = jobData.Job;
                     }
                     else
@@ -558,6 +743,7 @@ namespace Hangfire.HttpJob.Server
                             result.Info = "GetJobDetail Error：can not found job by id:" + jobItem.JobName;
                             return result;
                         }
+
                         job = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
                     }
 

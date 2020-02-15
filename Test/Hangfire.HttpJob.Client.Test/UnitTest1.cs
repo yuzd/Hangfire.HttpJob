@@ -17,7 +17,37 @@ namespace Hangfire.HttpJob.Client.Test
                 Url = "http://localhost:5000/testaaa",
                 Mail = new List<string> {"1877682825@qq.com"},
                 SendSucMail = true,
-                DelayFromMinutes = 1
+                DelayFromMinutes = 1,
+                Success = new HttpChildJob
+                {
+                    Method = "Get",
+                    Url = "http://localhost:5000/testSuccess",
+                    Success  = new HttpChildJob
+                    {
+                        Method = "Get",
+                        Url = "http://localhost:5000/testSuccess",
+                    },
+                    Fail = new HttpChildJob
+                    {
+                        Method = "Get",
+                        Url = "http://localhost:5000/testFail"
+                    }
+                },
+                Fail = new HttpChildJob
+                {
+                    Method = "Get",
+                    Url = "http://localhost:5000/testFail",
+                    Success  = new HttpChildJob
+                    {
+                        Method = "Get",
+                        Url = "http://localhost:5000/testSuccess",
+                    },
+                    Fail = new HttpChildJob
+                    {
+                        Method = "Get",
+                        Url = "http://localhost:5000/testFail"
+                    }
+                }
             }, new HangfireServerPostOption
             {
                 BasicUserName = "admin",

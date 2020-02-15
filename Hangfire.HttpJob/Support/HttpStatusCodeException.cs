@@ -13,4 +13,12 @@ namespace Hangfire.HttpJob.Support
             
         }
     }
+    
+    public class ChildJobException:Exception
+    {
+        public ChildJobException(string code):base($"ChildJob Fail ===> {code} ")
+        {
+            
+        }
+    }
 }

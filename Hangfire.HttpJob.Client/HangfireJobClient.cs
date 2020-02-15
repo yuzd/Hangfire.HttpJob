@@ -1,6 +1,7 @@
 ﻿using HttpClientFactory.Impl;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -55,17 +56,19 @@ namespace Hangfire.HttpJob.Client
             {
                 throw new ArgumentNullException(nameof(backgroundJob));
             }
-
+            
             if (string.IsNullOrEmpty(backgroundJob.Url))
             {
                 throw new ArgumentNullException(nameof(backgroundJob.Url));
             }
-
+            
             if (string.IsNullOrEmpty(backgroundJob.JobName))
             {
                 throw new ArgumentNullException(nameof(backgroundJob.JobName));
             }
 
+            CheckChildJob(backgroundJob.Success, backgroundJob.Fail);
+            
             if (option == null) option = new HangfireServerPostOption();
             option.HttpClient = !string.IsNullOrEmpty(option.ProxyUrl) ?
                 HangfireJobHttpClientFactory.GetProxiedHttpClient(option.ProxyUrl) :
@@ -85,6 +88,7 @@ namespace Hangfire.HttpJob.Client
             var url = hangfireServerUrl.EndsWith("/httpjob?op=backgroundjob")
                 ? hangfireServerUrl
                 : hangfireServerUrl + "/httpjob?op=backgroundjob";
+            
             HttpJobItem jobItem = new HttpJobItem(url, option)
             {
                 Url = backgroundJob.Url,
@@ -105,6 +109,8 @@ namespace Hangfire.HttpJob.Client
                 AgentClass = backgroundJob.AgentClass,
                 Headers = backgroundJob.Headers
             };
+
+            AppendChildJob(jobItem, backgroundJob.Success, backgroundJob.Fail);
             return jobItem;
         }
         #endregion
@@ -147,11 +153,6 @@ namespace Hangfire.HttpJob.Client
                 throw new ArgumentNullException(nameof(recurringJob));
             }
 
-            if (string.IsNullOrEmpty(recurringJob.Url))
-            {
-                throw new ArgumentNullException(nameof(recurringJob.Url));
-            }
-
             if (string.IsNullOrEmpty(recurringJob.JobName))
             {
                 throw new ArgumentNullException(nameof(recurringJob.JobName));
@@ -161,6 +162,8 @@ namespace Hangfire.HttpJob.Client
             {
                 throw new ArgumentNullException(nameof(recurringJob.Cron));
             }
+            
+            CheckChildJob(recurringJob.Success, recurringJob.Fail);
 
             if (option == null) option = new HangfireServerPostOption();
             option.HttpClient = !string.IsNullOrEmpty(option.ProxyUrl) ?
@@ -202,6 +205,8 @@ namespace Hangfire.HttpJob.Client
                 AgentClass = recurringJob.AgentClass,
                 Headers = recurringJob.Headers
             };
+            
+            AppendChildJob(jobItem,recurringJob.Success,recurringJob.Fail);
             return jobItem;
         }
         #endregion
@@ -266,6 +271,106 @@ namespace Hangfire.HttpJob.Client
         }
 
         #endregion
-       
+
+        /// <summary>
+        /// 检查子Job参数
+        /// </summary>
+        /// <param name="success"></param>
+        /// <param name="fail"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        private static void CheckChildJob(HttpChildJob success,HttpChildJob fail)
+        {
+            var list = new List<HttpChildJob>();
+
+            void AddAllJobItem(HttpChildJob item, List<HttpChildJob> listOut)
+            {
+                listOut.Add(item);
+                if (item.Success != null)
+                {
+                    AddAllJobItem(item.Success, listOut);
+                }
+
+                if (item.Fail != null)
+                {
+                    AddAllJobItem(item.Fail, listOut);
+                }
+            }
+
+            if(success!=null)AddAllJobItem(success, list);
+            if(fail!=null)AddAllJobItem(fail, list);
+
+            foreach (var job in list)
+            {
+                if (string.IsNullOrEmpty(job.Url))
+                {
+                    throw new ArgumentNullException(nameof(HttpChildJob.Url));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 包装子Job
+        /// </summary>
+        /// <param name="httpJobItem"></param>
+        /// <param name="success"></param>
+        /// <param name="fail"></param>
+        private static void AppendChildJob(BaseHttpJobInfo httpJobItem,HttpChildJob success,HttpChildJob fail)
+        {
+            if (success != null)
+            {
+                string ___data;
+                if (success.Data is string _dataStr)
+                {
+                    ___data = _dataStr;
+                }
+                else
+                {
+                    ___data = JsonConvert.SerializeObject(success.Data);
+                }
+                
+                httpJobItem.Success = new BaseHttpJobInfo()
+                {
+                    Url = success.Url,
+                    Method = success.Method,
+                    Data = ___data,
+                    ContentType = success.ContentType,
+                    Timeout = success.Timeout,
+                    BasicUserName = success.BasicUserName,
+                    BasicPassword = success.BasicPassword,
+                    AgentClass = success.AgentClass,
+                    Headers = success.Headers
+                };
+
+                AppendChildJob(httpJobItem.Success, success.Success, success.Fail);
+            }
+
+            if (fail != null)
+            {
+                string ___data;
+                if (fail.Data is string _dataStr)
+                {
+                    ___data = _dataStr;
+                }
+                else
+                {
+                    ___data = JsonConvert.SerializeObject(fail.Data);
+                }
+                
+                httpJobItem.Fail = new BaseHttpJobInfo()
+                {
+                    Url = fail.Url,
+                    Method = fail.Method,
+                    Data = ___data,
+                    ContentType = fail.ContentType,
+                    Timeout = fail.Timeout,
+                    BasicUserName = fail.BasicUserName,
+                    BasicPassword = fail.BasicPassword,
+                    AgentClass = fail.AgentClass,
+                    Headers = fail.Headers
+                };
+
+                AppendChildJob(httpJobItem.Fail, fail.Success, fail.Fail);
+            }
+        }
     }
 }

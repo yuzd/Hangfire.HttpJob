@@ -12,26 +12,9 @@ using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Client
 {
-    internal class HttpJobItem
+
+    internal class BaseHttpJobInfo
     {
-        private readonly string _hangfireUrl;
-        private readonly HangfireServerPostOption _httpPostOption;
-
-        private HttpJobItem()
-        {
-            Method = "Post";
-            ContentType = "application/json";
-            Timeout = 20000;
-            DelayFromMinutes = 15;
-        }
-
-        public HttpJobItem(string hangfireUrl, HangfireServerPostOption option) :this()
-        {
-            _hangfireUrl = hangfireUrl;
-            _httpPostOption = option;
-        }
-
-
         #region HttpJob
         /// <summary>
         /// 请求Url
@@ -98,7 +81,28 @@ namespace Hangfire.HttpJob.Client
 
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
+        public BaseHttpJobInfo Success { get; set; }
+        public BaseHttpJobInfo Fail { get; set; }
         #endregion
+    }
+    internal class HttpJobItem:BaseHttpJobInfo
+    {
+        private readonly string _hangfireUrl;
+        private readonly HangfireServerPostOption _httpPostOption;
+
+        private HttpJobItem()
+        {
+            Method = "Post";
+            ContentType = "application/json";
+            Timeout = 20000;
+            DelayFromMinutes = 15;
+        }
+
+        public HttpJobItem(string hangfireUrl, HangfireServerPostOption option) :this()
+        {
+            _hangfireUrl = hangfireUrl;
+            _httpPostOption = option;
+        }
 
         /// <summary>
         /// 发送请求
