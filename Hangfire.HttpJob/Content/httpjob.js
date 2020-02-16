@@ -262,7 +262,6 @@
                 window.jsonEditor = new JSONEditor(container, options);
                 window.jsonViewEditor = new JSONEditor(container2, options);
             } catch (e) {
-                Console.log(e);
             }
 
             $('#addHttpJob').click(function () {
