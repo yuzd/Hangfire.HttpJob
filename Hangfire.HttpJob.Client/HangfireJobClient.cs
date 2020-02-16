@@ -107,7 +107,8 @@ namespace Hangfire.HttpJob.Client
                 BasicUserName = backgroundJob.BasicUserName,
                 BasicPassword = backgroundJob.BasicPassword,
                 AgentClass = backgroundJob.AgentClass,
-                Headers = backgroundJob.Headers
+                Headers = backgroundJob.Headers,
+                CallbackEL = backgroundJob.CallbackEL
             };
 
             AppendChildJob(jobItem, backgroundJob.Success, backgroundJob.Fail);
@@ -203,7 +204,8 @@ namespace Hangfire.HttpJob.Client
                 BasicUserName = recurringJob.BasicUserName,
                 BasicPassword = recurringJob.BasicPassword,
                 AgentClass = recurringJob.AgentClass,
-                Headers = recurringJob.Headers
+                Headers = recurringJob.Headers,
+                CallbackEL = recurringJob.CallbackEL
             };
             
             AppendChildJob(jobItem,recurringJob.Success,recurringJob.Fail);
@@ -338,7 +340,9 @@ namespace Hangfire.HttpJob.Client
                     BasicUserName = success.BasicUserName,
                     BasicPassword = success.BasicPassword,
                     AgentClass = success.AgentClass,
-                    Headers = success.Headers
+                    Headers = success.Headers,
+                    CallbackEL = success.CallbackEL
+
                 };
 
                 AppendChildJob(httpJobItem.Success, success.Success, success.Fail);
@@ -366,7 +370,8 @@ namespace Hangfire.HttpJob.Client
                     BasicUserName = fail.BasicUserName,
                     BasicPassword = fail.BasicPassword,
                     AgentClass = fail.AgentClass,
-                    Headers = fail.Headers
+                    Headers = fail.Headers,
+                    CallbackEL = fail.CallbackEL
                 };
 
                 AppendChildJob(httpJobItem.Fail, fail.Success, fail.Fail);

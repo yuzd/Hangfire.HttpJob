@@ -9,8 +9,17 @@ namespace Hangfire.HttpJob.Support
     public class HttpStatusCodeException:Exception
     {
         public string Msg  { get; set; }
+        public bool IsEl  { get; set; }
+        public string El  { get; set; }
         public HttpStatusCodeException(HttpStatusCode code,string data):base($"{Strings.ResponseCode}:{code} ===> CheckResult: Fail ")
         {
+            Msg = data;
+        }
+
+        public HttpStatusCodeException(string el, string data) : base($"{Strings.CallbackELExcuteError}:{el} ===> CheckResult: Fail ")
+        {
+            IsEl = true;
+            El = el;
             Msg = data;
         }
     }

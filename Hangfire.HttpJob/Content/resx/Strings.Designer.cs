@@ -97,6 +97,24 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 CallbackEL Excute Error 的本地化字符串。
+        /// </summary>
+        public static string CallbackELExcuteError {
+            get {
+                return ResourceManager.GetString("CallbackELExcuteError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 CallbackEL Excute Result 的本地化字符串。
+        /// </summary>
+        public static string CallbackELExcuteResult {
+            get {
+                return ResourceManager.GetString("CallbackELExcuteResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Callback Fail 的本地化字符串。
         /// </summary>
         public static string CallbackFail {

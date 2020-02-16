@@ -112,6 +112,12 @@ namespace Hangfire.HttpJob.Server
         [JsonIgnore]
         public string CallbackRoot { get; set; }
 
+
+        /// <summary>
+        /// 判断是否成功还是失败的EL表达式
+        /// </summary>
+        public string CallbackEL { get; set; }
+
         /// <summary>
         /// 上层job执行成功的回调
         /// </summary>
@@ -199,10 +205,13 @@ namespace Hangfire.HttpJob.Server
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
 
+
+        public string CallbackEL { get; set; }
+
         /// <summary>
         /// 上层job执行成功的回调
         /// </summary>
-     
+
         public RecurringJobChildItem Success { get; set; }
         
         /// <summary>

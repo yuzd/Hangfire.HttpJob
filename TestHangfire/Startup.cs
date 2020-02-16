@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Data;
 using Hangfire.Tags;
 using Hangfire.Tags.Mysql;
+using Newtonsoft.Json;
 
 namespace TestHangfire
 {
@@ -152,7 +153,7 @@ namespace TestHangfire
             }
            
 
-            app.Run(async (context) => { await context.Response.WriteAsync("ok."); });
+            app.Run(async (context) => { await context.Response.WriteAsync(JsonConvert.SerializeObject(new { Success = false, Info = "ok" })); });
         }
     }
 }

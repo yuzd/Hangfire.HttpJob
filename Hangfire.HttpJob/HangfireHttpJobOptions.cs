@@ -52,7 +52,7 @@ namespace Hangfire.HttpJob
         /// 检查HttpResponseStatusCode
         ///  如果不指定 < 400 = error
         /// </summary>
-        public Func<HttpStatusCode, bool> CheckHttpResponseStatusCode;
+        public Func<HttpStatusCode,string, bool> CheckHttpResponseStatusCode;
 
 
         #region 按钮名称和标题等自定义展示名称

@@ -327,4 +327,10 @@
   <data name="ReplacePlaceHolder" xml:space="preserve">
     <value>占位符替换</value>
   </data>
+  <data name="CallbackELExcuteError" xml:space="preserve">
+    <value>回调条件错误</value>
+  </data>
+  <data name="CallbackELExcuteResult" xml:space="preserve">
+    <value>回调条件结果</value>
+  </data>
 </root>

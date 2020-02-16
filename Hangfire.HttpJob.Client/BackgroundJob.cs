@@ -59,7 +59,12 @@ namespace Hangfire.HttpJob.Client
         /// 代理设置
         /// </summary>
         public string AgentClass { get; set; }
-        
+
+        /// <summary>
+        /// 判断是否成功还是失败的EL表达式
+        /// </summary>
+        public string CallbackEL { get; set; }
+
         /// <summary>
         /// Header
         /// </summary>
@@ -164,7 +169,13 @@ namespace Hangfire.HttpJob.Client
         /// 代理设置
         /// </summary>
         public string AgentClass { get; set; }
-        
+
+        /// <summary>
+        /// 判断是否成功还是失败的EL表达式
+        /// </summary>
+        public string CallbackEL { get; set; }
+
+
         /// <summary>
         /// Header
         /// </summary>

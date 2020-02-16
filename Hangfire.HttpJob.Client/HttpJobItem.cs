@@ -81,6 +81,12 @@ namespace Hangfire.HttpJob.Client
 
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
+
+        /// <summary>
+        /// 判断是否成功还是失败的EL表达式
+        /// </summary>
+        public string CallbackEL { get; set; }
+
         public BaseHttpJobInfo Success { get; set; }
         public BaseHttpJobInfo Fail { get; set; }
         #endregion

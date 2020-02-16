@@ -43,7 +43,7 @@ namespace Hangfire.HttpJob
             if (options.GlobalHttpTimeOut < 2000) options.GlobalHttpTimeOut = 2000;
             if (options.CheckHttpResponseStatusCode == null)
             {
-                options.CheckHttpResponseStatusCode = code => ((int)code) < 400;
+                options.CheckHttpResponseStatusCode = (code,result) => ((int)code) < 400;
             }
 
             if (string.IsNullOrEmpty(options.GlobalSettingJsonFilePath))

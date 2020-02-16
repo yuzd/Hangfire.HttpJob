@@ -78,8 +78,8 @@
                 mode: 'code'
             };
 
-            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
-            var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\"}";
+            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
+            var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton)   {
                 button =

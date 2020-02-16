@@ -327,4 +327,10 @@
   <data name="ReplacePlaceHolder" xml:space="preserve">
     <value>Replace PlaceHolder</value>
   </data>
+  <data name="CallbackELExcuteError" xml:space="preserve">
+    <value>CallbackEL Excute Error</value>
+  </data>
+  <data name="CallbackELExcuteResult" xml:space="preserve">
+    <value>CallbackEL Excute Result</value>
+  </data>
 </root>
