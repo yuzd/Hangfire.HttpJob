@@ -312,4 +312,19 @@
   <data name="LimitReached" xml:space="preserve">
     <value>Error retry limit reached</value>
   </data>
+  <data name="CallbackFail" xml:space="preserve">
+    <value>Callback Fail</value>
+  </data>
+  <data name="CallbackStart" xml:space="preserve">
+    <value>Callback Start</value>
+  </data>
+  <data name="CallbackSuccess" xml:space="preserve">
+    <value>Callback Success</value>
+  </data>
+  <data name="GobalSettingButtonName" xml:space="preserve">
+    <value>Global Config</value>
+  </data>
+  <data name="ReplacePlaceHolder" xml:space="preserve">
+    <value>Replace PlaceHolder</value>
+  </data>
 </root>

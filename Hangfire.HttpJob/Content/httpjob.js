@@ -60,9 +60,13 @@
 
             var button = '';
             var AddCronButton = '';
+            var GlobalSetButton = '';
+            var josnDiv = '';
             var PauseButton = '';
             var EditRecurringJobutton = '';
             var editgeturl = config.GetRecurringJobUrl;
+            var getGlobalJsonurl = config.GetGlobalSettingUrl;
+            var postGlobalJsonurl = config.PostGlobalSettingUrl;
             var pauseurl = config.PauseJobUrl;
             var startBackgroudJobUrl = config.StartBackgroudJobUrl;
             var stopBackgroudJobUrl = config.StopBackgroudJobUrl;
@@ -89,8 +93,10 @@
                     '<div class="modal-header">' +
                     '<h4 class="modal-title">' + config.AddHttpJobButtonName + '</h4>' +
                     '</div>' +
-                    '<div class="modal-body">' +
-                    '<div class="editor_holder" style="height: 280px;"></div>' +
+                    ' <div class="modal-body" style="padding:0">' +
+                    '<div class="form-group">' +
+                    ' <div class="editor_holder" style="height: 350px;"></div>' +
+                    '</div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
@@ -132,12 +138,14 @@
                     '<div class="modal-header">' +
                     '<h4 class="modal-title">' + config.AddRecurringJobHttpJobButtonName + '</h4>' +
                     '</div>' +
-                    '<div class="modal-body">' +
-                    '<div class="editor_holder" style="height: 280px;"></div>' +
+                    ' <div class="modal-body" style="padding:0">' +
+                    '<div class="form-group">' +
+                    ' <div class="editor_holder" style="height: 350px;"></div>' +
+                    '</div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
-                    '<button type="button" class="btn btn-primary" id="addhttpJob_save-model" data-url="' + config.AddRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
+                '<button type="button" class="btn btn-primary" id="addhttpJob_save-model"  data-title="' + config.AddRecurringJobHttpJobButtonName +'" data-url="' + config.AddRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
                     '</div>' +
                     ' </div>' +
                     ' </div>' +
@@ -159,12 +167,14 @@
                     '<div class="modal-header">' +
                     '<h4 class="modal-title">' + config.EditRecurringJobButtonName + '</h4>' +
                     '</div>' +
-                    '<div class="modal-body">' +
-                    '<div class="editor_holder" style="height: 280px;"></div>' +
+                ' <div class="modal-body" style="padding:0">' +
+                    '<div class="form-group">' +
+                    ' <div class="editor_holder" style="height: 350px;"></div>' +
+                    '</div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
-                    '<button type="button" class="btn btn-primary" id="addhttpJob_save-model" data-url="' + config.EditRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
+                '<button type="button" class="btn btn-primary" id="addhttpJob_save-model" data-title="' + config.EditRecurringJobButtonName+'" data-url="' + config.EditRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
                     '</div>' +
                     ' </div>' +
                     ' </div>' +
@@ -176,6 +186,29 @@
                 AddCronButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" id="AddCron">' +
                     '<span class="glyphicon glyphicon-time"> ' + config.AddCronButtonName + '</span>' +
                     '</button>';
+
+                GlobalSetButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" id="GlobalSet">' +
+                    '<span class="glyphicon glyphicon-cog"> ' + config.GlobalSetButtonName + '</span>' +
+                    '</button>';
+                josnDiv =
+                    '<div class="modal inmodal" id="jsonModel" tabindex="-1" role="dialog" aria-hidden="true">' +
+                        '<div class="modal-dialog" >' +
+                        '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                '<h4 class="modal-title">' + config.GlobalSetButtonName + '</h4>' +
+                    '</div>' +
+                    ' <div class="modal-body" style="padding:0">' +
+                        '<div class="form-group">' +
+                        ' <div class="editor_holder2" style="height: 350px;"></div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer">' +
+                '<button type="button" class="btn btn-danger" id="colseconfig_close-model">' + config.CloseButtonName + '</button>' +
+                '<button type="button" class="btn btn-success" data-title="' + config.GlobalSetButtonName +'"  id="saveconfig_close-model">' + config.SubmitButtonName+'</button>' +
+                        '  </div>' +
+                        '  </div>' +
+                        '</div>' +
+                        '</div>';
             }
 
             //暂停和启用任务
@@ -193,10 +226,13 @@
             $('.page-header').append(button);
             $('.page-header').append(EditRecurringJobutton);
             $('.page-header').append(AddCronButton);
+            $('.page-header').append(GlobalSetButton);
+           
            
            
             $(document.body).append(divModel);
             $(document.body).append(jobDetailModel);
+            $(document.body).append(josnDiv);
             if (config.NeedEditRecurringJobButton) {
 
                 //启动或暂停
@@ -221,9 +257,10 @@
             }
 
             var container = $('.editor_holder')[0];
-
+            var container2 = $('.editor_holder2')[0];
             try {
                 window.jsonEditor = new JSONEditor(container, options);
+                window.jsonViewEditor = new JSONEditor(container2, options);
             } catch (e) {
                 Console.log(e);
             }
@@ -520,7 +557,94 @@
                 });
             }
 
-  
+
+            //全局配置
+            $('#GlobalSet').click(function() {
+                $(".modal-title").html(config.GlobalSetButtonName);
+                $.ajax({
+                    type: "post",
+                    url: getGlobalJsonurl,
+                    contentType: "html",
+                    async: true,
+                    success: function (returndata) {
+                        if (!returndata || returndata.length < 1) {
+                            $('#jsonModel').modal({
+                                backdrop: 'static',
+                                keyboard: false
+                            });
+                            return;
+                        }
+                        if (returndata.substr(0, 4) == 'err:') {
+                            swal({
+                                title: "",
+                                text: returndata,
+                                type: "error"
+                            });
+                            return;
+                        }
+                        window.jsonViewEditor.setText(returndata);
+                        window.jsonViewEditor.format();
+                        $('#jsonModel').modal({
+                            backdrop: 'static',
+                            keyboard: false
+                        });
+                    },
+                    fail: function (errText) {
+                        swal({
+                            title: "",
+                            text: errText.responseText || "get json fail！",
+                            type: "error"
+                        });
+                    }
+
+                });
+               
+            });
+
+            function jsonSave() {
+                var json = window.jsonViewEditor.getText();
+                if (json.length < 1) {
+                    swal({
+                        title: "",
+                        text: 'please input json',
+                        type: "error"
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    type: "post",
+                    url: postGlobalJsonurl,
+                    contentType: "html",
+                    data: json,
+                    async: true,
+                    success: function (returndata) {
+                        if (returndata.substr(0, 4) == 'err:') {
+                            swal({
+                                title: "",
+                                text: returndata,
+                                type: "error"
+                            });
+                            return;
+                        } else {
+                            swal({
+                                title: "",
+                                text: 'save success',
+                                type: "success"
+                            });
+                        }
+                        close_json_editor();
+                    },
+                    fail: function (errText) {
+                        swal({
+                            title: "",
+                            text: errText.responseText || "save fail！",
+                            type: "error"
+                        });
+                    }
+
+                });
+            }
 
             //编辑任务
             $("#EditJob").click(function () {
@@ -568,13 +692,25 @@
             });
             //打开cron表达式页面
             $("#AddCron").click(function () {
-                window.location.href = config.AddCronUrl;
+                window.open(config.AddCronUrl);
             });
             $('#addhttpJob_close-model').click(function () {
+                close_json_editor();
+            });
+            $('#colseconfig_close-model').click(function () {
+                close_json_editor();
+            });
+
+            $('#saveconfig_close-model').click(function () {
+                jsonSave();
+            });
+            function close_json_editor() {
+                $('#jsonModel').modal('hide');
                 $('#jobDetailModel').modal('hide');
                 $('#httpJobModal').modal('hide');
                 window.jsonEditor.setText('{}');
-            });
+                window.jsonViewEditor.setText('{}');
+            }
             $('#getJobDetail_close-model').click(function () {
                 $('#jobNameSpan').html('');
                 $('#jobDetailModel').modal('hide');
@@ -584,6 +720,7 @@
                 var url = $(this).data("url");
                 if (!url) return;
                 var obj = window.jsonEditor.get();
+
                 if (obj && obj.Data) {
                     if (typeof obj.Data === 'string' || obj.Data instanceof String) {
                     } else {
@@ -591,6 +728,22 @@
                     }
 
                     if (obj.Data == '{}') obj.Data = '';
+                }
+                if (obj && obj.Success &&  obj.Success.Data) {
+                    if (typeof obj.Success.Data === 'string' || obj.Success.Data instanceof String) {
+                    } else {
+                        obj.Success.Data = JSON.stringify(obj.Success.Data);
+                    }
+
+                    if (obj.Success.Data == '{}') obj.Success.Data = '';
+                }
+                if (obj && obj.Fail && obj.Fail.Data) {
+                    if (typeof obj.Fail.Data === 'string' || obj.Fail.Data instanceof String) {
+                    } else {
+                        obj.Fail.Data = JSON.stringify(obj.Fail.Data);
+                    }
+
+                    if (obj.Fail.Data == '{}') obj.Fail.Data = '';
                 }
                 var settings = {
                     "async": true,

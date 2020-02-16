@@ -107,6 +107,12 @@ namespace Hangfire.HttpJob.Server
         public Dictionary<string,string> Headers { get; set; }
 
         /// <summary>
+        /// 记录回调路径
+        /// </summary>
+        [JsonIgnore]
+        public string CallbackRoot { get; set; }
+
+        /// <summary>
         /// 上层job执行成功的回调
         /// </summary>
         public HttpJobItem Success { get; set; }

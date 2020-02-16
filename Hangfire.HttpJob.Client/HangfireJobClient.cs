@@ -278,11 +278,11 @@ namespace Hangfire.HttpJob.Client
         /// <param name="success"></param>
         /// <param name="fail"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        private static void CheckChildJob(HttpChildJob success,HttpChildJob fail)
+        private static void CheckChildJob(HttpCallbackJob success,HttpCallbackJob fail)
         {
-            var list = new List<HttpChildJob>();
+            var list = new List<HttpCallbackJob>();
 
-            void AddAllJobItem(HttpChildJob item, List<HttpChildJob> listOut)
+            void AddAllJobItem(HttpCallbackJob item, List<HttpCallbackJob> listOut)
             {
                 listOut.Add(item);
                 if (item.Success != null)
@@ -303,7 +303,7 @@ namespace Hangfire.HttpJob.Client
             {
                 if (string.IsNullOrEmpty(job.Url))
                 {
-                    throw new ArgumentNullException(nameof(HttpChildJob.Url));
+                    throw new ArgumentNullException(nameof(HttpCallbackJob.Url));
                 }
             }
         }
@@ -314,7 +314,7 @@ namespace Hangfire.HttpJob.Client
         /// <param name="httpJobItem"></param>
         /// <param name="success"></param>
         /// <param name="fail"></param>
-        private static void AppendChildJob(BaseHttpJobInfo httpJobItem,HttpChildJob success,HttpChildJob fail)
+        private static void AppendChildJob(BaseHttpJobInfo httpJobItem,HttpCallbackJob success,HttpCallbackJob fail)
         {
             if (success != null)
             {

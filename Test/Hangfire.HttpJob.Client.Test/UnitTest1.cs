@@ -18,31 +18,31 @@ namespace Hangfire.HttpJob.Client.Test
                 Mail = new List<string> {"1877682825@qq.com"},
                 SendSucMail = true,
                 DelayFromMinutes = 1,
-                Success = new HttpChildJob
+                Success = new HttpCallbackJob
                 {
                     Method = "Get",
                     Url = "http://localhost:5000/testSuccess",
-                    Success  = new HttpChildJob
+                    Success  = new HttpCallbackJob
                     {
                         Method = "Get",
                         Url = "http://localhost:5000/testSuccess",
                     },
-                    Fail = new HttpChildJob
+                    Fail = new HttpCallbackJob
                     {
                         Method = "Get",
                         Url = "http://localhost:5000/testFail"
                     }
                 },
-                Fail = new HttpChildJob
+                Fail = new HttpCallbackJob
                 {
                     Method = "Get",
                     Url = "http://localhost:5000/testFail",
-                    Success  = new HttpChildJob
+                    Success  = new HttpCallbackJob
                     {
                         Method = "Get",
                         Url = "http://localhost:5000/testSuccess",
                     },
-                    Fail = new HttpChildJob
+                    Fail = new HttpCallbackJob
                     {
                         Method = "Get",
                         Url = "http://localhost:5000/testFail"

@@ -312,4 +312,19 @@
   <data name="LimitReached" xml:space="preserve">
     <value>错误重试已达到上限!</value>
   </data>
+  <data name="CallbackFail" xml:space="preserve">
+    <value>回调失败</value>
+  </data>
+  <data name="CallbackStart" xml:space="preserve">
+    <value>回调开始</value>
+  </data>
+  <data name="CallbackSuccess" xml:space="preserve">
+    <value>回调成功</value>
+  </data>
+  <data name="GobalSettingButtonName" xml:space="preserve">
+    <value>全局配置</value>
+  </data>
+  <data name="ReplacePlaceHolder" xml:space="preserve">
+    <value>占位符替换</value>
+  </data>
 </root>

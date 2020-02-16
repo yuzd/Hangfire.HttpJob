@@ -1,15 +1,20 @@
-﻿using Hangfire.Dashboard;
+﻿using System;
+using System.IO;
+using Hangfire.Dashboard;
 using Hangfire.HttpJob.Dashboard;
 using Hangfire.HttpJob.Server;
 using Hangfire.HttpJob.Support;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.HttpJob.Dashboard.Pages;
+using Hangfire.Logging;
 
 namespace Hangfire.HttpJob
 {
     public static class GlobalConfigurationExtension
     {
+        private static readonly ILog Logger = LogProvider.For<HangfireHttpJobOptions>();
+
         public static IGlobalConfiguration UseHangfireHttpJob(this IGlobalConfiguration config, HangfireHttpJobOptions options = null)
         {
             if (options == null) options = new HangfireHttpJobOptions();
@@ -40,6 +45,24 @@ namespace Hangfire.HttpJob
             {
                 options.CheckHttpResponseStatusCode = code => ((int)code) < 400;
             }
+
+            if (string.IsNullOrEmpty(options.GlobalSettingJsonFilePath))
+            {
+                options.GlobalSettingJsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hangfire_global.json");
+            }
+
+            if (!File.Exists(options.GlobalSettingJsonFilePath))
+            {
+                try
+                {
+                    File.WriteAllText(options.GlobalSettingJsonFilePath,"");//如果没有权限则会报错
+                }
+                catch (Exception e)
+                {
+                    Logger.WarnException($"{nameof(HangfireHttpJobOptions.GlobalSettingJsonFilePath)}:[{options.GlobalSettingJsonFilePath}] access error",e);
+                }
+            }
+
             Server.HttpJob.HangfireHttpJobOptions = options;
 
             return config;

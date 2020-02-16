@@ -97,6 +97,33 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 Callback Fail 的本地化字符串。
+        /// </summary>
+        public static string CallbackFail {
+            get {
+                return ResourceManager.GetString("CallbackFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Callback Start 的本地化字符串。
+        /// </summary>
+        public static string CallbackStart {
+            get {
+                return ResourceManager.GetString("CallbackStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Callback Success 的本地化字符串。
+        /// </summary>
+        public static string CallbackSuccess {
+            get {
+                return ResourceManager.GetString("CallbackSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 (choose one or many) 的本地化字符串。
         /// </summary>
         public static string Choose {
@@ -304,6 +331,15 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 Global Config 的本地化字符串。
+        /// </summary>
+        public static string GobalSettingButtonName {
+            get {
+                return ResourceManager.GetString("GobalSettingButtonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Hours 的本地化字符串。
         /// </summary>
         public static string Hours {
@@ -480,6 +516,15 @@ namespace Hangfire.HttpJob.Content.resx {
         public static string QueuenName {
             get {
                 return ResourceManager.GetString("QueuenName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Replace PlaceHolder 的本地化字符串。
+        /// </summary>
+        public static string ReplacePlaceHolder {
+            get {
+                return ResourceManager.GetString("ReplacePlaceHolder", resourceCulture);
             }
         }
         

@@ -108,7 +108,7 @@ namespace Hangfire.HttpJob.Client
         /// </summary>
         public Dictionary<string,string> Headers { get; set; } = new Dictionary<string, string>();
         
-        public HttpChildJob Success { get; set; }
-        public HttpChildJob Fail { get; set; }
+        public HttpCallbackJob Success { get; set; }
+        public HttpCallbackJob Fail { get; set; }
     }
 }

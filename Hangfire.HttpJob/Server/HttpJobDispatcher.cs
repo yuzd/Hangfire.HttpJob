@@ -82,6 +82,16 @@ namespace Hangfire.HttpJob.Server
                     await StopBackgroudJob(context);
                     return;
                 }
+                else if (op == "getglobalsetting")
+                {
+                    await GetGlobalSetting(context);
+                    return;
+                }
+                else if (op == "saveglobalsetting")
+                {
+                    await SaveGlobalSetting(context);
+                    return;
+                }
 
                 context.Response.StatusCode = (int) HttpStatusCode.MethodNotAllowed;
             }
@@ -91,6 +101,64 @@ namespace Hangfire.HttpJob.Server
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
                 return;
+            }
+        }
+
+        /// <summary>
+        /// 保存全局配置
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task SaveGlobalSetting(DashboardContext context)
+        {
+            try
+            {
+                var content = await GetRequestBody<string>(context);
+                if (string.IsNullOrEmpty(content))
+                {
+                    await context.Response.WriteAsync("err: json invaild");
+                    return;
+                }
+
+                var jsonString = ConvertJsonString(content);
+                if (string.IsNullOrEmpty(jsonString))
+                {
+                    await context.Response.WriteAsync($"err: invaild json !");
+                    return;
+                }
+
+                File.WriteAllText(Server.HttpJob.HangfireHttpJobOptions.GlobalSettingJsonFilePath, jsonString);
+            }
+            catch (Exception e)
+            {
+                await context.Response.WriteAsync("err:"+e.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// 获取全局配置
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task GetGlobalSetting(DashboardContext context)
+        {
+            var path = Server.HttpJob.HangfireHttpJobOptions.GlobalSettingJsonFilePath;
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    File.WriteAllText(path,"");//如果没有权限则会报错
+                    await context.Response.WriteAsync("");
+                    return;
+                }
+
+                var content = File.ReadAllText(path);
+                await context.Response.WriteAsync(content);
+            }
+            catch (Exception e)
+            {
+                await context.Response.WriteAsync($"err:{nameof(HangfireHttpJobOptions.GlobalSettingJsonFilePath)}:[{path}] access error:{e.Message}");
             }
         }
 
@@ -171,7 +239,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task<(HttpJobItem, string)> GetCheckedJobItem(DashboardContext context)
         {
-            var jobItem = await GetJobItem(context);
+            var jobItem = await GetRequestBody<HttpJobItem>(context);
             if (jobItem == null)
             {
                 return (null, "get job data fail");
@@ -245,7 +313,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task GetRecurringJobDetail(DashboardContext context)
         {
-            var jobItem = await GetJobItem(context);
+            var jobItem = await GetRequestBody<HttpJobItem>(context);
 
             if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
             {
@@ -276,7 +344,7 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         /// <param name="_context"></param>
         /// <returns></returns>
-        public async Task<HttpJobItem> GetJobItem(DashboardContext _context)
+        public async Task<T> GetRequestBody<T>(DashboardContext _context)
         {
             try
             {
@@ -298,7 +366,7 @@ namespace Hangfire.HttpJob.Server
                     if (owinContext == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
-                        return null;
+                        return default(T);
                     }
 
                     var request = owinContext.GetType().GetProperty("Request")?.GetValue(owinContext);
@@ -306,20 +374,20 @@ namespace Hangfire.HttpJob.Server
                     if (request == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
-                        return null;
+                        return default(T);
                     }
 
                     body = request.GetType().GetProperty("Body")?.GetValue(request) as Stream;
                     if (body == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
-                        return null;
+                        return default(T);
                     }
                 }
 
                 if (body == null)
                 {
-                    return null;
+                    return default(T);
                 }
 
                 using (MemoryStream ms = new MemoryStream())
@@ -329,13 +397,17 @@ namespace Hangfire.HttpJob.Server
                     ms.Seek(0, SeekOrigin.Begin);
                     var sr = new StreamReader(ms);
                     var requestBody = await sr.ReadToEndAsync();
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<HttpJobItem>(requestBody);
+                    if (typeof(T) == typeof(String))
+                    {
+                        return (T)(object)requestBody;
+                    }
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(requestBody);
                 }
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.GetJobItem", ex);
-                return null;
+                return default(T);
             }
         }
 
@@ -379,7 +451,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jobItem = await GetJobItem(context);
+                var jobItem = await GetRequestBody<HttpJobItem>(context);
 
                 if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
                 {
@@ -427,7 +499,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jobItem = await GetJobItem(context);
+                var jobItem = await GetRequestBody<HttpJobItem>(context);
 
                 if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
                 {
@@ -537,7 +609,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task DoPauseOrRestartJob(DashboardContext context)
         {
-            var jobItem = await GetJobItem(context);
+            var jobItem = await GetRequestBody<HttpJobItem>(context);
             if (string.IsNullOrEmpty(jobItem.JobName))
             {
                 context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
@@ -566,7 +638,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jobItem = await GetJobItem(context);
+                var jobItem = await GetRequestBody<HttpJobItem>(context);
                 if (string.IsNullOrEmpty(jobItem.JobName))
                 {
                     context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
@@ -709,7 +781,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task<JobDetailInfo> GetBackGroundJobDetail(DashboardContext context)
         {
-            var jobItem = await GetJobItem(context);
+            var jobItem = await GetRequestBody<HttpJobItem>(context);
             var result = new JobDetailInfo();
             var jobName = string.Empty;
             try
@@ -779,6 +851,43 @@ namespace Hangfire.HttpJob.Server
                 Logger.ErrorException("HttpJobDispatcher.GetBackGroundJobDetail", ex);
                 result.Info = $"{(!string.IsNullOrEmpty(jobName) ? "【" + jobName + "】" : string.Empty)} GetJobDetail Error：" + ex.ToString();
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// 序列化jsonstring
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        private string ConvertJsonString(string str)
+        {
+            try
+            {
+                //格式化json字符串
+                JsonSerializer serializer = new JsonSerializer();
+                TextReader tr = new StringReader(str);
+                JsonTextReader jtr = new JsonTextReader(tr);
+                object obj = serializer.Deserialize(jtr);
+                if (obj != null)
+                {
+                    StringWriter textWriter = new StringWriter();
+                    JsonTextWriter jsonWriter = new JsonTextWriter(textWriter)
+                    {
+                        Formatting = Formatting.Indented,
+                        Indentation = 4,
+                        IndentChar = ' '
+                    };
+                    serializer.Serialize(jsonWriter, obj);
+                    return textWriter.ToString();
+                }
+                else
+                {
+                    return str;
+                }
+            }
+            catch (Exception)
+            {
+                return string.Empty;
             }
         }
     }
