@@ -121,7 +121,7 @@ namespace Hangfire.HttpJob.Agent.Config
         {
             var types = assembly.GetExportedTypes();
             var agengList = (from t in types
-                where t.BaseType == typeof(JobAgent) &&
+                where typeof(JobAgent).IsAssignableFrom(t) &&
                       !t.IsAbstract &&
                       !t.IsInterface
                 select t).ToList();

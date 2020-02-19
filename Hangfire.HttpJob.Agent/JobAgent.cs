@@ -69,9 +69,9 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         internal event EventHandler<TransitentJobDisposeArgs> TransitentJobDisposeEvent;
 
-        protected abstract Task OnStart(JobContext jobContext);
-        protected abstract void OnStop(JobContext jobContext);
-        protected abstract void OnException(Exception ex);
+        public abstract Task OnStart(JobContext jobContext);
+        public abstract void OnStop(JobContext jobContext);
+        public abstract void OnException(Exception ex);
 
 
         internal void Run(string param, IHangfireConsole console, ConcurrentDictionary<string, string> headers)

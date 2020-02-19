@@ -37,9 +37,9 @@ namespace Hangfire.HttpJob.Agent.Util
                 minute = Convert.ToInt16((t % 86400 % 3600) / 60);
                 second = Convert.ToInt16(t % 86400 % 3600 % 60);
                 if (type == 0)
-                    r = day + ("day") + hour + ("hour") + minute + ("minute") + second + ("second");
+                    r = day + ("D") + hour + ("H") + minute + ("M") + second + ("S");
                 else
-                    r = day + ("day") + hour + ("hour") + minute + ("minute");
+                    r = day + ("D") + hour + ("H") + minute + ("M");
 
             }
             else if (t >= 3600)//时,
@@ -48,20 +48,20 @@ namespace Hangfire.HttpJob.Agent.Util
                 minute = Convert.ToInt16((t % 3600) / 60);
                 second = Convert.ToInt16(t % 3600 % 60);
                 if (type == 0)
-                    r = hour + ("hour") + minute + ("minute") + second + ("second");
+                    r = hour + ("H") + minute + ("M") + second + ("S");
                 else
-                    r = hour + ("hour") + minute + ("minute");
+                    r = hour + ("H") + minute + ("M");
             }
             else if (t >= 60)//分
             {
                 minute = Convert.ToInt16(t / 60);
                 second = Convert.ToInt16(t % 60);
-                r = minute + ("minute") + second + ("second");
+                r = minute + ("M") + second + ("S");
             }
             else
             {
                 second = Convert.ToInt16(t);
-                r = second + ("second");
+                r = second + ("S");
             }
             return r;
         }

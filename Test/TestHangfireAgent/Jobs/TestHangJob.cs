@@ -18,7 +18,7 @@ namespace TestHangfireAgent.Jobs
             _logger = logger;
             _logger.LogInformation($"Create {nameof(TestHangJob)} Instance Success");
         }
-        protected override async Task OnStart(JobContext jobContext)
+        public override async Task OnStart(JobContext jobContext)
         {
             await Task.Delay(1000 * 10);
            
@@ -27,12 +27,12 @@ namespace TestHangfireAgent.Jobs
             throw new Exception("ddddd");
         }
 
-        protected override void OnStop(JobContext jobContext)
+        public override void OnStop(JobContext jobContext)
         {
             _logger.LogInformation("OnStop");
         }
 
-        protected override void OnException(Exception ex)
+        public override void OnException(Exception ex)
         {
             _logger.LogError(ex, nameof(OnException) + (ex.Data["Method"] ?? string.Empty));
         }
