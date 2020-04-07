@@ -175,6 +175,11 @@ namespace Hangfire.HttpJob.Client
         /// </summary>
         public string CallbackEL { get; set; }
 
+        /// <summary>
+        /// QueueName的名称 如果不配置就用默认的 DEFAULT
+        /// </summary>
+        public string QueueName { get; set; }
+
 
         /// <summary>
         /// Header

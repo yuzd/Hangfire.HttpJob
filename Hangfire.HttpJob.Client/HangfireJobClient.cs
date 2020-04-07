@@ -108,7 +108,8 @@ namespace Hangfire.HttpJob.Client
                 BasicPassword = backgroundJob.BasicPassword,
                 AgentClass = backgroundJob.AgentClass,
                 Headers = backgroundJob.Headers,
-                CallbackEL = backgroundJob.CallbackEL
+                CallbackEL = backgroundJob.CallbackEL,
+                QueueName = backgroundJob.QueueName
             };
 
             AppendChildJob(jobItem, backgroundJob.Success, backgroundJob.Fail);
