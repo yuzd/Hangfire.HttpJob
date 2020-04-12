@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Agent;
 using Hangfire.HttpJob.Agent.Attribute;
+using Hangfire.HttpJob.Agent.Util;
 using Microsoft.Extensions.Logging;
 
 namespace TestHangfireAgent.Jobs
@@ -24,6 +25,24 @@ namespace TestHangfireAgent.Jobs
             jobContext.Console.WriteLine("结束等待10秒");
             jobContext.Console.WriteLine("哈哈哈哈",ConsoleFontColor.Cyan);
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
+
+            var bar = jobContext.Console.WriteProgressBar("testbar", 10);
+
+            for (int i = 0; i < 10; i++)
+            {
+                bar.SetValue(i);
+                await Task.Delay(1000);
+            }
+
+            bar.SetValue(100);
+
+            var list = new List<string>{"dddd","2","222"};
+
+            foreach (var item in list.WithProgress(jobContext.Console))
+            {
+                jobContext.Console.WriteLine(item);
+            }
+
         }
 
         public override void OnStop(JobContext jobContext)

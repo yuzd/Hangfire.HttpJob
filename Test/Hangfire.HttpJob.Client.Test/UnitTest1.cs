@@ -115,6 +115,7 @@ namespace Hangfire.HttpJob.Client.Test
                 Mail = new List<string> { "1877682825@qq.com" },
                 SendSucMail = true,
                 DelayFromMinutes = 1,
+                QueueName = "APIS",
                 Headers = new Dictionary<string, string>
                 {
                     {"token" , "aaaa" }

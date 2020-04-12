@@ -15,7 +15,27 @@ namespace Hangfire.HttpJob.Agent
     public interface IHangfireConsole
     {
         void WriteLine(string message, ConsoleFontColor fontColor = null);
+        IProgressBar WriteProgressBar(string name, double initValue, ConsoleFontColor color = null);
     }
+
+    /// <summary>
+    /// Progress bar line inside console.
+    /// </summary>
+    public interface IProgressBar
+    {
+        /// <summary>
+        /// Updates a value of a progress bar.
+        /// </summary>
+        /// <param name="value">New value</param>
+        void SetValue(int value);
+
+        /// <summary>
+        /// Updates a value of a progress bar.
+        /// </summary>
+        /// <param name="value">New value</param>
+        void SetValue(double value);
+    }
+
     public interface IHangfireConsoleInit
     {
         void Init(ConsoleInfo consoleInfo);
@@ -24,6 +44,7 @@ namespace Hangfire.HttpJob.Agent
     public class ConsoleInfo
     {
         public string SetKey { get; set; }
+        public int ProgressBarId { get; set; }
         public string HashKey { get; set; }
         public DateTime StartTime { get; set; }
     }
