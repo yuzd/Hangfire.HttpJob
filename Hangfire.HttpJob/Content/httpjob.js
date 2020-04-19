@@ -783,6 +783,46 @@
 
     })();
 
+    
+
+    //if (/\/jobs\/details\/([^/]+)$/.test(path)) {
+    //    var console = $(".console").first();
+    //    if (console.length != 1) return;
+    //    var consoleId = $(console[0]).data('id');
+    //    if (!consoleId) return;
+    //    var url = window.Hangfire.config.consolePollUrl + consoleId;
+    //    var currentLine = $('.line-buffer,.line').length;
+
+        
+       
+        
+    //    function poolGetProgress(start) {
+    //        $.get(url,
+    //            { start: start },
+    //            function (data) {
+    //                //解析
+    //                var ele = $(data);
+    //                var lines = ele.find('.line');
+    //                var lastLine = ele[lines - 1];
+    //                var endLine = $(lastLine).html();
+    //                //判断是否结束了
+    //                if (endLine.indexOf('【JobAgent】【') > 0) {
+    //                    var target = endLine.split('【JobAgent】【')[1].split('】')[0];
+    //                    if (target.indexOf('OnStop') > -1) {
+    //                        return;
+    //                    }
+    //                }
+
+    //                //找到新增的
+
+
+
+    //            }, "html");
+    //    }
+
+       
+    //    poolGetProgress(currentLine);
+    //}
 })(window.Hangfire = window.Hangfire || {});
 
 //找出已经暂停的job
@@ -884,3 +924,226 @@ if (window.attachEvent) {
         window.onload = loadHttpJobModule;
     }
 }
+
+
+(function ($, hangfire) {
+    var pollUrl = hangfire.config.consolePollUrl;
+    var pollInterval = hangfire.config.consolePollInterval;
+    if (!pollUrl || !pollInterval)
+        throw new Error("Hangfire.Console2 was not properly configured");
+
+    hangfire.LineBuffer2 = (function () {
+        function updateMoments(container) {
+            $(".line span[data-moment-title]:not([title])", container).each(function () {
+                var $this = $(this),
+                    time = moment($this.data('moment-title'), 'X');
+                $this.prop('title', time.format('llll'))
+                    .attr('data-container', 'body');
+            });
+        }
+
+        function LineBuffer2(el) {
+            if (!el || el.length !== 1)
+                throw new Error("LineBuffer2 expects jQuery object with a single value");
+
+            this._el = el;
+            this._n = parseInt(el.data('n')) || 0;
+            updateMoments(el);
+        }
+
+        LineBuffer2.prototype.replaceWith = function (other) {
+            if (!(other instanceof LineBuffer2))
+                throw new Error("LineBuffer2.replaceWith() expects LineBuffer2 argument");
+
+            this._el.replaceWith(other._el);
+
+            this._n = other._n;
+            this._el = other._el;
+
+            $(".line span[data-moment-title]", this._el).tooltip();
+        };
+
+        LineBuffer2.prototype.append = function (other) {
+            if (!other) return;
+
+            if (!(other instanceof LineBuffer2))
+                throw new Error("LineBuffer2.append() expects LineBuffer2 argument");
+
+            var el = this._el;
+
+            $(".line.pb", other._el).each(function () {
+                var $this = $(this),
+                    $id = $this.data('id');
+
+                var pv = $(".line.pb[data-id='" + $id + "'] .pv", el);
+                if (pv.length === 0) return;
+
+                var $pv = $(".pv", $this);
+
+                pv.attr("style", $pv.attr("style"))
+                    .attr("data-value", $pv.attr("data-value"));
+                $this.addClass("ignore");
+            });
+
+            $(".line:not(.ignore)", other._el).addClass("new").appendTo(el);
+
+            this._n = other._n;
+
+            $(".line span[data-moment-title]", el).tooltip();
+        };
+
+        LineBuffer2.prototype.next = function () {
+            return isEnd() ? -1 : $('.line-buffer,.line').length;
+        };
+
+        function isEnd() {
+            try {
+               
+                var endLine = $($('.line-buffer,.line')[$('.line-buffer,.line').length - 1]).html();
+                if (endLine.indexOf('【JobAgent】【') > 0) {
+                    try {
+                        var target = endLine.split('【JobAgent】【')[1].split('】')[0];
+                        if (target.indexOf('End') > -1) {
+                            return true;
+                        }
+                    } catch (e) {
+
+                    } 
+                }
+                return false;
+            } catch (e) {
+                return true;
+            }
+        }
+
+        
+
+        LineBuffer2.prototype.unmarkNew = function () {
+            $(".line.new", this._el).removeClass("new");
+        };
+
+        LineBuffer2.prototype.getHTMLElement = function () {
+            return this._el[0];
+        };
+
+        return LineBuffer2;
+    })();
+
+    hangfire.Console2 = (function () {
+        function Console2(el) {
+            if (!el || el.length !== 1)
+                throw new Error("Console2 expects jQuery object with a single value");
+
+            this._el = el;
+            this._id = el.data('id');
+            this._buffer = new hangfire.LineBuffer2($(".line-buffer", el));
+            this._polling = false;
+        }
+
+        Console2.prototype.reload = function () {
+            var self = this;
+
+            $.get(pollUrl + this._id, null, function (data) {
+                self._buffer.replaceWith(new hangfire.LineBuffer2($(data)));
+            }, "html");
+        };
+
+        function resizeHandler(e) {
+            var obj = e.target || e.srcElement,
+                $buffer = $(obj).closest(".line-buffer"),
+                $console = $buffer.closest(".console");
+
+            if (0 === $(".line:first", $buffer).length) {
+                // collapse console area if there's no lines
+                $console.height(0);
+                return;
+            }
+
+            $console.height($buffer.outerHeight(false));
+        }
+
+        Console2.prototype.poll = function () {
+            if (this._polling) return;
+
+            if (this._buffer.next() < 0) return;
+
+            var self = this;
+
+            this._polling = true;
+            this._el.addClass('active');
+
+            resizeHandler({ target: this._buffer.getHTMLElement() });
+            window.addResizeListener(this._buffer.getHTMLElement(), resizeHandler);
+
+            console.log("polling was started");
+
+            setTimeout(function () { self._poll(); }, pollInterval);
+        };
+
+        Console2.prototype._poll = function () {
+            this._buffer.unmarkNew();
+
+            var next = this._buffer.next();
+            if (next < 0) {
+                this._endPoll();
+
+                if (next === -1) {
+                    console.log("job state change detected");
+                    location.reload();
+                }
+
+                return;
+            }
+
+            var self = this;
+
+            $.get(pollUrl + this._id, { start: next }, function (data) {
+                    var $data = $(data);
+                    var buffer = new hangfire.LineBuffer2($data);
+                    var newLines = $(".line:not(.pb)", $data);
+                self._buffer.append(buffer);
+                self._el.toggleClass("waiting", newLines.length === 0);
+            }, "html")
+
+                .always(function () {
+                    setTimeout(function () { self._poll(); }, pollInterval);
+                });
+        };
+
+        Console2.prototype._endPoll = function () {
+            console.log("polling was terminated");
+
+            window.removeResizeListener(this._buffer.getHTMLElement(), resizeHandler);
+
+            this._el.removeClass("active waiting");
+            this._polling = false;
+        };
+
+        return Console2;
+    })();
+
+
+})(jQuery, window.Hangfire = window.Hangfire || {});
+
+$(function () {
+    var path = window.location.pathname;
+
+    if (/\/jobs\/details\/([^/]+)$/.test(path)) {
+        // execute scripts for /jobs/details/<jobId>
+        if ($('.page-header').html().indexOf('JobAgent ') < 0) {
+            return;
+        }
+
+        $(".console").each(function (index) {
+            var $this = $(this),
+                c = new Hangfire.Console2($this);
+
+
+            if (index === 0) {
+                debugger;
+                // poll on the first console
+                c.poll();
+            }
+        });
+    } 
+});

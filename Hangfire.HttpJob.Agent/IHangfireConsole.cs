@@ -15,7 +15,7 @@ namespace Hangfire.HttpJob.Agent
     public interface IHangfireConsole
     {
         void WriteLine(string message, ConsoleFontColor fontColor = null);
-        IProgressBar WriteProgressBar(string name, double initValue, ConsoleFontColor color = null);
+        IProgressBar WriteProgressBar(string name, double initValue=1, ConsoleFontColor color = null);
     }
 
     /// <summary>

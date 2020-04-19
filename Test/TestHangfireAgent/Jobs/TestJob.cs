@@ -20,28 +20,26 @@ namespace TestHangfireAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            jobContext.Console.WriteLine("开始等待10秒");
-            await Task.Delay(1000 * 10);
-            jobContext.Console.WriteLine("结束等待10秒");
-            jobContext.Console.WriteLine("哈哈哈哈",ConsoleFontColor.Cyan);
+            //jobContext.Console.WriteLine("开始等待10秒");
+            //await Task.Delay(1000 * 10);
+            //jobContext.Console.WriteLine("结束等待10秒");
+            jobContext.Console.WriteLine("开始测试Progressbar",ConsoleFontColor.Cyan);
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
-            var bar = jobContext.Console.WriteProgressBar("testbar", 10);
-
-            for (int i = 0; i < 10; i++)
+            var bar = jobContext.Console.WriteProgressBar("testbar");
+            for (int i = 0; i < 100; i++)
             {
                 bar.SetValue(i);
                 await Task.Delay(1000);
             }
 
-            bar.SetValue(100);
 
-            var list = new List<string>{"dddd","2","222"};
+            //var list = new List<string>{"dddd","2","222"};
 
-            foreach (var item in list.WithProgress(jobContext.Console))
-            {
-                jobContext.Console.WriteLine(item);
-            }
+            //foreach (var item in list.WithProgress(jobContext.Console))
+            //{
+            //    jobContext.Console.WriteLine(item);
+            //}
 
         }
 

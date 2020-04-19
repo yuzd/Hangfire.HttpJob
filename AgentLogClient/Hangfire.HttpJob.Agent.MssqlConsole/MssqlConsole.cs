@@ -82,7 +82,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
             }
         }
 
-        public IProgressBar WriteProgressBar(string name, double value, ConsoleFontColor color = null)
+        public IProgressBar WriteProgressBar(string name, double value = 1, ConsoleFontColor color = null)
         {
             var progressBarId = Interlocked.Increment(ref _nextProgressBarId);
 
