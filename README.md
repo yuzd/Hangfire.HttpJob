@@ -10,6 +10,19 @@ Hangfire.HttpJob for Hangfire
 5. cron generator on dashbord
 6. use Hangfire.HttpJob.Agent extention to quick develop job program
 
+   6.1 Make your webjob very convenient to support scheduling execution
+   
+   6.2 Visualizing the execution process of webjob by logs and progress on hangfire dashbord
+   
+   6.3 Variety of webjob types with different life cycles
+   
+   	6.3.1 Singleton
+	
+	6.3.2 Transient 
+	
+	6.3.3 Hang up until stop command
+	
+
 # wiki
 
 00.QickStart
@@ -129,8 +142,6 @@ Usage
 	BasicPassword = "test"
     });
 ```
-注意如果使用Client新增Job的话 需要
-![image](https://images4.c-ctrip.com/target/zb0b15000000xs2mt81B5.png)
 
 How to add Hangfire.HttpJob by restful api
 ================================
