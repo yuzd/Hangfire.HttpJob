@@ -16,6 +16,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using Spring.Expressions;
@@ -150,6 +151,7 @@ namespace Hangfire.HttpJob.Server
         /// <exception cref="HttpStatusCodeException"></exception>
         private static bool Run(HttpJobItem item, PerformContext context, List<string> logList, HttpJobItem parentJob = null)
         {
+            CancellationTokenSource cancelToken = null;
             try
             {
                 if (parentJob != null)
@@ -194,10 +196,11 @@ namespace Hangfire.HttpJob.Server
                     //per host per HttpClient
                     client = HangfireHttpClientFactory.Instance.GetHttpClient(item.Url);
                 }
-                
+
                 var httpMesage = PrepareHttpRequestMessage(item, context, parentJob);
-                var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
-                var httpResponse = client.SendAsync(httpMesage, cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+                cancelToken = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
+                var httpResponse = client.SendAsync(httpMesage, cancelToken.Token).ConfigureAwait(false).GetAwaiter()
+                    .GetResult();
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
                 RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}"));
@@ -206,7 +209,8 @@ namespace Hangfire.HttpJob.Server
                 //检查HttpResponse StatusCode
                 if (HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
                 {
-                    RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
+                    RunWithTry(() =>
+                        context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
                     logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");
                 }
                 else
@@ -217,11 +221,13 @@ namespace Hangfire.HttpJob.Server
                 //检查是否有设置EL表达式
                 if (!string.IsNullOrEmpty(item.CallbackEL))
                 {
-                    var elResult = InvokeSpringElCondition(item.CallbackEL, result, context, new Dictionary<string, object> { { "resultBody", result } });
+                    var elResult = InvokeSpringElCondition(item.CallbackEL, result, context,
+                        new Dictionary<string, object> { { "resultBody", result } });
                     if (!elResult)
                     {
                         throw new HttpStatusCodeException(item.CallbackEL, result);
                     }
+
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackELExcuteResult}:Ok 】" + item.CallbackEL));
                 }
 
@@ -229,12 +235,13 @@ namespace Hangfire.HttpJob.Server
                 logList.Add($"{Strings.JobResult}:{result}");
                 RunWithTry(() => context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                if (parentJob != null) RunWithTry(() => context.WriteLine($"【{Strings.CallbackSuccess}】[{item.CallbackRoot}]"));
+                if (parentJob != null)
+                    RunWithTry(() => context.WriteLine($"【{Strings.CallbackSuccess}】[{item.CallbackRoot}]"));
 
                 //到这里查看是否有 子Job
                 if (item.Success != null)
                 {
-                    item.Cron = result;//父job的执行结果
+                    item.Cron = result; //父job的执行结果
                     item.Success.CallbackRoot = item.CallbackRoot + ".Success";
                     return Run(item.Success, context, logList, item);
                 }
@@ -244,8 +251,21 @@ namespace Hangfire.HttpJob.Server
             catch (Exception e)
             {
                 if (parentJob == null) throw;
-
                 RunWithTry(() => context.SetTextColor(ConsoleTextColor.Red));
+                if (cancelToken!=null && e is TaskCanceledException canceledException)
+                {
+                    if( canceledException.CancellationToken == cancelToken.Token)
+                    {
+                        //说明是被我们自己设置的timeout超时了
+                        RunWithTry(() => context.WriteLine("【HttpJob Timeout】：" + item.Timeout + "ms"));
+                    }
+                    else
+                    {
+                        //说明是远程服务端超时了
+                        RunWithTry(() => context.WriteLine("【Server Timeout】:The server api excute timed out "));
+                    }
+                }
+
                 Logger.ErrorException("HttpJob.Excute=>" + item, e);
                 RunWithTry(() => context.WriteLine($"【{Strings.CallbackFail}】[{item.CallbackRoot}]"));
                 if (e is HttpStatusCodeException exception && exception.IsEl)
@@ -626,7 +646,7 @@ namespace Hangfire.HttpJob.Server
         /// 用EL表达式动态判断是否执行成功
         /// </summary>
         /// <returns></returns>
-        private static bool InvokeSpringElCondition(string placeholder,string result, PerformContext context,Dictionary<string, object> param)
+        private static bool InvokeSpringElCondition(string placeholder, string result, PerformContext context, Dictionary<string, object> param)
         {
             try
             {
@@ -640,7 +660,7 @@ namespace Hangfire.HttpJob.Server
                 }
 
                 var parameterValue = ExpressionEvaluator.GetValue(null, placeholder, param);
-               
+
                 return (bool)parameterValue;
             }
             catch (Exception e)
