@@ -24,6 +24,11 @@ namespace Hangfire.HttpJob.Agent
         internal volatile bool Singleton = true;
 
         /// <summary>
+        ///  是否已经结束
+        /// </summary>
+        internal volatile bool isDispose = false;
+
+        /// <summary>
         ///     线程
         /// </summary>
         private Thread thd;
@@ -145,7 +150,7 @@ namespace Hangfire.HttpJob.Agent
                 }
 
                 JobStatus = JobStatus.Stoped;
-                DisposeJob();
+                DisposeJob(console);
             }
         }
 
@@ -170,10 +175,6 @@ namespace Hangfire.HttpJob.Agent
                     WriteToDashBordConsole(jobContext.Console, $"【Job Hang Success】{AgentClass}");
                     _mainThread.WaitOne();
                 }
-
-                WriteToDashBordConsole(jobContext.Console, Hang
-                    ? $"【HangJob End】{AgentClass}"
-                    : $"【{(Singleton ? "SingletonJob" : "TransientJob")} End】{AgentClass}");
             }
             catch (Exception e)
             {
@@ -195,7 +196,7 @@ namespace Hangfire.HttpJob.Agent
             }
 
             JobStatus = JobStatus.Stoped;
-            DisposeJob();
+            DisposeJob(jobContext.Console);
         }
 
         private void WriteToDashBordConsole(IHangfireConsole console, string message)
@@ -250,10 +251,56 @@ namespace Hangfire.HttpJob.Agent
             return string.Join("\r\n", list);
         }
 
-        private void DisposeJob()
+        private void DisposeJob(IHangfireConsole console = null)
         {
-            if (!Singleton) TransitentJobDisposeEvent?.Invoke(null, new TransitentJobDisposeArgs(AgentClass, Guid));
-            _mainThread?.Dispose();
+            if (isDispose) return;
+
+            isDispose = true;
+
+
+            if (console != null)
+            {
+                WriteToDashBordConsole(console, Hang
+                    ? $"【HangJob End】{AgentClass}"
+                    : $"【{(Singleton ? "SingletonJob" : "TransientJob")} End】{AgentClass}");
+            }
+
+
+            try
+            {
+                if (!Singleton) TransitentJobDisposeEvent?.Invoke(null, new TransitentJobDisposeArgs(AgentClass, Guid));
+                _mainThread?.Dispose();
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+
+        }
+
+        /// <summary>
+        /// 停止线程
+        /// </summary>
+        /// <param name="console"></param>
+        protected void Abort(IHangfireConsole console = null)
+        {
+           
+            try
+            {
+                //停止线程
+                this.thd?.Abort();
+
+                if (console != null)
+                {
+                    WriteToDashBordConsole(console, Hang
+                        ? $"【HangJob Abort】{AgentClass}"
+                        : $"【{(Singleton ? "SingletonJob" : "TransientJob")} Abort】{AgentClass}");
+                }
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
         }
     }
 }
