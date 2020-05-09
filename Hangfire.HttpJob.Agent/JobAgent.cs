@@ -16,7 +16,7 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         internal volatile bool Hang = false;
 
-        private JobStatus jobStatus = JobStatus.Default;
+        private volatile JobStatus jobStatus = JobStatus.Default;
 
         /// <summary>
         ///     默认是单例
@@ -113,7 +113,7 @@ namespace Hangfire.HttpJob.Agent
                     else
                     {
                         WriteToDashBordConsole(console,
-                            $"【{(Singleton ? "TransientJob" : "SingletonJob")} OnStop】{AgentClass}");
+                            $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop】{AgentClass}");
                     }
 
                     JobStatus = JobStatus.Stopping;
@@ -129,7 +129,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     WriteToDashBordConsole(console, Hang
                         ? $"【HangJob OnStop With Error】{AgentClass}，ex：{e.Message}"
-                        : $"【{(Singleton ? "TransientJob" : "SingletonJob")} OnStop With Error】{AgentClass}，ex：{e.Message}");
+                        : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop With Error】{AgentClass}，ex：{e.Message}");
 
 
                     e.Data.Add("Method", "OnStop");
@@ -162,7 +162,7 @@ namespace Hangfire.HttpJob.Agent
 
                 WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob OnStart】{AgentClass}"
-                    : $"【{(Singleton ? "TransientJob" : "SingletonJob")} OnStart】{AgentClass}");
+                    : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStart】{AgentClass}");
 
                 await OnStart(jobContext);
                 if (Hang)
@@ -173,13 +173,13 @@ namespace Hangfire.HttpJob.Agent
 
                 WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob End】{AgentClass}"
-                    : $"【{(Singleton ? "TransientJob" : "SingletonJob")} End】{AgentClass}");
+                    : $"【{(Singleton ? "SingletonJob" : "TransientJob")} End】{AgentClass}");
             }
             catch (Exception e)
             {
                 WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob OnStart With Error】{AgentClass}，ex：{e.Message}"
-                    : $"【{(Singleton ? "TransientJob" : "SingletonJob")} OnStart With Error】{AgentClass}，ex：{e.Message}");
+                    : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStart With Error】{AgentClass}，ex：{e.Message}");
 
 
                 e.Data.Add("Method", "OnStart");
@@ -225,13 +225,28 @@ namespace Hangfire.HttpJob.Agent
                 list.Add($"ExcuteParam:【{Param ?? string.Empty}】");
             }
 
-            list.Add(
-                $"StartTime:【{(StartTime == null ? "not start yet!" : StartTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
-            list.Add(
-                $"LastEndTime:【{(LastEndTime == null ? "not end yet!" : LastEndTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
+            list.Add($"StartTime:【{(StartTime == null ? "not start yet!" : StartTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
+            list.Add($"LastEndTime:【{(LastEndTime == null ? "not end yet!" : LastEndTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))}】");
             if (JobStatus == JobStatus.Running && StartTime != null)
-                list.Add(
-                    $"RunningTime:【{CodingUtil.ParseTimeSeconds((int) (DateTime.Now - StartTime.Value).TotalSeconds)}】");
+            {
+                list.Add($"RunningTime:【{CodingUtil.ParseTimeSeconds((int)(DateTime.Now - StartTime.Value).TotalSeconds)}】");
+                if (thd != null)
+                {
+                    list.Add($"ThreadState:【{thd.ThreadState.ToString()}】");
+                    try
+                    {
+                        //如果线程被挂起了 结束线程
+                        if (thd.ThreadState == ThreadState.Suspended)
+                        {
+                            thd.Abort();
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //ignore
+                    }
+                }
+            }
             return string.Join("\r\n", list);
         }
 
