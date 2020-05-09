@@ -250,22 +250,17 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception e)
             {
-                if (parentJob == null) throw;
                 RunWithTry(() => context.SetTextColor(ConsoleTextColor.Red));
-                if (cancelToken!=null && e is TaskCanceledException canceledException)
+                if (cancelToken!=null && cancelToken.IsCancellationRequested)
                 {
-                    if( canceledException.CancellationToken == cancelToken.Token)
-                    {
-                        //说明是被我们自己设置的timeout超时了
-                        RunWithTry(() => context.WriteLine("【HttpJob Timeout】：" + item.Timeout + "ms"));
-                    }
-                    else
-                    {
-                        //说明是远程服务端超时了
-                        RunWithTry(() => context.WriteLine("【Server Timeout】:The server api excute timed out "));
-                    }
+                    //说明是被我们自己设置的timeout超时了
+                    RunWithTry(() => context.WriteLine("【HttpJob Timeout】：" + item.Timeout + "ms"));
                 }
 
+                if (parentJob == null)
+                {
+                    throw;
+                }
                 Logger.ErrorException("HttpJob.Excute=>" + item, e);
                 RunWithTry(() => context.WriteLine($"【{Strings.CallbackFail}】[{item.CallbackRoot}]"));
                 if (e is HttpStatusCodeException exception && exception.IsEl)
