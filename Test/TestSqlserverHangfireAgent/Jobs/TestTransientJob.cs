@@ -19,19 +19,19 @@ namespace TestSqlserverHangfireAgent.Jobs
             _logger = logger;
             _logger.LogInformation($"Create {nameof(TestTransientJob)} Instance Success");
         }
-        protected override async Task OnStart(JobContext jobContext)
+        public override async Task OnStart(JobContext jobContext)
         {
             _logger.LogWarning("ManagedThreadId:" + Thread.CurrentThread.ManagedThreadId);
             await Task.Delay(5000);
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
         }
 
-        protected override void OnStop(JobContext jobContext)
+        public override void OnStop(JobContext jobContext)
         {
             _logger.LogInformation("OnStop");
         }
 
-        protected override void OnException(Exception ex)
+        public override void OnException(Exception ex)
         {
             _logger.LogError(ex, nameof(OnException) + (ex.Data["Method"] ?? string.Empty));
         }

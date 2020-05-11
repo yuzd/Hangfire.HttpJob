@@ -24,11 +24,6 @@ namespace Hangfire.HttpJob.Agent
         internal volatile bool Singleton = true;
 
         /// <summary>
-        ///  是否已经结束
-        /// </summary>
-        internal volatile bool isDispose = false;
-
-        /// <summary>
         ///     线程
         /// </summary>
         private Thread thd;
@@ -253,11 +248,6 @@ namespace Hangfire.HttpJob.Agent
 
         private void DisposeJob(IHangfireConsole console = null)
         {
-            if (isDispose) return;
-
-            isDispose = true;
-
-
             if (console != null)
             {
                 WriteToDashBordConsole(console, Hang

@@ -17,7 +17,7 @@ namespace TestSqlserverHangfireAgent.Jobs
             _logger = logger;
             _logger.LogInformation($"Create {nameof(TestJob)} Instance Success");
         }
-        protected override async Task OnStart(JobContext jobContext)
+        public override async Task OnStart(JobContext jobContext)
         {
             jobContext.Console.WriteLine("开始等待10秒");
             await Task.Delay(1000 * 10);
@@ -26,12 +26,12 @@ namespace TestSqlserverHangfireAgent.Jobs
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
         }
 
-        protected override void OnStop(JobContext jobContext)
+        public override void OnStop(JobContext jobContext)
         {
             _logger.LogInformation(nameof(OnStop));
         }
 
-        protected override void OnException(Exception ex)
+        public override void OnException(Exception ex)
         {
             _logger.LogError(ex, nameof(OnException) + (ex.Data["Method"] ?? string.Empty));
         }
