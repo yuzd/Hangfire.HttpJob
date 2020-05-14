@@ -177,7 +177,15 @@ namespace Hangfire.HttpJob.Server
                 await context.Response.WriteAsync(jobItemRt.Item2);
                 return;
             }
-
+            if (Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter != null)
+            {
+                if (!Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsync("HttpJobFilter return false");
+                    return;
+                }
+            }
             var result = AddHttprecurringjob(jobItemRt.Item1);
             if (result)
             {
@@ -208,6 +216,15 @@ namespace Hangfire.HttpJob.Server
                 context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                 await context.Response.WriteAsync(jobItemRt.Item2);
                 return;
+            }
+            if (Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter != null)
+            {
+                if (!Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsync("HttpJobFilter return false");
+                    return;
+                }
             }
 
             var jobItem = jobItemRt.Item1;

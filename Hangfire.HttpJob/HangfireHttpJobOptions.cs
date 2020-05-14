@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using Hangfire.HttpJob.Content.resx;
+using Hangfire.HttpJob.Server;
 using Hangfire.States;
 
 namespace Hangfire.HttpJob
@@ -52,7 +53,13 @@ namespace Hangfire.HttpJob
         /// 检查HttpResponseStatusCode
         ///  如果不指定 < 400 = error
         /// </summary>
-        public Func<HttpStatusCode,string, bool> CheckHttpResponseStatusCode;
+        public Func<HttpStatusCode, string, bool> CheckHttpResponseStatusCode;
+
+
+        /// <summary>
+        /// 新增httpjob的时候拦截器 返回false 则不添加 也可以动态修改HttpJobItem里面的值
+        /// </summary>
+        public Func<HttpJobItem, bool> AddHttpJobFilter;
 
 
         #region 按钮名称和标题等自定义展示名称

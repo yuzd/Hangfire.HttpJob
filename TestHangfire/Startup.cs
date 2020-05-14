@@ -70,6 +70,18 @@ namespace TestHangfire
                     DefaultBackGroundJobQueueName = "DEFAULT",
                     RecurringJobTimeZone = TimeZoneInfo.Local,
                     // CheckHttpResponseStatusCode = code => (int)code < 400   //===》(default)
+                    AddHttpJobFilter = (jobContent) =>
+                    {
+                        //添加httpjob的拦截器 如果返回false就代表不添加 返回true则真正的添加
+
+                        if (jobContent.Url.StartsWith("http://localhost") ||
+                            jobContent.Url.StartsWith("http://127.0.0.1"))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
                 })
                 .UseTagsWithMysql(sqlOptions: mysqlOption);
         }
