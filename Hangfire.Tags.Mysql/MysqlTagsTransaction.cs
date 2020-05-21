@@ -78,7 +78,7 @@ namespace Hangfire.Tags.Mysql
                 {
                     key = key,
                     value = value,
-                    expireIn= expireIn
+                    expireAt = expireIn
                 }));
 
         }
