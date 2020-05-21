@@ -340,6 +340,14 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 ExportJobs 的本地化字符串。
+        /// </summary>
+        public static string ExportJobsButtonName {
+            get {
+                return ResourceManager.GetString("ExportJobsButtonName", resourceCulture);
+            }
+        }
+        /// <summary>
         ///   查找类似 From 的本地化字符串。
         /// </summary>
         public static string From {
@@ -375,6 +383,14 @@ namespace Hangfire.HttpJob.Content.resx {
             }
         }
         
+        /// <summary>
+        ///   查找类似 ImportJobs 的本地化字符串。
+        /// </summary>
+        public static string ImportJobsButtonName {
+            get {
+                return ResourceManager.GetString("ImportJobsButtonName", resourceCulture);
+            }
+        }
         /// <summary>
         ///   查找类似 JobEnd 的本地化字符串。
         /// </summary>

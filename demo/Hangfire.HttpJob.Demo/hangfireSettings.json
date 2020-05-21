@@ -1,0 +1,68 @@
+{
+
+  "HangfireSettings": {
+    "TablePrefix": "hangfire",
+    "StartUpPath": "/job",
+    "ReadOnlyPath": "/job-read",
+    "JobQueues": [ "default", "apis", "recurring", "awakenweb", "awakentweb", "queue1", "queue2", "queue3" ],
+    "WorkerCount": 50,
+    "DisplayStorageConnectionString": true,
+    "HttpAuthInfo": {
+      "SslRedirect": false,
+      "RequireSsl": false,
+      "LoginCaseSensitive": true,
+      "IsOpenLogin": true,
+      "Users": [
+        {
+          "Login": "admin",
+          "PasswordClear": "admin"
+        },
+        {
+          "Login": "test",
+          "PasswordClear": "test"
+        }
+      ]
+    },
+    "ConnectionString": {
+      "MysqlHangfire": "Server=mysql9.tcy365.org;Port=3306;Database=tcylianyunballdb_dev;Uid=tcylianyunball;Pwd=takbf9s4;charset=utf8;SslMode=none;Allow User Variables=True"
+    }
+  },
+  "HttpJobOptions": {
+    "DefaultTimeZone": "Asia/Shanghai",
+    "DashboardFooter": "tt",
+    "CurrentDomain": "//",
+    //"DashboardName": "JobWS",
+    //"DashboardTitle": "JobManager",
+    //"EditRecurringJobButtonName": "EditRecurringJob",
+    //"PauseJobButtonName": "Pause | Start",
+    //"AddCronButtonName": "CronGenerator",
+    "DefaultRecurringQueueName": "recurring",
+    //"RecurringEndPath": "/recurring",
+    //"ScheduledEndPath": "jobs/scheduled",
+    //"Proxy": "",
+    //"SearchPlaceholder": "Pelese Enter JobName Or Args ...",
+    //"StopBackgroudJobButtonName": "Stop Job",
+    //"StartBackgroudJobButtonName": "Start With Param",
+    //"LogOutButtonName": "Back",
+    //"SubmitButtonName": "Submit",
+    //"CloseButtonName": "Close",
+    //"AddRecurringJobHttpJobButtonName": "AddRecurringJob",
+    //"AddHttpJobButtonName": "AddDelayJob",
+    //"JobExpirationTimeoutDay": 7,
+    //"GlobalHttpTimeOut": 5000,
+    //"AgentJobDeatilButton": "AgentJobDetail",
+    //"MailOption": {
+    //  "Server": "",
+    //  "Port": 0,
+    //  "User": "",
+    //  "Password": "",
+    //  "UseSsl": false,
+    //  "AlertMailList": []
+    //} 
+    "DingTalkOption": {
+      "NoticeDingToken": "xx",
+      "DingtalkPhones": "",
+      "DingtalkAtAll": false
+    }
+  }
+}
