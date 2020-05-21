@@ -1,0 +1,47 @@
+######################
+# Web Site: Default 
+########################################
+
+port=80
+root=/ /var/www/hangfire_httpjobs
+hosts=jobs.tcy365.com    #OR your.com,*.your.com
+
+
+# AspNet.Workers=2  # Set the number of asp.net worker processes. Defauit is 1.
+
+# addr=0.0.0.0
+# CheckQuery=false
+NoLog=true
+AppHost={cmd=dotnet /var/www/hangfire_httpjobs/Hangfire.HttpJob.Demo.dll; root=/var/www/hangfire_httpjobs; port=5000}
+# NoFile=/index.aspx
+# Keep_Alive=false
+# UseGZIP=false
+ 
+# UseHttps=true
+# ssl.certificate=/x/xxx.crt  #or pem
+# ssl.certificatekey=/x/xxx.key
+# ssl.protocol=TLSv1.0    # TLSv1.1 or  TLSv1.2...
+# ssl.ciphers= 
+
+# DenyFrom=192.168.0.233, 192.168.1.*, 192.168.2.0/24
+AllowFrom=192.168.7.143
+# DenyDirs=~/cgi, ~/upfiles
+# indexes=myindex.aspx
+
+# Deny asp ...
+rewrite=^/.+?\.(asp|cgi|pl|sh|bash|dll)(\?.*|)$  /.deny->$1
+rewrite=.*/editor/.+                             /.deny->editor
+# reproxy=/bbs/ http://192.168.1.112/bbs/
+# host.Redirect=abc.com www.abc.com  301
+# ResponseHandler.Add=myKey:myValue
+
+
+# Jexus php fastcgi address is '/var/run/jexus/phpsvr'
+#######################################################
+# fastcgi.add=php|socket:/var/run/jexus/phpsvr
+
+# php-fpm listen address is '127.0.0.1:9000'
+############################################
+# fastcgi.add=php|tcp:127.0.0.1:9000
+
+

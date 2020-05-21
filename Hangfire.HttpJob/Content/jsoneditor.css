@@ -52,7 +52,7 @@ div.jsoneditor-field, div.jsoneditor-readonly, div.jsoneditor-value {
     }
 
 div.jsoneditor-value {
-    word-break: break-word
+    word-break: keep-all
 }
 
 div.jsoneditor-readonly {
@@ -517,7 +517,7 @@ div.jsoneditor-tree .jsoneditor-button.jsoneditor-schema-error {
     }
 
         .jsoneditor .jsoneditor-text-errors tr.parse-error {
-            background-color: #ee2e2e70
+            background-color: #ee2e2e
         }
 
 .jsoneditor-text-errors .jsoneditor-schema-error {

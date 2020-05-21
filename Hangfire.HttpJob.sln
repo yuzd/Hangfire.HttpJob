@@ -33,9 +33,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{5CF4C3B9-FED
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{E807D605-E7EA-4680-9269-879F2596A2D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.HttpJob.Agent.MssqlConsole", "AgentLogClient\Hangfire.HttpJob.Agent.MssqlConsole\Hangfire.HttpJob.Agent.MssqlConsole.csproj", "{BE7205C6-52AF-47DD-9175-6C798E2FD56F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.MssqlConsole", "AgentLogClient\Hangfire.HttpJob.Agent.MssqlConsole\Hangfire.HttpJob.Agent.MssqlConsole.csproj", "{BE7205C6-52AF-47DD-9175-6C798E2FD56F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSqlserverHangfireAgent", "Test\TestSqlserverHangfireAgent\TestSqlserverHangfireAgent.csproj", "{D400915A-2630-4B50-9815-23EE49633BFD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{37962700-6209-4A80-9E90-8EA276C21374}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Demo", "demo\Hangfire.HttpJob.Demo\Hangfire.HttpJob.Demo.csproj", "{F9BBB2E0-C683-4F8C-A5EA-490BFC67DDD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +91,10 @@ Global
 		{D400915A-2630-4B50-9815-23EE49633BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D400915A-2630-4B50-9815-23EE49633BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D400915A-2630-4B50-9815-23EE49633BFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9BBB2E0-C683-4F8C-A5EA-490BFC67DDD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9BBB2E0-C683-4F8C-A5EA-490BFC67DDD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9BBB2E0-C683-4F8C-A5EA-490BFC67DDD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9BBB2E0-C683-4F8C-A5EA-490BFC67DDD8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,6 +113,7 @@ Global
 		{BF2A3C67-04C2-48E6-946E-BC49C5E0CF6E} = {655E1B5A-EDAE-4C85-9553-55229B6254CE}
 		{BE7205C6-52AF-47DD-9175-6C798E2FD56F} = {E807D605-E7EA-4680-9269-879F2596A2D3}
 		{D400915A-2630-4B50-9815-23EE49633BFD} = {655E1B5A-EDAE-4C85-9553-55229B6254CE}
+		{F9BBB2E0-C683-4F8C-A5EA-490BFC67DDD8} = {37962700-6209-4A80-9E90-8EA276C21374}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A5F0048D-888D-47DA-8714-2283937235BC}

@@ -105,6 +105,7 @@ namespace Hangfire.HttpJob.Server
                             return;
                         }
                     }
+                    SendDingTalkNotice(item, context, queuename, ex.Message);
                     SendFailMail(item, string.Join("<br/>", logList), ex);
                     AddErrToJob(context, ex);
                     return;
@@ -126,6 +127,7 @@ namespace Hangfire.HttpJob.Server
                     }
                     RunWithTry(() => context.WriteLine(Strings.LimitReached));
                     logList.Add(Strings.LimitReached);
+                    SendDingTalkNotice(item, context, queuename, ex.Message);
                     SendFailMail(item, string.Join("<br/>", logList), ex);
                     AddErrToJob(context, ex);
                     return;
@@ -176,8 +178,7 @@ namespace Hangfire.HttpJob.Server
 
                 RunWithTry(() => context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                RunWithTry(() =>
-                    context.WriteLine(
+                RunWithTry(() => context.WriteLine(
                         $"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}"));
                 logList.Add(
                     $"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}");
@@ -205,6 +206,17 @@ namespace Hangfire.HttpJob.Server
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
                 RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}"));
                 logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode}");
+                RunWithTry(() => context.WriteLine($"{Strings.JobResult}:{result}"));
+                logList.Add($"{Strings.JobResult}:{result}");
+
+                if (httpResponse.StatusCode != HttpStatusCode.OK)
+                {
+                    SendDingTalkNotice(item, context, Strings.QueuenName, $"HttpStatusCode is <font color=#E74C3C> {httpResponse.StatusCode}</font> JobResult is {result}");
+                    logList.Add($"HttpStatusCode is {httpResponse.StatusCode} JobResult is {result}");
+                }
+                else
+                    CheckAndWarnWithDingTalk(item, context, Strings.QueuenName, result, logList);
+
 
                 //检查HttpResponse StatusCode
                 if (HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
@@ -251,7 +263,7 @@ namespace Hangfire.HttpJob.Server
             catch (Exception e)
             {
                 RunWithTry(() => context.SetTextColor(ConsoleTextColor.Red));
-                if (cancelToken!=null && cancelToken.IsCancellationRequested)
+                if (cancelToken != null && cancelToken.IsCancellationRequested)
                 {
                     //说明是被我们自己设置的timeout超时了
                     RunWithTry(() => context.WriteLine("【HttpJob Timeout】：" + item.Timeout + "ms"));
@@ -325,6 +337,48 @@ namespace Hangfire.HttpJob.Server
 
         #region Private
 
+        private static readonly string[] EmptyResponse = new[] { "", "{}", "[]" };
+        private static void CheckAndWarnWithDingTalk(HttpJobItem item, PerformContext context, string queueName, string resString, List<string> logList)
+        {
+            if (string.IsNullOrEmpty(resString) || EmptyResponse.Contains(resString)) return;
+
+            try
+            {
+                if (string.IsNullOrEmpty(item.AssertInfo)) return;
+                var assertInfos = item.AssertInfo.Split(':');
+                if (assertInfos.Length != 2) return;
+                RunWithTry(() => context.WriteLine($"AssertInfo:{item.AssertInfo}"));
+
+                var assertCode = assertInfos[0];
+                var assertValue = assertInfos[1];
+                var resDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(resString);
+
+                if (resDict.TryGetValue(assertCode, out var codeValue))
+                {
+                    var code = codeValue?.ToString();
+                    if (!string.IsNullOrEmpty(code) && !string.Equals(assertValue, code, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SendDingTalkNotice(item, context, queueName, resString);
+                    }
+                }
+                RunWithTry(() => context.WriteLine($"assertCode is {assertCode}, expectValue is {assertValue},realValue is {codeValue} "));
+                logList.Add($"assertCode is {assertCode}, expectValue is {assertValue},realValue is {codeValue} ");
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("CheckAndWarnWithDingTalk => " + item, ex);
+                RunWithTry(() => context.WriteLine($"CheckAndWarnWithDingTalk handler err {ex.Message},{ex}"));
+                logList.Add($"CheckAndWarnWithDingTalk handler err {ex.Message},{ex}");
+            }
+
+        }
+
+        private static void SendDingTalkNotice(HttpJobItem item, PerformContext context, string queueName, string resString)
+        {
+            DingDingNoticeService.Instance.ReSetDingTalkOption(item.NoticeDingToken, item.DingtalkPhones, item.DingtalkAtAll);
+            DingDingNoticeService.Instance.DoNotice(context.BackgroundJob.Id, queueName, item.Url, item.JobName, resString, item.CurrentDomain);
+        }
+
         private static void SendSuccessMail(HttpJobItem item, string result)
         {
             try
@@ -388,7 +442,7 @@ namespace Hangfire.HttpJob.Server
 
                 return sb.ToString();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return string.Empty;
             }
@@ -516,7 +570,7 @@ namespace Hangfire.HttpJob.Server
                     StartTime = (DateTime?)dateValue ?? DateTime.Now
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return null;
             }

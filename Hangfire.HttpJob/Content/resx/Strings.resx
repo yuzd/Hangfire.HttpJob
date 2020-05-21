@@ -333,4 +333,10 @@
   <data name="CallbackELExcuteResult" xml:space="preserve">
     <value>CallbackEL Excute Result</value>
   </data>
+  <data name="ExportJobsButtonName" xml:space="preserve">
+    <value>ExportJobs</value>
+  </data>
+  <data name="ImportJobsButtonName" xml:space="preserve">
+    <value>ImportJobs</value>
+  </data>
 </root>

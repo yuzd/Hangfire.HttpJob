@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Server
 {
-    public class HttpJobItem 
+    public class HttpJobItem : BaseJobItems
     {
         public HttpJobItem()
         {
@@ -15,6 +15,98 @@ namespace Hangfire.HttpJob.Server
             ContentType = "application/json";
             DelayFromMinutes = 15;
         }
+
+        /// <summary>
+        /// 记录回调路径
+        /// </summary>
+        [JsonIgnore]
+        public string CallbackRoot { get; set; }
+
+        /// <summary>
+        /// 上层job执行成功的回调
+        /// </summary>
+        public HttpJobItem Success { get; set; }
+
+        /// <summary>
+        /// 上层job执行失败的回调
+        /// </summary>
+        public HttpJobItem Fail { get; set; }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+    }
+
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
+    public class RecurringJobItem : BaseJobItems
+    {
+        /// <summary>
+        /// 上层job执行成功的回调
+        /// </summary>
+        public RecurringJobChildItem Success { get; set; }
+
+        /// <summary>
+        /// 上层job执行失败的回调
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public RecurringJobChildItem Fail { get; set; }
+    }
+
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
+    public class RecurringJobChildItem
+    { 
+        /// <summary>
+        /// 请求Url
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string Url { get; set; }
+
+        /// <summary>
+        /// 请求参数
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string Method { get; set; }
+
+        /// <summary>
+        /// 参数
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string Data { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string ContentType { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public int Timeout { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string QueueName { get; set; }
+
+        /// <summary>
+        /// 传了class就代表是agentjob
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string AgentClass { get; set; }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public Dictionary<string, string> Headers { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string BasicUserName { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        public string BasicPassword { get; set; }
+
+    }
+
+
+    public class BaseJobItems
+    {
         /// <summary>
         /// 请求Url
         /// </summary>
@@ -100,165 +192,30 @@ namespace Hangfire.HttpJob.Server
         /// basicAuth认证
         /// </summary>
         public string BasicPassword { get; set; }
-        
+
         /// <summary>
         /// Header
         /// </summary>
-        public Dictionary<string,string> Headers { get; set; }
-
-        /// <summary>
-        /// 记录回调路径
-        /// </summary>
-        [JsonIgnore]
-        public string CallbackRoot { get; set; }
-
+        public Dictionary<string, string> Headers { get; set; }
 
         /// <summary>
         /// 判断是否成功还是失败的EL表达式
         /// </summary>
         public string CallbackEL { get; set; }
 
-        /// <summary>
-        /// 上层job执行成功的回调
-        /// </summary>
-        public HttpJobItem Success { get; set; }
-        
-        /// <summary>
-        /// 上层job执行失败的回调
-        /// </summary>
-        public HttpJobItem Fail { get; set; }
-        
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
+        /// <summary> 每个job运行的时区（感觉意义不大）</summary>
+        public string TimeZone { get; set; } = "Asia/Shanghai";
+
+        /// <summary> 钉钉Webhook地址 </summary>
+        public string NoticeDingToken { get; set; } = "";
+
+        /// <summary> 通知是否@对应手机号的人员 , 分割 </summary>
+        public string DingtalkPhones { get; set; } = "";
+
+        /// <summary> 通知是否@所有人 </summary>
+        public bool DingtalkAtAll { get; set; } = false;
+        public string AssertInfo { get; set; }
+        public string CurrentDomain { get; set; } = "";
 
     }
-    
-    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)] 
-    public class RecurringJobItem 
-    {
-
-        /// <summary>
-        /// 请求Url
-        /// </summary>
-        public string Url { get; set; }
-
-        /// <summary>
-        /// 请求参数
-        /// </summary>
-        public string Method { get; set; }
-
-        /// <summary>
-        /// 参数
-        /// </summary>
-        public string Data { get; set; }
-
-        public string ContentType { get; set; }
-
-        public int Timeout { get; set; }
-
-        public string Cron { get; set; }
-        public string JobName { get; set; }
-        public string QueueName { get; set; }
-
-        /// <summary>
-        /// 传了class就代表是agentjob
-        /// </summary>
-        public string AgentClass { get; set; }
-
-        /// <summary>
-        /// 是否成功发送邮件
-        /// </summary>
-        public bool SendSucMail { get; set; }
-
-        /// <summary>
-        /// 是否失败发送邮件
-        /// </summary>
-        public bool SendFaiMail { get; set; }
-
-        /// <summary>
-        /// 指定发送邮件
-        /// </summary>
-        public string Mail { get; set; }
-
-        /// <summary>
-        /// 开启失败重启
-        /// </summary>
-        public bool EnableRetry { get; set; }
-
-        /// <summary>
-        /// 失败重试区间 半角逗号隔开
-        /// </summary>
-        public string RetryDelaysInSeconds { get; set; }
-
-        /// <summary>
-        /// 错误尝试次数自定义
-        /// </summary>
-        public int RetryTimes { get; set; }
-
-        /// <summary>
-        /// Header
-        /// </summary>
-        public Dictionary<string,string> Headers { get; set; }
-
-        public string BasicUserName { get; set; }
-        public string BasicPassword { get; set; }
-
-
-        public string CallbackEL { get; set; }
-
-        /// <summary>
-        /// 上层job执行成功的回调
-        /// </summary>
-
-        public RecurringJobChildItem Success { get; set; }
-        
-        /// <summary>
-        /// 上层job执行失败的回调
-        /// </summary>
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]
-        public RecurringJobChildItem Fail { get; set; }
-    }
-    
-    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)] 
-    public class RecurringJobChildItem 
-    {
-
-        /// <summary>
-        /// 请求Url
-        /// </summary>
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string Url { get; set; }
-
-        /// <summary>
-        /// 请求参数
-        /// </summary>
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string Method { get; set; }
-
-        /// <summary>
-        /// 参数
-        /// </summary>
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string Data { get; set; }
-
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string ContentType { get; set; }
-
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public int Timeout { get; set; }
-
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string QueueName { get; set; }
-
-        /// <summary>
-        /// 传了class就代表是agentjob
-        /// </summary>
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string AgentClass { get; set; }
-
-        /// <summary>
-        /// Header
-        /// </summary>
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public Dictionary<string,string> Headers { get; set; }
-
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string BasicUserName { get; set; }
-        [JsonProperty(DefaultValueHandling= DefaultValueHandling.Ignore)]public string BasicPassword { get; set; }
-
-    }
-    
 }

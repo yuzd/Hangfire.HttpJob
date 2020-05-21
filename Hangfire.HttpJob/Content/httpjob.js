@@ -20,11 +20,11 @@
                 }
 
                 if (config.NeedAddRecurringHttpJobButton) {
-                    tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="JobAgent" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text()+'" target="_blank">Tag</a>');
+                    tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="JobAgent" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
                 }
             });
 
-         
+
             if (!config) return;
 
             if (config.DashboardName) {
@@ -59,11 +59,14 @@
 
 
             var button = '';
+            //增加job
             var AddCronButton = '';
             var GlobalSetButton = '';
             var josnDiv = '';
             var PauseButton = '';
             var EditRecurringJobutton = '';
+            var ExportJobsButton = "";
+            var ImportJobsButton = "";
             var editgeturl = config.GetRecurringJobUrl;
             var getGlobalJsonurl = config.GetGlobalSettingUrl;
             var postGlobalJsonurl = config.PostGlobalSettingUrl;
@@ -71,17 +74,75 @@
             var startBackgroudJobUrl = config.StartBackgroudJobUrl;
             var stopBackgroudJobUrl = config.StopBackgroudJobUrl;
             var agentJobDeatilButtonUrl = config.AgentJobDeatilButtonUrl;
-            var getlisturl = config.GetJobListUrl;
+            // var getlisturl = config.GetJobListUrl;
+            var importJobsUrl = config.ImportJobsUrl;
+            var exportJobsUrl = config.ExportJobsUrl;
             var divModel = '';
             var options = {
                 schema: {},
                 mode: 'code'
             };
+            var normalObj = {
+                JobName: "",
+                Method: "GET",
+                ContentType: "application/json",
+                Url: "http://",
+                DelayFromMinutes: 1,
+                Headers: {},
+                Data: {},
+                Timeout: config.GlobalHttpTimeOut,
+                BasicUserName: "",
+                BasicPassword: "",
+                QueueName: config.DefaultBackGroundJobQueueName,
+                EnableRetry: false,
+                RetryTimes: false,
+                RetryDelaysInSeconds: "20,30,60",
+                SendSucMail: false,
+                SendFaiMail: true,
+                Mail: "",
+                AgentClass: "",
+                TimeZone: config.DefaultTimeZone,
+                NoticeDingToken: config.NoticeDingToken,
+                DingtalkPhones: config.DingtalkPhones,
+                DingtalkAtAll: config.DingtalkAtAll,
+                AssertInfo: config.AssertInfo,
+                CurrentDomain: config.CurrentDomain,
+                CallbackEL: ""
+            };
+            var recurringObj = {
+                JobName: "",
+                Method: "GET",
+                ContentType: "application/json",
+                Url: "http://",
+                Headers: {},
+                Data: {},
+                Timeout: config.GlobalHttpTimeOut,
+                Cron: "",
+                BasicUserName: "",
+                BasicPassword: "",
+                QueueName: config.DefaultRecurringQueueName,
+                EnableRetry: false,
+                RetryTimes: false,
+                RetryDelaysInSeconds: "20,30,60",
+                SendSucMail: false,
+                SendFaiMail: true,
+                Mail: "",
+                AgentClass: "",
+                TimeZone: config.DefaultTimeZone,
+                NoticeDingToken: config.NoticeDingToken,
+                DingtalkPhones: config.DingtalkPhones,
+                DingtalkAtAll: config.DingtalkAtAll,
+                AssertInfo: config.AssertInfo,
+                CurrentDomain: config.CurrentDomain,
+                CallbackEL: ""
+            };
+            var normal_templete = JSON.stringify(normalObj);     // "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
+            var recurring_templete = JSON.stringify(recurringObj); // "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
+            // console.log(normal_templete);
+            // console.log(recurring_templete);
 
-            var normal_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
-            var recurring_templete = "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
             //如果需要注入新增计划任务
-            if (config.NeedAddNomalHttpJobButton)   {
+            if (config.NeedAddNomalHttpJobButton) {
                 button =
                     '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float: inherit;margin-left: 10px" id="addHttpJob">' +
                     '<span class="glyphicon glyphicon-plus"> ' + config.AddHttpJobButtonName + '</span>' +
@@ -95,7 +156,7 @@
                     '</div>' +
                     ' <div class="modal-body" style="padding:0">' +
                     '<div class="form-group">' +
-                    ' <div class="editor_holder" style="height: 350px;"></div>' +
+                    ' <div class="editor_holder" style="height: 400px;"></div>' +
                     '</div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
@@ -107,7 +168,7 @@
                     ' </div>';
 
             }
-            
+
             var jobDetailModel = '<div class="modal inmodal" id="jobDetailModel" tabindex="-1" role="dialog" aria-hidden="true">' +
                 '<div class="modal-dialog">' +
                 '<div class="modal-content">' +
@@ -140,12 +201,12 @@
                     '</div>' +
                     ' <div class="modal-body" style="padding:0">' +
                     '<div class="form-group">' +
-                    ' <div class="editor_holder" style="height: 350px;"></div>' +
+                    ' <div class="editor_holder" style="height: 400px;"></div>' +
                     '</div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
-                '<button type="button" class="btn btn-primary" id="addhttpJob_save-model"  data-title="' + config.AddRecurringJobHttpJobButtonName +'" data-url="' + config.AddRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
+                    '<button type="button" class="btn btn-primary" id="addhttpJob_save-model"  data-title="' + config.AddRecurringJobHttpJobButtonName + '" data-url="' + config.AddRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
                     '</div>' +
                     ' </div>' +
                     ' </div>' +
@@ -167,14 +228,14 @@
                     '<div class="modal-header">' +
                     '<h4 class="modal-title">' + config.EditRecurringJobButtonName + '</h4>' +
                     '</div>' +
-                ' <div class="modal-body" style="padding:0">' +
+                    ' <div class="modal-body" style="padding:0">' +
                     '<div class="form-group">' +
-                    ' <div class="editor_holder" style="height: 350px;"></div>' +
+                    ' <div class="editor_holder" style="height: 400px;"></div>' +
                     '</div>' +
                     '</div>' +
                     '<div class="modal-footer">' +
                     ' <button type="button" class="btn btn-white" id="addhttpJob_close-model">' + config.CloseButtonName + '</button>' +
-                '<button type="button" class="btn btn-primary" id="addhttpJob_save-model" data-title="' + config.EditRecurringJobButtonName+'" data-url="' + config.EditRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
+                    '<button type="button" class="btn btn-primary" id="addhttpJob_save-model" data-title="' + config.EditRecurringJobButtonName + '" data-url="' + config.EditRecurringJobUrl + '">' + config.SubmitButtonName + '</button>' +
                     '</div>' +
                     ' </div>' +
                     ' </div>' +
@@ -192,46 +253,83 @@
                     '</button>';
                 josnDiv =
                     '<div class="modal inmodal" id="jsonModel" tabindex="-1" role="dialog" aria-hidden="true">' +
-                        '<div class="modal-dialog" >' +
-                        '<div class="modal-content">' +
+                    '<div class="modal-dialog" >' +
+                    '<div class="modal-content">' +
                     '<div class="modal-header">' +
-                '<h4 class="modal-title">' + config.GlobalSetButtonName + '</h4>' +
+                    '<h4 class="modal-title">' + config.GlobalSetButtonName + '</h4>' +
                     '</div>' +
                     ' <div class="modal-body" style="padding:0">' +
-                        '<div class="form-group">' +
-                        ' <div class="editor_holder2" style="height: 350px;"></div>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="modal-footer">' +
-                '<button type="button" class="btn btn-danger" id="colseconfig_close-model">' + config.CloseButtonName + '</button>' +
-                '<button type="button" class="btn btn-success" data-title="' + config.GlobalSetButtonName +'"  id="saveconfig_close-model">' + config.SubmitButtonName+'</button>' +
-                        '  </div>' +
-                        '  </div>' +
-                        '</div>' +
-                        '</div>';
+                    '<div class="form-group">' +
+                    ' <div class="editor_holder2" style="height: 350px;"></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-danger" id="colseconfig_close-model">' + config.CloseButtonName + '</button>' +
+                    '<button type="button" class="btn btn-success" data-title="' + config.GlobalSetButtonName + '"  id="saveconfig_close-model">' + config.SubmitButtonName + '</button>' +
+                    '  </div>' +
+                    '  </div>' +
+                    '</div>' +
+                    '</div>';
             }
 
             //暂停和启用任务
-
             PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
                 '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
-            
-            var getAgentJobDeatilButton =  '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="JobDetail">' +
-                '<span class="glyphicon glyphicon-stop"> ' + (config.AgentJobDeatilButton) + '</span>' +
+
+            // 获取AgentJob 详情
+            var getAgentJobDeatilButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="JobDetail">' +
+                '<span class="glyphicon glyphicon-record"> ' + (config.AgentJobDeatilButton) + '</span>' +
                 '</button>';
-            
+
+            // 导出按钮
+            if (config.NeedExportJobsButton) {
+                ExportJobsButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float: inherit;margin-left: 10px" id="exportHttpJobs">' +
+                    '<span class="glyphicon glyphicon-export"> ' + config.ExportJobsButtonName + '</span>' +
+                    '</button>';
+            }
+
+            // 导入按钮
+            if (config.NeedImportJobsButton) {
+                ImportJobsButton =
+                    '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float: inherit;margin-left:10px" id="importHttpJobs">' +
+                    '<span class="glyphicon glyphicon-import"> ' + config.ImportJobsButtonName + '</span>' +
+                    '</button>';
+            }
+
+            var importDivModel =
+                '<div class="modal inmodal" id="div_import_model" tabindex="-1" role="dialog" aria-hidden="true">' +
+                '<div class="modal-dialog">' +
+                '<div class="modal-content">' +
+                '<div class="modal-header">' +
+                '<h4 class="modal-title">' + "导入任务列表" + '</h4>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                '<div class="editor_holder3" style="height: 400px;"></div>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                ' <button type="button" class="btn btn-white" id="btn_importJobs_close">' + config.CloseButtonName + '</button>' +
+                '<button type="button" class="btn btn-primary" id="btn_importJobs_save" data-url="' + importJobsUrl + '">' + config.SubmitButtonName + '</button>' +
+                '</div>' +
+                ' </div>' +
+                ' </div>' +
+                ' </div>';
+
             if (!button || !divModel) return;
             //新增按钮
             $('.page-header').append(button);
             $('.page-header').append(EditRecurringJobutton);
             $('.page-header').append(AddCronButton);
             $('.page-header').append(GlobalSetButton);
-           
-           
-           
+            $('.page-header').append(ExportJobsButton); // 导出任务列表
+            $('.page-header').append(ImportJobsButton); // 导入任务列表
+            //$('.btn-toolbar-top').append(PauseButton);
+            //$('.btn-toolbar-top').append(getAgentJobDeatilButton);
+
+
             $(document.body).append(divModel);
             $(document.body).append(jobDetailModel);
+            $(document.body).append(importDivModel);
             $(document.body).append(josnDiv);
             if (config.NeedEditRecurringJobButton) {
 
@@ -240,7 +338,7 @@
 
                 //带参数执行
                 var PauseAgentButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="StartAgentJob">' +
-                    '<span class="glyphicon glyphicon-stop"> ' + (config.StartBackgroudJobButtonName) + '</span>' +
+                    '<span class="glyphicon glyphicon-play"> ' + (config.StartBackgroudJobButtonName) + '</span>' +
                     '</button>';
 
                 $('.btn-toolbar-top').append(PauseAgentButton);
@@ -258,11 +356,22 @@
 
             var container = $('.editor_holder')[0];
             var container2 = $('.editor_holder2')[0];
+            var container3 = $('.editor_holder3')[0];
+
             try {
                 window.jsonEditor = new JSONEditor(container, options);
                 window.jsonViewEditor = new JSONEditor(container2, options);
+                window.jsonEditor3 = new JSONEditor(container3, options);
             } catch (e) {
+                console.log(e);
             }
+
+
+            //try {
+            //    window.jsonEditor3 = new JSONEditor(container3, options);
+            //} catch (e2) {
+            //    console.log(e2);
+            //}
 
             $('#addHttpJob').click(function () {
                 window.jsonEditor.setText(normal_templete);
@@ -346,7 +455,7 @@
                 e.stopPropagation();
                 e.preventDefault();
             });
-            
+
             //获取agentJob的执行情况
             $("#JobDetail").click(function (e) {
 
@@ -420,7 +529,7 @@
                 e.stopPropagation();
                 e.preventDefault();
             });
-            
+
             $('#StartAgentJob').click(function (e) {
 
                 if ($("input[type=checkbox]:checked").length > 2) {
@@ -485,7 +594,7 @@
 
             //暂停任务
             $("#PauseJob").click(function (e) {
-               
+
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
@@ -517,48 +626,49 @@
                     success: function (returndata) {
                         window.location.reload();
                     },
-                    fail:function (errText) {
+                    fail: function (errText) {
                         swal({
                             title: "",
-                            text: errText.responseText  || "fail！",
+                            text: errText.responseText || "fail！",
                             type: "error"
                         });
                     }
                 });
             });
+
             //GetJobList();
-            function GetJobList() {
-                $.ajax({
-                    type: "post",
-                    url: getlisturl,
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
-                    async: true,
-                    success: function (returndata) {
-                        if (config.NeedEditRecurringJobButton) {
-                            if (!returndata) return;
-                            if (returndata.length < 1) return;
+            //function GetJobList() {
+            //    $.ajax({
+            //        type: "post",
+            //        url: getlisturl,
+            //        contentType: "application/json; charset=utf-8",
+            //        data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
+            //        async: true,
+            //        success: function (returndata) {
+            //            if (config.NeedEditRecurringJobButton) {
+            //                if (!returndata) return;
+            //                if (returndata.length < 1) return;
 
 
-                            $(".table tbody").find('tr').each(function () {
-                                var tdArr = $(this).children();
-                                var ss = tdArr.eq(1).text();
-                                for (var i = 0; i < returndata.length; i++) {
-                                    if (ss === returndata[i].Id) {
-                                        $(this).css("color", "red");
-                                        $(this).addClass("Paused");
-                                    }
-                                }
-                            });
-                        }
+            //                $(".table tbody").find('tr').each(function () {
+            //                    var tdArr = $(this).children();
+            //                    var ss = tdArr.eq(1).text();
+            //                    for (var i = 0; i < returndata.length; i++) {
+            //                        if (ss === returndata[i].Id) {
+            //                            $(this).css("color", "red");
+            //                            $(this).addClass("Paused");
+            //                        }
+            //                    }
+            //                });
+            //            }
 
-                    }
-                });
-            }
+            //        }
+            //    });
+            //}
 
 
             //全局配置
-            $('#GlobalSet').click(function() {
+            $('#GlobalSet').click(function () {
                 $(".modal-title").html(config.GlobalSetButtonName);
                 $.ajax({
                     type: "post",
@@ -597,7 +707,7 @@
                     }
 
                 });
-               
+
             });
 
             function jsonSave() {
@@ -632,7 +742,7 @@
                                 type: "success"
                             });
                         }
-                        close_json_editor();
+                        clearJsonEditor();
                     },
                     fail: function (errText) {
                         swal({
@@ -677,12 +787,12 @@
                     success: function (returndata) {
                         window.jsonEditor.setText(JSON.stringify(returndata));
                         window.jsonEditor.format();
-                        $('#httpJobModal').modal('show');   
+                        $('#httpJobModal').modal('show');
                     },
-                    fail:function (errText) {
+                    fail: function (errText) {
                         swal({
                             title: "",
-                            text: errText.responseText  || "edit job fail！",
+                            text: errText.responseText || "edit job fail！",
                             type: "error"
                         });
                     }
@@ -694,22 +804,18 @@
                 window.open(config.AddCronUrl);
             });
             $('#addhttpJob_close-model').click(function () {
-                close_json_editor();
+                clearJsonEditor();
+
             });
             $('#colseconfig_close-model').click(function () {
-                close_json_editor();
+                clearJsonEditor();
             });
 
             $('#saveconfig_close-model').click(function () {
                 jsonSave();
             });
-            function close_json_editor() {
-                $('#jsonModel').modal('hide');
-                $('#jobDetailModel').modal('hide');
-                $('#httpJobModal').modal('hide');
-                window.jsonEditor.setText('{}');
-                window.jsonViewEditor.setText('{}');
-            }
+
+
             $('#getJobDetail_close-model').click(function () {
                 $('#jobNameSpan').html('');
                 $('#jobDetailModel').modal('hide');
@@ -728,7 +834,7 @@
 
                     if (obj.Data == '{}') obj.Data = '';
                 }
-                if (obj && obj.Success &&  obj.Success.Data) {
+                if (obj && obj.Success && obj.Success.Data) {
                     if (typeof obj.Success.Data === 'string' || obj.Success.Data instanceof String) {
                     } else {
                         obj.Success.Data = JSON.stringify(obj.Success.Data);
@@ -764,7 +870,7 @@
                         confirmButtonText: "OK",
                     }, function () {
                         $('#httpJobModal').modal('hide');
-                        window.jsonEditor.setText('{}');
+                        clearJsonEditor();
                         location.reload();
                     });
 
@@ -776,14 +882,147 @@
                     });
                 });
             });
+
             $('.jsoneditor-menu').hide();
+
+            var tmpjoblist = null;
+            $('#exportHttpJobs').click(function () {
+                var settings = getAjaxSetting(exportJobsUrl, null);
+                $.ajax(settings)
+                    .done(function (response) {
+                        tmpjoblist = response;
+                        $(".modal-title").html(config.ExportJobsButtonName);
+                        $("#imhttpJob_save-model").disabled = true;
+                        setJson2JsonEditor(3, JSON.stringify(tmpjoblist));
+                        $('#div_import_model').modal({ backdrop: 'static', keyboard: false });
+                        $('#div_import_model').modal('show');
+                    }).fail(function () {
+                        swal({
+                            title: "",
+                            text: "Export Jobs Fail！",
+                            type: "error"
+                        });
+                    });
+            });
+
+            $('#importHttpJobs').click(function () {
+                var settings = getAjaxSetting(exportJobsUrl, null);
+                $.ajax(settings)
+                    .done(function (response) {
+                        tmpjoblist = response;
+                        $(".modal-title").html(config.ImportJobsButtonName);
+                        setJson2JsonEditor(3, JSON.stringify(tmpjoblist));
+                    })
+                    .fail(function () {
+                        setJson2JsonEditor(3, "{}");
+                    });
+
+                $('#div_import_model').modal({ backdrop: 'static', keyboard: false });
+                $('#div_import_model').modal('show');
+            });
+
+            $("#btn_importJobs_close").click(function () {
+                clearJsonEditor();
+            });
+
+            $("#btn_importJobs_save").click(function () {
+                var url = $(this).data("url");
+                if (!url) return;
+                console.log(url);
+                var obj = getIOEditorData();
+                if (obj && obj.Data) {
+                    if (typeof obj.Data === "string" || obj.Data instanceof String) {
+                    } else {
+                        obj.Data = JSON.stringify(obj.Data);
+                    }
+
+                    if (obj.Data === '{}') obj.Data = '';
+                }
+                if (obj.Data === "") {
+                    window.swal({
+                        title: "",
+                        text: "内容不能为空！",
+                        type: "error"
+                    });
+                    return;
+                }
+
+                var settings = getAjaxSetting(url, JSON.stringify(obj));
+                $.ajax(settings)
+                    .done(function (response) {
+                        console.log(response);
+                        window.swal({
+                            title: "Success",
+                            type: "success",
+                            showCancelButton: false,
+                            closeOnConfirm: false,
+                            animation: "slide-from-top",
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "OK"
+                        }, function () {
+                            clearJsonEditor();
+                            location.reload();
+                        });
+
+                    }).fail(function () {
+                        window.swal({
+                            title: "",
+                            text: "Add job fail！",
+                            type: "error"
+                        });
+                    });
+            });
+
+            function setJson2JsonEditor(edit, json) {
+                if (edit === 1) { // for job 
+                    window.jsonEditor.setText(json);
+                    window.jsonEditor.format();
+                }
+                else if (edit === 2) { // for config
+                    window.jsonViewEditor.setText(json);
+                    window.jsonViewEditor.format();
+                }
+                else if (edit === 3) { // for import|export
+                    window.jsonEditor3.setText(json);
+                    window.jsonEditor3.format();
+                }
+            }
+
+            function clearJsonEditor() {
+
+                $('#jobDetailModel').modal("hide");
+                $('#httpJobModal').modal("hide");
+                $('#div_import_model').modal("hide");
+                $('#httpJobModal').modal('hide');
+
+                window.jsonEditor.setText("{}");
+                window.jsonViewEditor.setText("{}");
+                window.jsonEditor3.setText("{}");
+            }
+
+            function getIOEditorData() {
+                var obj = window.jsonEditor3.get();
+                return obj;
+            }
+
+            function getAjaxSetting(url, data) {
+                var settings = {
+                    async: true,
+                    url: url,
+                    method: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    data: data
+                }
+                return settings;
+            }
         };
 
         return HttpJob;
 
     })();
 
-    
+
 
     //if (/\/jobs\/details\/([^/]+)$/.test(path)) {
     //    var console = $(".console").first();
@@ -793,9 +1032,9 @@
     //    var url = window.Hangfire.config.consolePollUrl + consoleId;
     //    var currentLine = $('.line-buffer,.line').length;
 
-        
-       
-        
+
+
+
     //    function poolGetProgress(start) {
     //        $.get(url,
     //            { start: start },
@@ -820,7 +1059,7 @@
     //            }, "html");
     //    }
 
-       
+
     //    poolGetProgress(currentLine);
     //}
 })(window.Hangfire = window.Hangfire || {});
@@ -998,7 +1237,7 @@ if (window.attachEvent) {
 
         function isEnd() {
             try {
-               
+
                 var endLine = $($('.line-buffer,.line')[$('.line-buffer,.line').length - 1]).html();
                 if (endLine.indexOf('【JobAgent】【') > 0) {
                     try {
@@ -1008,7 +1247,7 @@ if (window.attachEvent) {
                         }
                     } catch (e) {
 
-                    } 
+                    }
                 }
                 return false;
             } catch (e) {
@@ -1016,7 +1255,7 @@ if (window.attachEvent) {
             }
         }
 
-        
+
 
         LineBuffer2.prototype.unmarkNew = function () {
             $(".line.new", this._el).removeClass("new");
@@ -1098,9 +1337,9 @@ if (window.attachEvent) {
             var self = this;
 
             $.get(pollUrl + this._id, { start: next }, function (data) {
-                    var $data = $(data);
-                    var buffer = new hangfire.LineBuffer2($data);
-                    var newLines = $(".line:not(.pb)", $data);
+                var $data = $(data);
+                var buffer = new hangfire.LineBuffer2($data);
+                var newLines = $(".line:not(.pb)", $data);
                 self._buffer.append(buffer);
                 self._el.toggleClass("waiting", newLines.length === 0);
             }, "html")
@@ -1145,5 +1384,5 @@ $(function () {
                 c.poll();
             }
         });
-    } 
+    }
 });

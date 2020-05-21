@@ -333,4 +333,10 @@
   <data name="CallbackELExcuteResult" xml:space="preserve">
     <value>回调条件结果</value>
   </data>
+  <data name="ExportJobsButtonName" xml:space="preserve">
+    <value>导出任务列表</value>
+  </data>
+  <data name="ImportJobsButtonName" xml:space="preserve">
+    <value>导入任务列表</value>
+  </data>  
 </root>

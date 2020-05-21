@@ -14,6 +14,8 @@ namespace Hangfire.HttpJob
         /// </summary>
         public int GlobalHttpTimeOut { get; set; } = 5000;
 
+        public string DefaultTimeZone { get; set; } = "Asia/Shanghai";
+
         /// <summary>
         /// 默认保留7天执行记录
         /// </summary>
@@ -65,6 +67,8 @@ namespace Hangfire.HttpJob
         #region 按钮名称和标题等自定义展示名称
 
         public string AddHttpJobButtonName { get; set; } = Strings.AddHttpJobButtonName;
+        public string ExportJobsButtonName { get; set; } = Strings.ExportJobsButtonName;
+        public string ImportJobsButtonName { get; set; } = Strings.ImportJobsButtonName;
         public string AddRecurringJobHttpJobButtonName { get; set; } = Strings.AddRecurringJobHttpJobButtonName;
         public string CloseButtonName { get; set; } = Strings.CloseButtonName;
         public string SubmitButtonName { get; set; } = Strings.SubmitButtonName;
@@ -105,7 +109,27 @@ namespace Hangfire.HttpJob
 
         #endregion
 
+        /// <summary> 钉钉Webhook配置 </summary>
+        public DingTalkOption DingTalkOption { get; set; } = new DingTalkOption();
+
+        public string AssertInfo { get; set; }// = "'Code':0";
+
+        /// <summary> 当前站点名称 </summary>
+        public string CurrentDomain { get; set; } = "";
     }
+
+    public class DingTalkOption
+    {
+        /// <summary> 钉钉Webhook地址 </summary>
+        public string NoticeDingToken { get; set; }
+
+        /// <summary> 通知是否@对应手机号的人员 , 分割 </summary>
+        public string DingtalkPhones { get; set; }
+
+        /// <summary> 通知是否@所有人 </summary>
+        public bool DingtalkAtAll { get; set; }
+    }
+
 
 
     public class MailOption
