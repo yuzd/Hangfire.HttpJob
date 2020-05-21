@@ -24,7 +24,7 @@
       ]
     },
     "ConnectionString": {
-      "MysqlHangfire": "Server=mysql9.tcy365.org;Port=3306;Database=tcylianyunballdb_dev;Uid=tcylianyunball;Pwd=takbf9s4;charset=utf8;SslMode=none;Allow User Variables=True"
+      "MysqlHangfire": "Server=xx;Port=3306;Database=xx;Uid=xx;Pwd=xx;charset=utf8;SslMode=none;Allow User Variables=True"
     }
   },
   "HttpJobOptions": {
