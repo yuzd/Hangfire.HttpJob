@@ -68,57 +68,57 @@ namespace Hangfire.HttpJob.Server
 
                 op = op.ToLower();
 
-                if (CheckOperateType(op, OperateType.GetRecurringJob))// if (op == "getrecurringjob") // dashbord 上获取周期性job详情
+                if (CheckOperateType(op, OperateType.GetRecurringJob) || op == "getrecurringjob") // dashbord 上获取周期性job详情
                 {
                     await GetRecurringJobDetail(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.GetBackgroundJobDetail))// if (op == "getbackgroundjobdetail") // dashbord 上获取Agent job详情
+                else if (CheckOperateType(op, OperateType.GetBackgroundJobDetail) || op == "getbackgroundjobdetail")// if (op == "getbackgroundjobdetail") // dashbord 上获取Agent job详情
                 {
                     await DoGetBackGroundJobDetail(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.DelJob))//(op == "deljob") // 删除job
+                else if (CheckOperateType(op, OperateType.DelJob) || op == "deljob")//(op == "deljob") // 删除job
                 {
                     await DelJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.PauseJob)) //if (op == "pausejob") // 暂停或开始job
+                else if (CheckOperateType(op, OperateType.PauseJob)|| op == "pausejob") //if (op == "pausejob") // 暂停或开始job
                 {
                     await DoPauseOrRestartJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.BackgroundJob)) //if (op == "backgroundjob") //新增后台任务job
+                else if (CheckOperateType(op, OperateType.BackgroundJob)|| op == "backgroundjob") //if (op == "backgroundjob") //新增后台任务job
                 {
                     await AddBackgroundjob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.RecurringJob)) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
+                else if (CheckOperateType(op, OperateType.RecurringJob) || ((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
                 {
                     await AddRecurringJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.EditRecurringJob)) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
+                else if (CheckOperateType(op, OperateType.EditRecurringJob)||((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
                 {
                     await AddRecurringJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.StartBackgroundJob)) //if (op == "startbackgroudjob")
+                else if (CheckOperateType(op, OperateType.StartBackgroundJob)|| (op == "startbackgroudjob")) //if (op == "startbackgroudjob")
                 {
                     await StartBackgroudJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.StopBackgroundJob)) //if (op == "stopbackgroudjob")
+                else if (CheckOperateType(op, OperateType.StopBackgroundJob)|| (op == "stopbackgroudjob")) //if (op == "stopbackgroudjob")
                 {
                     await StopBackgroudJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.GetGlobalSetting)) // if (op == "getglobalsetting")
+                else if (CheckOperateType(op, OperateType.GetGlobalSetting)|| (op == "getglobalsetting")) // if (op == "getglobalsetting")
                 {
                     await GetGlobalSetting(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.SaveGlobalSetting)) //if (op == "saveglobalsetting")
+                else if (CheckOperateType(op, OperateType.SaveGlobalSetting)|| (op == "saveglobalsetting")) //if (op == "saveglobalsetting")
                 {
                     await SaveGlobalSetting(context);
                     return;
@@ -765,8 +765,15 @@ namespace Hangfire.HttpJob.Server
 
             try
             {
-                var timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
-                //var timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
+
+                // 先用每个job配置的 如果没有就用系统配置的 在没有就用Local
+                TimeZoneInfo timeZone = null;
+                if (!string.IsNullOrEmpty(jobItem.TimeZone))
+                { 
+                    timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
+                }
+                
+                if(timeZone == null) timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的

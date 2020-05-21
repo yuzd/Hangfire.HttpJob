@@ -73,11 +73,11 @@ namespace Hangfire.HttpJob.Client
         /// 传了class就代表是agentjob
         /// </summary>
         public string AgentClass { get; set; }
-        
+
         /// <summary>
         /// Header
         /// </summary>
-        public Dictionary<string,string> Headers { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
 
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
@@ -89,9 +89,36 @@ namespace Hangfire.HttpJob.Client
 
         public BaseHttpJobInfo Success { get; set; }
         public BaseHttpJobInfo Fail { get; set; }
+        /// <summary>
+        /// 每个job运行的时区
+        /// </summary>
+        public string TimeZone { get; set; }
+
+        /// <summary>
+        /// 钉钉配置
+        /// </summary>
+        public DingTalkOption DingTalk { get; set; }
         #endregion
     }
-    internal class HttpJobItem:BaseHttpJobInfo
+    public class DingTalkOption
+    {
+        /// <summary>
+        /// 钉钉Webhook地址
+        /// </summary>
+        public string Token { get; set; }
+
+        /// <summary>
+        /// 通知是否@对应手机号的人员 , 分割
+        /// </summary>
+        public string AtPhones { get; set; }
+
+        /// <summary>
+        ///  通知是否@所有人
+        /// </summary>
+        public bool IsAtAll { get; set; }
+    }
+
+    internal class HttpJobItem : BaseHttpJobInfo
     {
         private readonly string _hangfireUrl;
         private readonly HangfireServerPostOption _httpPostOption;
@@ -104,7 +131,7 @@ namespace Hangfire.HttpJob.Client
             DelayFromMinutes = 15;
         }
 
-        public HttpJobItem(string hangfireUrl, HangfireServerPostOption option) :this()
+        public HttpJobItem(string hangfireUrl, HangfireServerPostOption option) : this()
         {
             _hangfireUrl = hangfireUrl;
             _httpPostOption = option;
@@ -114,7 +141,7 @@ namespace Hangfire.HttpJob.Client
         /// 发送请求
         /// </summary>
         /// <returns></returns>
-        public async Task<T> PostAsync<T>() where T: HangfirJobResult,new()
+        public async Task<T> PostAsync<T>() where T : HangfirJobResult, new()
         {
             var result = new T();
             try
@@ -141,7 +168,7 @@ namespace Hangfire.HttpJob.Client
                     result.ErrMessage = httpResponse.StatusCode.ToString();
                     return result;
                 }
-               
+
             }
             catch (Exception ex)
             {
@@ -160,7 +187,7 @@ namespace Hangfire.HttpJob.Client
         }
 
 
-        private  HttpRequestMessage PrepareHttpRequestMessage()
+        private HttpRequestMessage PrepareHttpRequestMessage()
         {
             var request = new HttpRequestMessage(new HttpMethod("POST"), this._hangfireUrl);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -175,6 +202,6 @@ namespace Hangfire.HttpJob.Client
             return request;
         }
 
-      
+
     }
 }

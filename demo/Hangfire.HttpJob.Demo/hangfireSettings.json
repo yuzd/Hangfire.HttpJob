@@ -58,11 +58,11 @@
     //  "Password": "",
     //  "UseSsl": false,
     //  "AlertMailList": []
-    //} 
+    //}
     "DingTalkOption": {
-      "NoticeDingToken": "xx",
-      "DingtalkPhones": "",
-      "DingtalkAtAll": false
+      "Token": "xx",
+      "AtPhones": "",
+      "IsAtAll": false
     }
   }
 }

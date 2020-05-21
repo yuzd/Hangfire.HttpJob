@@ -232,6 +232,51 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 HttpJob-Detail 的本地化字符串。
+        /// </summary>
+        public static string DingTalkConfig {
+            get {
+                return ResourceManager.GetString("DingTalkConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 JobLogDetail 的本地化字符串。
+        /// </summary>
+        public static string DingTalkLogDetail {
+            get {
+                return ResourceManager.GetString("DingTalkLogDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 RequestUrl 的本地化字符串。
+        /// </summary>
+        public static string DingTalkRequestUrl {
+            get {
+                return ResourceManager.GetString("DingTalkRequestUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Response 的本地化字符串。
+        /// </summary>
+        public static string DingTalkResponse {
+            get {
+                return ResourceManager.GetString("DingTalkResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 HttpJob-Alert 的本地化字符串。
+        /// </summary>
+        public static string DingTalkTitle {
+            get {
+                return ResourceManager.GetString("DingTalkTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 EditRecurringJob 的本地化字符串。
         /// </summary>
         public static string EditRecurringJobButtonName {
@@ -347,6 +392,7 @@ namespace Hangfire.HttpJob.Content.resx {
                 return ResourceManager.GetString("ExportJobsButtonName", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   查找类似 From 的本地化字符串。
         /// </summary>
@@ -391,6 +437,7 @@ namespace Hangfire.HttpJob.Content.resx {
                 return ResourceManager.GetString("ImportJobsButtonName", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   查找类似 JobEnd 的本地化字符串。
         /// </summary>

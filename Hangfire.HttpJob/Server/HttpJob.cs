@@ -61,23 +61,26 @@ namespace Hangfire.HttpJob.Server
             var result = false;
             try
             {
-                context.Items.TryGetValue("Data", out var runTimeDataItem);
-                var runTimeData = runTimeDataItem as string;
-                if (!string.IsNullOrEmpty(runTimeData))
+                object runTimeDataItem = null;
+                context?.Items.TryGetValue("Data", out runTimeDataItem);
+                if(runTimeDataItem!=null)
                 {
-                    item.Data = runTimeData;
+                    var runTimeData = runTimeDataItem as string;
+                    if (!string.IsNullOrEmpty(runTimeData))
+                    {
+                        item.Data = runTimeData;
+                    }
                 }
 
                 if (Run(item, context, logList))
                 {
-                    SendSuccessMail(item, string.Join("<br/>", logList));
+                    SendSuccess(context.BackgroundJob.Id, item, string.Join("<br/>", logList));
                     result = true;
                 }
                 else
                 {
-                    SendFailMail(item, string.Join("<br/>", logList), null);
+                    SendFail(context.BackgroundJob.Id, item, string.Join("<br/>", logList), null);
                 }
-
             }
             catch (Exception ex)
             {
@@ -101,12 +104,11 @@ namespace Hangfire.HttpJob.Server
                         item.Cron = statusCodeEx == null || string.IsNullOrEmpty(statusCodeEx.Msg) ? ex.Message : statusCodeEx.Msg;
                         if (Run(item.Fail, context, logList, item))
                         {
-                            SendSuccessMail(item, string.Join("<br/>", logList));
+                            SendSuccess(context.BackgroundJob.Id, item, string.Join("<br/>", logList));
                             return;
                         }
                     }
-                    SendDingTalkNotice(item, context, queuename, ex.Message);
-                    SendFailMail(item, string.Join("<br/>", logList), ex);
+                    SendFail(context.BackgroundJob.Id, item, string.Join("<br/>", logList), ex);
                     AddErrToJob(context, ex);
                     return;
                 }
@@ -121,19 +123,18 @@ namespace Hangfire.HttpJob.Server
                         item.Cron = statusCodeEx == null || string.IsNullOrEmpty(statusCodeEx.Msg) ? ex.Message : statusCodeEx.Msg;
                         if (Run(item.Fail, context, logList, item))
                         {
-                            SendSuccessMail(item, string.Join("<br/>", logList));
+                            SendSuccess(context.BackgroundJob.Id, item, string.Join("<br/>", logList));
                             return;
                         }
                     }
                     RunWithTry(() => context.WriteLine(Strings.LimitReached));
                     logList.Add(Strings.LimitReached);
-                    SendDingTalkNotice(item, context, queuename, ex.Message);
-                    SendFailMail(item, string.Join("<br/>", logList), ex);
+                    SendFail(context.BackgroundJob.Id, item, string.Join("<br/>", logList), ex);
                     AddErrToJob(context, ex);
                     return;
                 }
 
-                context.Items.Add("RetryCount", count);
+                context?.Items.Add("RetryCount", count);
                 throw;
             }
 
@@ -178,8 +179,7 @@ namespace Hangfire.HttpJob.Server
 
                 RunWithTry(() => context.WriteLine($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobStart}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                RunWithTry(() => context.WriteLine(
-                        $"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}"));
+                RunWithTry(() => context.WriteLine($"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}"));
                 logList.Add(
                     $"{Strings.JobName}:{item.JobName ?? string.Empty}|{Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}");
                 RunWithTry(() => context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】"));
@@ -189,7 +189,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     // per proxy per HttpClient
                     client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(HangfireHttpJobOptions.Proxy);
-                    RunWithTry(() => context.WriteLine($"Proxy:{HangfireHttpJobOptions.Proxy}"));
+                    RunWithTry(() => context.WriteLine($"Use Proxy:{HangfireHttpJobOptions.Proxy}"));
                     logList.Add($"Proxy:{HangfireHttpJobOptions.Proxy}");
                 }
                 else
@@ -200,53 +200,43 @@ namespace Hangfire.HttpJob.Server
 
                 var httpMesage = PrepareHttpRequestMessage(item, context, parentJob);
                 cancelToken = new CancellationTokenSource(TimeSpan.FromMilliseconds(item.Timeout));
-                var httpResponse = client.SendAsync(httpMesage, cancelToken.Token).ConfigureAwait(false).GetAwaiter()
-                    .GetResult();
+                var httpResponse = client.SendAsync(httpMesage, cancelToken.Token).ConfigureAwait(false).GetAwaiter().GetResult();
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
                 RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode}"));
                 logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode}");
                 RunWithTry(() => context.WriteLine($"{Strings.JobResult}:{result}"));
                 logList.Add($"{Strings.JobResult}:{result}");
-
-                if (httpResponse.StatusCode != HttpStatusCode.OK)
-                {
-                    SendDingTalkNotice(item, context, Strings.QueuenName, $"HttpStatusCode is <font color=#E74C3C> {httpResponse.StatusCode}</font> JobResult is {result}");
-                    logList.Add($"HttpStatusCode is {httpResponse.StatusCode} JobResult is {result}");
-                }
-                else
-                    CheckAndWarnWithDingTalk(item, context, Strings.QueuenName, result, logList);
-
+                RunWithTry(() => context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
+                logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
                 //检查HttpResponse StatusCode
                 if (HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
                 {
-                    RunWithTry(() =>
-                        context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
+                    RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
                     logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");
                 }
                 else
                 {
+                    //错误的log都会在exception里面出
                     throw new HttpStatusCodeException(httpResponse.StatusCode, result);
                 }
 
-                //检查是否有设置EL表达式
+                //检查是否有设置EL表达式 可以自定义检查StatusCode 和 解析返回的参数值
                 if (!string.IsNullOrEmpty(item.CallbackEL))
                 {
                     var elResult = InvokeSpringElCondition(item.CallbackEL, result, context,
-                        new Dictionary<string, object> { { "resultBody", result } });
+                        new Dictionary<string, object> { { "resultBody", result } , { "StatusCode", (int)httpResponse.StatusCode } });
                     if (!elResult)
                     {
+                        //错误的log都会在exception里面出
                         throw new HttpStatusCodeException(item.CallbackEL, result);
                     }
 
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackELExcuteResult}:Ok 】" + item.CallbackEL));
                 }
 
-                RunWithTry(() => context.WriteLine($"{Strings.JobResult}:{result}"));
-                logList.Add($"{Strings.JobResult}:{result}");
-                RunWithTry(() => context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
-                logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+               
                 if (parentJob != null)
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackSuccess}】[{item.CallbackRoot}]"));
 
@@ -273,6 +263,8 @@ namespace Hangfire.HttpJob.Server
                 {
                     throw;
                 }
+
+                //走到这里应该都是callback的抛出的异常了
                 Logger.ErrorException("HttpJob.Excute=>" + item, e);
                 RunWithTry(() => context.WriteLine($"【{Strings.CallbackFail}】[{item.CallbackRoot}]"));
                 if (e is HttpStatusCodeException exception && exception.IsEl)
@@ -337,48 +329,105 @@ namespace Hangfire.HttpJob.Server
 
         #region Private
 
-        private static readonly string[] EmptyResponse = new[] { "", "{}", "[]" };
-        private static void CheckAndWarnWithDingTalk(HttpJobItem item, PerformContext context, string queueName, string resString, List<string> logList)
+        
+        /// <summary>
+        /// 发送钉钉通知
+        /// </summary>
+        private static void SendDingTalkNotice(HttpJobItem item,string jobId, string resString,bool isSuccess, Exception exception = null)
         {
-            if (string.IsNullOrEmpty(resString) || EmptyResponse.Contains(resString)) return;
-
             try
             {
-                if (string.IsNullOrEmpty(item.AssertInfo)) return;
-                var assertInfos = item.AssertInfo.Split(':');
-                if (assertInfos.Length != 2) return;
-                RunWithTry(() => context.WriteLine($"AssertInfo:{item.AssertInfo}"));
-
-                var assertCode = assertInfos[0];
-                var assertValue = assertInfos[1];
-                var resDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(resString);
-
-                if (resDict.TryGetValue(assertCode, out var codeValue))
+                if (!HangfireHttpJobOptions.EnableDingTalk)
                 {
-                    var code = codeValue?.ToString();
-                    if (!string.IsNullOrEmpty(code) && !string.Equals(assertValue, code, StringComparison.OrdinalIgnoreCase))
-                    {
-                        SendDingTalkNotice(item, context, queueName, resString);
-                    }
+                    return;
                 }
-                RunWithTry(() => context.WriteLine($"assertCode is {assertCode}, expectValue is {assertValue},realValue is {codeValue} "));
-                logList.Add($"assertCode is {assertCode}, expectValue is {assertValue},realValue is {codeValue} ");
+
+                DingTalkOption dingTalk = item.DingTalk ?? HangfireHttpJobOptions.DingTalkOption;
+                if (dingTalk == null || string.IsNullOrEmpty(dingTalk.Token))
+                {
+                    return;
+                }
+
+                var logDetail = string.IsNullOrEmpty(HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{HangfireHttpJobOptions.CurrentDomain}/job/jobs/details/{jobId}";
+
+
+                var content =
+                    $@"## {item.JobName} {(isSuccess?"Success":"Fail")}{Strings.DingTalkTitle}
+### {Strings.DingTalkConfig}
+>#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName)?"DEFAULT": item.QueueName)} 
+### {Strings.DingTalkRequestUrl}: 
+> #### {item.Url}
+### {Strings.DingTalkResponse}:
+>#### {resString}   
+### {Strings.DingTalkLogDetail}：
+>#### {logDetail}{(exception!=null?"\n\n"+exception.ToString():"")}    
+";
+
+                var title = $"{Strings.DingTalkTitle}";
+
+                var obj = new
+                {
+                    msgtype = "markdown",
+                    markdown = new
+                    {
+                        title,
+                        text = content
+                    },
+                    at = new
+                    {
+                        atMobiles = dingTalk.AtPhones,
+                        isAtAll = dingTalk.IsAtAll,
+                    }
+                };
+
+                var requestUri = $"https://oapi.dingtalk.com/robot/send?access_token={dingTalk.Token}";
+                var httpClient = HangfireHttpClientFactory.DingTalkInstance.GetHttpClient(requestUri);
+
+
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json")
+                };
+
+                var res = httpClient.SendAsync(request).GetAwaiter().GetResult();
+                res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Logger.ErrorException("CheckAndWarnWithDingTalk => " + item, ex);
-                RunWithTry(() => context.WriteLine($"CheckAndWarnWithDingTalk handler err {ex.Message},{ex}"));
-                logList.Add($"CheckAndWarnWithDingTalk handler err {ex.Message},{ex}");
+                Logger.ErrorException("HttpJob.SendDingTalkNotice=>" + item, e);
             }
-
         }
 
-        private static void SendDingTalkNotice(HttpJobItem item, PerformContext context, string queueName, string resString)
+        /// <summary>
+        /// 发送成功通知
+        /// </summary>
+        private static void SendSuccess(string jobId,HttpJobItem item, string result)
         {
-            DingDingNoticeService.Instance.ReSetDingTalkOption(item.NoticeDingToken, item.DingtalkPhones, item.DingtalkAtAll);
-            DingDingNoticeService.Instance.DoNotice(context.BackgroundJob.Id, queueName, item.Url, item.JobName, resString, item.CurrentDomain);
+            new Task(() =>
+            {
+                SendSuccessMail(item, result);
+                SendDingTalkNotice(item, jobId, result,true);
+            }).Start();
         }
 
+        /// <summary>
+        /// 发送失败通知
+        /// </summary>
+        private static void SendFail(string jobId, HttpJobItem item, string result, Exception exception)
+        {
+            new Task(() =>
+            {
+                SendFailMail(item, result, exception);
+                SendDingTalkNotice(item, jobId, result,false,exception);
+            }).Start();
+        }
+
+
+        /// <summary>
+        /// 发送成功邮件通知
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="result"></param>
         private static void SendSuccessMail(HttpJobItem item, string result)
         {
             try
@@ -400,7 +449,12 @@ namespace Hangfire.HttpJob.Server
             }
         }
 
-
+        /// <summary>
+        /// 发送失败邮件通知
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="result"></param>
+        /// <param name="exception"></param>
         private static void SendFailMail(HttpJobItem item, string result, Exception exception)
         {
             try
