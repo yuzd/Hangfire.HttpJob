@@ -14,7 +14,7 @@ namespace Hangfire.HttpJob
 
     internal static class TimeZoneInfoHelper
     {
-        private static Dictionary<string, string> olsonWindowsTimes = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> olsonWindowsTimes = new Dictionary<string, string>()
     {
         { "Africa/Bangui", "W. Central Africa Standard Time" },
         { "Africa/Cairo", "Egypt Standard Time" },
@@ -184,40 +184,24 @@ namespace Hangfire.HttpJob
         /// </remarks>
         public static TimeZoneInfo OlsonTimeZoneToTimeZoneInfo(string olsonTimeZoneId)
         {
-            if (currentOperatorSys != OperatorSys.Windows)
-                return TimeZoneInfo.FindSystemTimeZoneById(olsonTimeZoneId);
-            var windowsTimeZone = TimeZoneInfo.Local;
-            if (olsonWindowsTimes.TryGetValue(olsonTimeZoneId, out var windowsTimeZoneId))
+            try
             {
-                try
-                {
-                    windowsTimeZone = TimeZoneInfo.FindSystemTimeZoneById(windowsTimeZoneId);
-                }
-                catch (TimeZoneNotFoundException)
-                {
+                if (currentOperatorSys != OperatorSys.Windows)
+                    return TimeZoneInfo.FindSystemTimeZoneById(olsonTimeZoneId);
 
-                }
-                catch (InvalidTimeZoneException)
+                if (olsonWindowsTimes.TryGetValue(olsonTimeZoneId, out var windowsTimeZoneId))
                 {
-
+                    return TimeZoneInfo.FindSystemTimeZoneById(windowsTimeZoneId);
+                }
+                else
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById(olsonTimeZoneId);
                 }
             }
-            else
+            catch (Exception)
             {
-                try
-                {
-                    windowsTimeZone = TimeZoneInfo.FindSystemTimeZoneById(olsonTimeZoneId);
-                }
-                catch (TimeZoneNotFoundException)
-                {
-
-                }
-                catch (InvalidTimeZoneException)
-                {
-
-                }
+                return null;
             }
-            return windowsTimeZone;
         }
     }
 }

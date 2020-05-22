@@ -188,5 +188,15 @@ namespace Hangfire.HttpJob.Client
 
         public HttpCallbackJob Success { get; set; }
         public HttpCallbackJob Fail { get; set; }
+        /// <summary>
+        /// 每个job运行的时区
+        /// </summary>
+        public string TimeZone { get; set; }
+
+        /// <summary>
+        /// 钉钉配置
+        /// </summary>
+        public DingTalkOption DingTalk { get; set; }
+
     }
 }

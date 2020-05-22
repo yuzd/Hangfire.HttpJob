@@ -333,4 +333,19 @@
   <data name="CallbackELExcuteResult" xml:space="preserve">
     <value>CallbackEL Excute Result</value>
   </data>
+  <data name="DingTalkConfig" xml:space="preserve">
+    <value>HttpJob-Detail</value>
+  </data>
+  <data name="DingTalkLogDetail" xml:space="preserve">
+    <value>JobLogDetail</value>
+  </data>
+  <data name="DingTalkRequestUrl" xml:space="preserve">
+    <value>RequestUrl</value>
+  </data>
+  <data name="DingTalkResponse" xml:space="preserve">
+    <value>Response</value>
+  </data>
+  <data name="DingTalkTitle" xml:space="preserve">
+    <value>HttpJob-Alert</value>
+  </data>
 </root>

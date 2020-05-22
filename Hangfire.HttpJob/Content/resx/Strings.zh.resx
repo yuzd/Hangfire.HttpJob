@@ -338,5 +338,20 @@
   </data>
   <data name="ImportJobsButtonName" xml:space="preserve">
     <value>导入任务列表</value>
-  </data>  
+  </data>
+  <data name="DingTalkConfig" xml:space="preserve">
+    <value>任务基础属性</value>
+  </data>
+  <data name="DingTalkLogDetail" xml:space="preserve">
+    <value>日志详细</value>
+  </data>
+  <data name="DingTalkRequestUrl" xml:space="preserve">
+    <value>请求地址</value>
+  </data>
+  <data name="DingTalkResponse" xml:space="preserve">
+    <value>执行情况</value>
+  </data>
+  <data name="DingTalkTitle" xml:space="preserve">
+    <value>任务通知</value>
+  </data>
 </root>

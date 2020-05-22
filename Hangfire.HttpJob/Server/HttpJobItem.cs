@@ -203,19 +203,15 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         public string CallbackEL { get; set; }
 
-        /// <summary> 每个job运行的时区（感觉意义不大）</summary>
-        public string TimeZone { get; set; } = "Asia/Shanghai";
+        /// <summary>
+        /// 每个job运行的时区
+        /// </summary>
+        public string TimeZone { get; set; }
 
-        /// <summary> 钉钉Webhook地址 </summary>
-        public string NoticeDingToken { get; set; } = "";
-
-        /// <summary> 通知是否@对应手机号的人员 , 分割 </summary>
-        public string DingtalkPhones { get; set; } = "";
-
-        /// <summary> 通知是否@所有人 </summary>
-        public bool DingtalkAtAll { get; set; } = false;
-        public string AssertInfo { get; set; }
-        public string CurrentDomain { get; set; } = "";
+        /// <summary>
+        /// 钉钉配置
+        /// </summary>
+        public DingTalkOption DingTalk { get; set; } 
 
     }
 }
