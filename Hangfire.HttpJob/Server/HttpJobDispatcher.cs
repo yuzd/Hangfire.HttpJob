@@ -169,7 +169,7 @@ namespace Hangfire.HttpJob.Server
                     return;
                 }
 
-                File.WriteAllText(Server.HttpJob.HangfireHttpJobOptions.GlobalSettingJsonFilePath, jsonString);
+                File.WriteAllText(CodingUtil.HangfireHttpJobOptions.GlobalSettingJsonFilePath, jsonString);
             }
             catch (Exception e)
             {
@@ -184,7 +184,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task GetGlobalSetting(DashboardContext context)
         {
-            var path = Server.HttpJob.HangfireHttpJobOptions.GlobalSettingJsonFilePath;
+            var path = CodingUtil.HangfireHttpJobOptions.GlobalSettingJsonFilePath;
             try
             {
                 if (!File.Exists(path))
@@ -218,9 +218,9 @@ namespace Hangfire.HttpJob.Server
                 await context.Response.WriteAsync(jobItemRt.Item2);
                 return;
             }
-            if (Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter != null)
+            if (CodingUtil.HangfireHttpJobOptions.AddHttpJobFilter != null)
             {
-                if (!Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
+                if (!CodingUtil.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsync("HttpJobFilter return false");
@@ -258,9 +258,9 @@ namespace Hangfire.HttpJob.Server
                 await context.Response.WriteAsync(jobItemRt.Item2);
                 return;
             }
-            if (Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter != null)
+            if (CodingUtil.HangfireHttpJobOptions.AddHttpJobFilter != null)
             {
-                if (!Server.HttpJob.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
+                if (!CodingUtil.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsync("HttpJobFilter return false");
@@ -773,7 +773,7 @@ namespace Hangfire.HttpJob.Server
                     timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
                 }
                 
-                if(timeZone == null) timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
+                if(timeZone == null) timeZone = CodingUtil.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的

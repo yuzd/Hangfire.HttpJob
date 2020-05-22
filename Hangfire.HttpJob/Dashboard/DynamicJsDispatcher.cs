@@ -2,6 +2,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Hangfire.HttpJob.Support;
 
 namespace Hangfire.HttpJob.Dashboard
 {
@@ -17,13 +18,17 @@ namespace Hangfire.HttpJob.Dashboard
         {
             var builder = new StringBuilder();
 
+            CodingUtil.GetGlobalAppsettings().TryGetValue("EnableDingTalk", out var EnableDingTalk);
+            CodingUtil.GetGlobalAppsettings().TryGetValue("DefaultTimeZone", out var DefaultTimeZone);
+
+
             builder.Append(@"(function (hangFire) {")
                   .Append("hangFire.httpjobConfig =  {};")
-                  .AppendFormat("hangFire.httpjobConfig.DefaultTimeZone = '{0}';", _options.DefaultTimeZone)
+                  .AppendFormat("hangFire.httpjobConfig.DefaultTimeZone = '{0}';", DefaultTimeZone ?? _options.DefaultTimeZone)
                   .AppendFormat("hangFire.httpjobConfig.DingtalkToken = '{0}';", _options?.DingTalkOption?.Token ?? "")
                   .AppendFormat("hangFire.httpjobConfig.DingtalkPhones = '{0}';", _options?.DingTalkOption?.AtPhones ?? "")
                   .AppendFormat("hangFire.httpjobConfig.DingtalkAtAll = '{0}';", _options?.DingTalkOption?.IsAtAll ?? false ? "true" : "false")
-                  .AppendFormat("hangFire.httpjobConfig.EnableDingTalk = '{0}';", _options?.EnableDingTalk ?? false ? "true" : "false")
+                  .AppendFormat("hangFire.httpjobConfig.EnableDingTalk = '{0}';", EnableDingTalk!=null&& EnableDingTalk.ToString().Equals("True") ? "true":  _options?.EnableDingTalk ?? false ? "true" : "false")
                   .AppendFormat("hangFire.httpjobConfig.AddHttpJobButtonName = '{0}';", _options.AddHttpJobButtonName)
                   .AppendFormat("hangFire.httpjobConfig.ExportJobsButtonName = '{0}';", _options.ExportJobsButtonName)
                   .AppendFormat("hangFire.httpjobConfig.ImportJobsButtonName = '{0}';", _options.ImportJobsButtonName)
