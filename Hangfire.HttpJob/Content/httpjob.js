@@ -994,6 +994,7 @@
                 $('#httpJobModal').modal("hide");
                 $('#div_import_model').modal("hide");
                 $('#httpJobModal').modal('hide');
+                $('#jsonModel').modal('hide');
 
                 window.jsonEditor.setText("{}");
                 window.jsonViewEditor.setText("{}");
