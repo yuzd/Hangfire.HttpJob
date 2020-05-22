@@ -336,8 +336,18 @@ namespace Hangfire.HttpJob.Server
         private static void SendDingTalkNotice(HttpJobItem item, string jobId, string resString, bool isSuccess, Exception exception = null)
         {
             try
-            {
-                if (!HangfireHttpJobOptions.EnableDingTalk || isSuccess) // 成功的任务不用通知，钉钉消息容易被覆盖，只需关注失败的结果，或者这个做成每个job自定义
+            { 
+                if (isSuccess && !item.SendSuccess)
+                {
+                    return;
+                }
+
+                if (!isSuccess && !item.SendFail)
+                {
+                    return;
+                }
+
+                if (!HangfireHttpJobOptions.EnableDingTalk) // 成功的任务不用通知，钉钉消息容易被覆盖，只需关注失败的结果，或者这个做成每个job自定义
                 {
                     return;
                 }
@@ -432,7 +442,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                if (!item.SendSucMail) return;
+                if (!item.SendSuccess) return;
                 var mail = string.IsNullOrEmpty(item.Mail)
                     ? string.Join(",", HangfireHttpJobOptions.MailOption.AlertMailList)
                     : item.Mail;
@@ -459,7 +469,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                if (!item.SendFaiMail) return;
+                if (!item.SendFail) return;
                 var mail = string.IsNullOrEmpty(item.Mail)
                     ? string.Join(",", HangfireHttpJobOptions.MailOption.AlertMailList)
                     : item.Mail;

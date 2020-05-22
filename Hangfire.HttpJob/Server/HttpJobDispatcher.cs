@@ -935,7 +935,6 @@ namespace Hangfire.HttpJob.Server
                 var jobItems = jobList.Select(m => m.Job.Args[0]).ToList();
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
-                System.Console.WriteLine(JsonConvert.SerializeObject(jobItems));
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(jobItems));
             }
             catch (Exception e)

@@ -99,8 +99,8 @@
                 EnableRetry: false,
                 RetryTimes: 3,
                 RetryDelaysInSeconds: "20,30,60",
-                SendSucMail: false,
-                SendFaiMail: true,
+                SendSuccess: false,
+                SendFail: true,
                 Mail: "",
                 CallbackEL: "",
                 AssertInfo: config.AssertInfo,
@@ -124,8 +124,8 @@
                 EnableRetry: false,
                 RetryTimes: 3,
                 RetryDelaysInSeconds: "20,30,60",
-                SendSucMail: false,
-                SendFaiMail: true,
+                SendSuccess: false,
+                SendFail: true,
                 Mail: "",
                 CallbackEL: "",
                 AssertInfo: config.AssertInfo,
@@ -1003,7 +1003,6 @@
                 $('#jobDetailModel').modal("hide");
                 $('#httpJobModal').modal("hide");
                 $('#div_import_model').modal("hide");
-                $('#httpJobModal').modal('hide');
                 $('#jsonModel').modal('hide');
 
                 window.jsonEditor.setText("{}");

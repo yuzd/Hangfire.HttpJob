@@ -157,12 +157,12 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 是否成功发送邮件
         /// </summary>
-        public bool SendSucMail { get; set; }
+        public bool SendSuccess { get; set; }
 
         /// <summary>
         /// 是否失败发送邮件
         /// </summary>
-        public bool SendFaiMail { get; set; }
+        public bool SendFail { get; set; }
 
         /// <summary>
         /// 指定发送邮件
