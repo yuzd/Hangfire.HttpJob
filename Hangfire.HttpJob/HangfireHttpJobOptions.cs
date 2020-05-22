@@ -14,7 +14,10 @@ namespace Hangfire.HttpJob
         /// </summary>
         public int GlobalHttpTimeOut { get; set; } = 5000;
 
-        public string DefaultTimeZone { get; set; } = "Asia/Shanghai";
+        /// <summary>
+        /// 默认的时区
+        /// </summary>
+        public string DefaultTimeZone { get; set; }
 
         /// <summary>
         /// 默认保留7天执行记录
@@ -109,25 +112,38 @@ namespace Hangfire.HttpJob
 
         #endregion
 
-        /// <summary> 钉钉Webhook配置 </summary>
+        /// <summary>
+        /// 配置默认的钉钉发送
+        /// </summary>
         public DingTalkOption DingTalkOption { get; set; } = new DingTalkOption();
 
-        public string AssertInfo { get; set; }// = "'Code':0";
+        /// <summary>
+        /// 是否开启钉钉通知服务
+        /// </summary>
+        public bool EnableDingTalk { get; set; } 
 
-        /// <summary> 当前站点名称 </summary>
-        public string CurrentDomain { get; set; } = "";
+        /// <summary>
+        /// 当前hangfire调度服务的部署站点域名
+        /// </summary>
+        public string CurrentDomain { get; set; } 
     }
 
     public class DingTalkOption
     {
-        /// <summary> 钉钉Webhook地址 </summary>
-        public string NoticeDingToken { get; set; }
+        /// <summary>
+        /// 钉钉Webhook地址
+        /// </summary>
+        public string Token { get; set; }
 
-        /// <summary> 通知是否@对应手机号的人员 , 分割 </summary>
-        public string DingtalkPhones { get; set; }
+        /// <summary>
+        /// 通知是否@对应手机号的人员 , 分割
+        /// </summary>
+        public string AtPhones { get; set; }
 
-        /// <summary> 通知是否@所有人 </summary>
-        public bool DingtalkAtAll { get; set; }
+        /// <summary>
+        ///  通知是否@所有人
+        /// </summary>
+        public bool IsAtAll { get; set; }
     }
 
 
