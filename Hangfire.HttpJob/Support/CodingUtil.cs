@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Hangfire.Logging;
 using Newtonsoft.Json;
+using Spring.Core.TypeConversion;
 
 namespace Hangfire.HttpJob.Support
 {
@@ -26,7 +27,7 @@ namespace Hangfire.HttpJob.Support
         /// <summary>
         /// appsettions.json配置文件内容
         /// </summary>
-        private static Dictionary<string, object> _appsettingsJson = new Dictionary<string, object>();
+        internal static Dictionary<string, object> _appsettingsJson = new Dictionary<string, object>();
 
         /// <summary>
         /// 全局配置 每次会检测是否有改变
@@ -51,8 +52,23 @@ namespace Hangfire.HttpJob.Support
             return _appsettingsJson;
         }
 
+        public static T GetGlobalAppsetting<T>(string value, T deflaultValue)
+        {
+            try
+            {
+                if (_appsettingsJson.TryGetValue(value, out var v))
+                {
+                    return (T)TypeConversionUtils.ConvertValueIfNecessary(typeof(T), v, null);
+                }
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
 
 
+            return deflaultValue;
+        }
 
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace Hangfire.HttpJob.Support
             _contentType = contentType;
         }
 
-        public Task Dispatch(DashboardContext context)
+        public async Task Dispatch(DashboardContext context)
         {
             if (!string.IsNullOrEmpty(_contentType))
             {
@@ -44,7 +44,7 @@ namespace Hangfire.HttpJob.Support
                 }
             }
 
-            return WriteResourceAsync(context.Response, _assembly, _resourceName);
+            await WriteResourceAsync(context.Response, _assembly, _resourceName);
         }
 
         private static async Task WriteResourceAsync(DashboardResponse response, Assembly assembly, string resourceName)

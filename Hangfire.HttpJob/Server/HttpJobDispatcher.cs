@@ -170,6 +170,8 @@ namespace Hangfire.HttpJob.Server
                 }
 
                 File.WriteAllText(CodingUtil.HangfireHttpJobOptions.GlobalSettingJsonFilePath, jsonString);
+
+                CodingUtil.GetGlobalAppsettings();
             }
             catch (Exception e)
             {
