@@ -362,7 +362,7 @@ namespace Hangfire.HttpJob.Server
 
 
                 var content =
-                    $@"## {item.JobName} {(isSuccess?"Success":"Fail")}{Strings.DingTalkTitle}
+                    $@"## {item.JobName} {(isSuccess?"Success": "<font color=#E74C3C>Failed</font>")}{Strings.DingTalkTitle}
 ### {Strings.DingTalkConfig}
 >#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName)?"DEFAULT": item.QueueName)} 
 ### {Strings.DingTalkRequestUrl}: 
