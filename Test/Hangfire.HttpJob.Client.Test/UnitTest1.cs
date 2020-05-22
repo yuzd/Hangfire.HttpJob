@@ -16,7 +16,7 @@ namespace Hangfire.HttpJob.Client.Test
                 Method = "Get",
                 Url = "http://localhost:5000/testaaa",
                 Mail = new List<string> {"1877682825@qq.com"},
-                SendSucMail = true,
+                SendSuccess = true,
                 DelayFromMinutes = 1,
                 TimeZone = "",
                 DingTalk = new DingTalkOption
@@ -77,7 +77,7 @@ namespace Hangfire.HttpJob.Client.Test
                 Data = new {name = "aaa",age = 10},
                 Url = "http://localhost:5000/testpost",
                 Mail = new List<string> { "1877682825@qq.com" },
-                SendSucMail = true,
+                SendSuccess = true,
                 Cron = "40 17 * * *",
                 TimeZone = "",
                 DingTalk = new DingTalkOption
@@ -127,7 +127,7 @@ namespace Hangfire.HttpJob.Client.Test
                 Method = "Get",
                 Url = "http://localhost:5000/testaaa",
                 Mail = new List<string> { "1877682825@qq.com" },
-                SendSucMail = true,
+                SendSuccess = true,
                 DelayFromMinutes = 1,
                 QueueName = "APIS",
                 Headers = new Dictionary<string, string>

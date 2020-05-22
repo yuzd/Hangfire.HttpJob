@@ -337,6 +337,16 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
+                if (isSuccess && !item.SendSuccess)
+                {
+                    return;
+                }
+
+                if (!isSuccess && !item.SendFail)
+                {
+                    return;
+                }
+
                 if (!HangfireHttpJobOptions.EnableDingTalk)
                 {
                     return;
@@ -432,7 +442,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                if (!item.SendSucMail) return;
+                if (!item.SendSuccess) return;
                 var mail = string.IsNullOrEmpty(item.Mail)
                     ? string.Join(",", HangfireHttpJobOptions.MailOption.AlertMailList)
                     : item.Mail;
@@ -459,7 +469,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                if (!item.SendFaiMail) return;
+                if (!item.SendFail) return;
                 var mail = string.IsNullOrEmpty(item.Mail)
                     ? string.Join(",", HangfireHttpJobOptions.MailOption.AlertMailList)
                     : item.Mail;

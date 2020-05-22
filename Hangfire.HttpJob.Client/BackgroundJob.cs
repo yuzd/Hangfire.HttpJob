@@ -86,7 +86,7 @@ namespace Hangfire.HttpJob.Client
             ContentType = "application/json";
             Timeout = 20000;
             DelayFromMinutes = 15;
-            SendFaiMail = true;
+            SendFail = true;
         }
 
         /// <summary>
@@ -126,14 +126,14 @@ namespace Hangfire.HttpJob.Client
         public string JobName { get; set; }
 
         /// <summary>
-        /// 是否成功发送邮件
+        /// 是否成功发送通知
         /// </summary>
-        public bool SendSucMail { get; set; }
+        public bool SendSuccess { get; set; }
 
         /// <summary>
-        /// 是否失败发送邮件
+        /// 是否失败发送通知
         /// </summary>
-        public bool SendFaiMail { get; set; }
+        public bool SendFail { get; set; }
 
         /// <summary>
         /// 指定发送邮件
