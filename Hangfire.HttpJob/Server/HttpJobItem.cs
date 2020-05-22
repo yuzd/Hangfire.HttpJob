@@ -56,50 +56,50 @@ namespace Hangfire.HttpJob.Server
 
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class RecurringJobChildItem
-    { 
+    {
         /// <summary>
         /// 请求Url
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Url { get; set; }
 
         /// <summary>
         /// 请求参数
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Method { get; set; }
 
         /// <summary>
         /// 参数
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Data { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ContentType { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public int Timeout { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string QueueName { get; set; }
 
         /// <summary>
         /// 传了class就代表是agentjob
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string AgentClass { get; set; }
 
         /// <summary>
         /// Header
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public Dictionary<string, string> Headers { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string BasicUserName { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)] 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string BasicPassword { get; set; }
 
     }
@@ -211,7 +211,18 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 钉钉配置
         /// </summary>
-        public DingTalkOption DingTalk { get; set; } 
+        public DingTalkOption DingTalk { get; set; }
+
+        /// <summary>
+        /// 用于断言业务
+        /// </summary>
+        public string AssertInfo { get; set; }
+
+        /// <summary>
+        /// 当前hangfire调度服务的部署站点域名
+        /// </summary>
+        public string CurrentDomain { get; set; }
+
 
     }
 }

@@ -102,9 +102,11 @@
                 SendSucMail: false,
                 SendFaiMail: true,
                 Mail: "",
-                CallbackEL: ""
+                CallbackEL: "",
+                AssertInfo: config.AssertInfo,
+                CurrentDomain: config.CurrentDomain
             };
-         
+
             var recurringObj = {
                 JobName: "",
                 Method: "GET",
@@ -125,18 +127,20 @@
                 SendSucMail: false,
                 SendFaiMail: true,
                 Mail: "",
-                CallbackEL: ""
+                CallbackEL: "",
+                AssertInfo: config.AssertInfo,
+                CurrentDomain: config.CurrentDomain
             };
-            if (config.EnableDingTalk && config.EnableDingTalk == 'true') {
+            if (config.EnableDingTalk && config.EnableDingTalk === "true") {
                 normalObj.DingTalk = {
-                    Token: config.NoticeDingToken||"",
-                    AtPhones: config.DingtalkPhones||"",
-                    IsAtAll: config.DingtalkAtAll == 'true' ? true : false
+                    Token: config.DingtalkToken || "",
+                    AtPhones: config.DingtalkPhones || "",
+                    IsAtAll: config.DingtalkAtAll === "true" ? true : false
                 }
                 recurringObj.DingTalk = {
-                    Token: config.NoticeDingToken || "",
-                    AtPhones: config.DingtalkPhones||"",
-                    IsAtAll: config.DingtalkAtAll == 'true'?true:false
+                    Token: config.DingtalkToken || "",
+                    AtPhones: config.DingtalkPhones || "",
+                    IsAtAll: config.DingtalkAtAll === "true" ? true : false
                 }
             }
             var normal_templete = JSON.stringify(normalObj);     // "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";

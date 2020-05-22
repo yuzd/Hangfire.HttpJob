@@ -20,6 +20,8 @@ namespace Hangfire.HttpJob.Dashboard
             builder.Append(@"(function (hangFire) {")
                   .Append("hangFire.httpjobConfig =  {};")
                   .AppendFormat("hangFire.httpjobConfig.DefaultTimeZone = '{0}';", _options.DefaultTimeZone)
+                  .AppendFormat("hangFire.httpjobConfig.AssertInfo = '{0}';", _options.AssertInfo)
+                  .AppendFormat("hangFire.httpjobConfig.CurrentDomain = '{0}';", _options.CurrentDomain)
                   .AppendFormat("hangFire.httpjobConfig.DingtalkToken = '{0}';", _options?.DingTalkOption?.Token ?? "")
                   .AppendFormat("hangFire.httpjobConfig.DingtalkPhones = '{0}';", _options?.DingTalkOption?.AtPhones ?? "")
                   .AppendFormat("hangFire.httpjobConfig.DingtalkAtAll = '{0}';", _options?.DingTalkOption?.IsAtAll ?? false ? "true" : "false")

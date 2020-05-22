@@ -120,7 +120,9 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 是否开启钉钉通知服务
         /// </summary>
-        public bool EnableDingTalk { get; set; } 
+        public bool EnableDingTalk { get; set; }
+
+        public string AssertInfo { get; set; }
 
         /// <summary>
         /// 当前hangfire调度服务的部署站点域名

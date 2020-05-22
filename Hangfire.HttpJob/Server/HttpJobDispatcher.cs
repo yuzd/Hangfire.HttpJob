@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Threading.Tasks; 
 using Hangfire.Common;
 using Hangfire.HttpJob.Support;
 using Hangfire.States;
@@ -67,7 +67,7 @@ namespace Hangfire.HttpJob.Server
                 }
 
                 op = op.ToLower();
-
+                // TODO 保留一种写法吧
                 if (CheckOperateType(op, OperateType.GetRecurringJob) || op == "getrecurringjob") // dashbord 上获取周期性job详情
                 {
                     await GetRecurringJobDetail(context);
@@ -83,12 +83,12 @@ namespace Hangfire.HttpJob.Server
                     await DelJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.PauseJob)|| op == "pausejob") //if (op == "pausejob") // 暂停或开始job
+                else if (CheckOperateType(op, OperateType.PauseJob) || op == "pausejob") //if (op == "pausejob") // 暂停或开始job
                 {
                     await DoPauseOrRestartJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.BackgroundJob)|| op == "backgroundjob") //if (op == "backgroundjob") //新增后台任务job
+                else if (CheckOperateType(op, OperateType.BackgroundJob) || op == "backgroundjob") //if (op == "backgroundjob") //新增后台任务job
                 {
                     await AddBackgroundjob(context);
                     return;
@@ -98,27 +98,27 @@ namespace Hangfire.HttpJob.Server
                     await AddRecurringJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.EditRecurringJob)||((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
+                else if (CheckOperateType(op, OperateType.EditRecurringJob) || ((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
                 {
                     await AddRecurringJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.StartBackgroundJob)|| (op == "startbackgroudjob")) //if (op == "startbackgroudjob")
+                else if (CheckOperateType(op, OperateType.StartBackgroundJob) || (op == "startbackgroudjob")) //if (op == "startbackgroudjob")
                 {
                     await StartBackgroudJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.StopBackgroundJob)|| (op == "stopbackgroudjob")) //if (op == "stopbackgroudjob")
+                else if (CheckOperateType(op, OperateType.StopBackgroundJob) || (op == "stopbackgroudjob")) //if (op == "stopbackgroudjob")
                 {
                     await StopBackgroudJob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.GetGlobalSetting)|| (op == "getglobalsetting")) // if (op == "getglobalsetting")
+                else if (CheckOperateType(op, OperateType.GetGlobalSetting) || (op == "getglobalsetting")) // if (op == "getglobalsetting")
                 {
                     await GetGlobalSetting(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.SaveGlobalSetting)|| (op == "saveglobalsetting")) //if (op == "saveglobalsetting")
+                else if (CheckOperateType(op, OperateType.SaveGlobalSetting) || (op == "saveglobalsetting")) //if (op == "saveglobalsetting")
                 {
                     await SaveGlobalSetting(context);
                     return;
@@ -769,11 +769,11 @@ namespace Hangfire.HttpJob.Server
                 // 先用每个job配置的 如果没有就用系统配置的 在没有就用Local
                 TimeZoneInfo timeZone = null;
                 if (!string.IsNullOrEmpty(jobItem.TimeZone))
-                { 
+                {
                     timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
                 }
-                
-                if(timeZone == null) timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
+
+                if (timeZone == null) timeZone = Server.HttpJob.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的
@@ -1033,6 +1033,8 @@ namespace Hangfire.HttpJob.Server
             }
 
         }
-
+ 
     }
+
+  
 }

@@ -63,7 +63,7 @@ namespace Hangfire.HttpJob.Server
             {
                 object runTimeDataItem = null;
                 context?.Items.TryGetValue("Data", out runTimeDataItem);
-                if(runTimeDataItem!=null)
+                if (runTimeDataItem != null)
                 {
                     var runTimeData = runTimeDataItem as string;
                     if (!string.IsNullOrEmpty(runTimeData))
@@ -226,7 +226,7 @@ namespace Hangfire.HttpJob.Server
                 if (!string.IsNullOrEmpty(item.CallbackEL))
                 {
                     var elResult = InvokeSpringElCondition(item.CallbackEL, result, context,
-                        new Dictionary<string, object> { { "resultBody", result } , { "StatusCode", (int)httpResponse.StatusCode } });
+                        new Dictionary<string, object> { { "resultBody", result }, { "StatusCode", (int)httpResponse.StatusCode } });
                     if (!elResult)
                     {
                         //错误的log都会在exception里面出
@@ -236,7 +236,7 @@ namespace Hangfire.HttpJob.Server
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackELExcuteResult}:Ok 】" + item.CallbackEL));
                 }
 
-               
+
                 if (parentJob != null)
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackSuccess}】[{item.CallbackRoot}]"));
 
@@ -329,20 +329,20 @@ namespace Hangfire.HttpJob.Server
 
         #region Private
 
-        
+
         /// <summary>
         /// 发送钉钉通知
         /// </summary>
-        private static void SendDingTalkNotice(HttpJobItem item,string jobId, string resString,bool isSuccess, Exception exception = null)
+        private static void SendDingTalkNotice(HttpJobItem item, string jobId, string resString, bool isSuccess, Exception exception = null)
         {
             try
             {
-                if (!HangfireHttpJobOptions.EnableDingTalk)
+                if (!HangfireHttpJobOptions.EnableDingTalk || isSuccess) // 成功的任务不用通知，钉钉消息容易被覆盖，只需关注失败的结果，或者这个做成每个job自定义
                 {
                     return;
                 }
 
-                DingTalkOption dingTalk = item.DingTalk ?? HangfireHttpJobOptions.DingTalkOption;
+                var dingTalk = item.DingTalk ?? HangfireHttpJobOptions.DingTalkOption;
                 if (dingTalk == null || string.IsNullOrEmpty(dingTalk.Token))
                 {
                     return;
@@ -352,15 +352,15 @@ namespace Hangfire.HttpJob.Server
 
 
                 var content =
-                    $@"## {item.JobName} {(isSuccess?"Success":"Fail")}{Strings.DingTalkTitle}
+                    $@"## {item.JobName}  {(isSuccess ? "Success" : "<font color=#E74C3C>Failed</font>")} {Strings.DingTalkTitle}
 ### {Strings.DingTalkConfig}
->#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName)?"DEFAULT": item.QueueName)} 
+>#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)} 
 ### {Strings.DingTalkRequestUrl}: 
 > #### {item.Url}
 ### {Strings.DingTalkResponse}:
 >#### {resString}   
 ### {Strings.DingTalkLogDetail}：
->#### {logDetail}{(exception!=null?"\n\n"+exception.ToString():"")}    
+>#### {logDetail}{(exception != null ? "\n\n" + exception.ToString() : "")}    
 ";
 
                 var title = $"{Strings.DingTalkTitle}";
@@ -401,12 +401,12 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 发送成功通知
         /// </summary>
-        private static void SendSuccess(string jobId,HttpJobItem item, string result)
+        private static void SendSuccess(string jobId, HttpJobItem item, string result)
         {
             new Task(() =>
             {
                 SendSuccessMail(item, result);
-                SendDingTalkNotice(item, jobId, result,true);
+                SendDingTalkNotice(item, jobId, result, true);
             }).Start();
         }
 
@@ -418,7 +418,7 @@ namespace Hangfire.HttpJob.Server
             new Task(() =>
             {
                 SendFailMail(item, result, exception);
-                SendDingTalkNotice(item, jobId, result,false,exception);
+                SendDingTalkNotice(item, jobId, result, false, exception);
             }).Start();
         }
 

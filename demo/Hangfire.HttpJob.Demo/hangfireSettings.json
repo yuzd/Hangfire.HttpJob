@@ -31,6 +31,7 @@
     "DefaultTimeZone": "Asia/Shanghai",
     "DashboardFooter": "tt",
     "CurrentDomain": "//",
+    "EnableDingTalk": true,
     //"DashboardName": "JobWS",
     //"DashboardTitle": "JobManager",
     //"EditRecurringJobButtonName": "EditRecurringJob",
@@ -60,7 +61,7 @@
     //  "AlertMailList": []
     //}
     "DingTalkOption": {
-      "Token": "xx",
+      "Token": "",
       "AtPhones": "",
       "IsAtAll": false
     }
