@@ -129,12 +129,12 @@
             };
             if (config.EnableDingTalk && config.EnableDingTalk == 'true') {
                 normalObj.DingTalk = {
-                    Token: config.NoticeDingToken||"",
+                    Token: config.DingtalkToken||"",
                     AtPhones: config.DingtalkPhones||"",
                     IsAtAll: config.DingtalkAtAll == 'true' ? true : false
                 }
                 recurringObj.DingTalk = {
-                    Token: config.NoticeDingToken || "",
+                    Token: config.DingtalkToken || "",
                     AtPhones: config.DingtalkPhones||"",
                     IsAtAll: config.DingtalkAtAll == 'true'?true:false
                 }
