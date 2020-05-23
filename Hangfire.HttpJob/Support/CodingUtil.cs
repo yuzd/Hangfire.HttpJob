@@ -51,7 +51,14 @@ namespace Hangfire.HttpJob.Support
 
             return _appsettingsJson;
         }
-
+        
+        /// <summary>
+        /// 获取动态的全局配置
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="deflaultValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T GetGlobalAppsetting<T>(string value, T deflaultValue)
         {
             try
@@ -65,12 +72,25 @@ namespace Hangfire.HttpJob.Support
             {
                 //ignore
             }
-
-
             return deflaultValue;
         }
 
+        /// <summary>
+        /// 获取代理配置 先检查有没有在全局json里面动态配置 再检查有没有在启动的json文件里有配置
+        /// </summary>
+        /// <param name="proxy"></param>
+        /// <returns></returns>
+        public static bool TryGetGlobalProxy(out string proxy)
+        {
+            proxy = GetGlobalAppsetting("globalProxy", "");
+            if (string.IsNullOrEmpty(proxy))
+            {
+                proxy = HangfireHttpJobOptions.Proxy;
+            }
 
+            return !string.IsNullOrEmpty(proxy);
+        }
+        
         /// <summary>
         /// MD5函数
         /// </summary>

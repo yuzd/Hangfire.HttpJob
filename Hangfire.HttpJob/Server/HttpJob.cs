@@ -175,12 +175,14 @@ namespace Hangfire.HttpJob.Server
                 RunWithTry(() => context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】"));
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;
-                if (!string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.Proxy))
+                
+                //当前job指定如果开启了proxy 并且 有配置代理 那么就走代理
+                if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("proxy", out var enableCurrentJobProxy) && !string.IsNullOrEmpty(enableCurrentJobProxy) && enableCurrentJobProxy.ToLower().Equals("true"))
                 {
                     // per proxy per HttpClient
-                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(CodingUtil.HangfireHttpJobOptions.Proxy);
-                    RunWithTry(() => context.WriteLine($"Use Proxy:{CodingUtil.HangfireHttpJobOptions.Proxy}"));
-                    logList.Add($"Proxy:{CodingUtil.HangfireHttpJobOptions.Proxy}");
+                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(globalProxy);
+                    RunWithTry(() => context.WriteLine($"Use Proxy:{globalProxy}"));
+                    logList.Add($"Proxy:{globalProxy}");
                 }
                 else
                 {
@@ -380,8 +382,19 @@ namespace Hangfire.HttpJob.Server
                 };
 
                 var requestUri = $"https://oapi.dingtalk.com/robot/send?access_token={dingTalk.Token}";
-                var httpClient = HangfireHttpClientFactory.DingTalkInstance.GetHttpClient(requestUri);
-
+                
+                HttpClient httpClient;
+                //当前job的钉钉如果开启了proxy 并且 有配置代理 那么就走代理
+                if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("dingProxy", out var enableDingProxy) && !string.IsNullOrEmpty(enableDingProxy) && enableDingProxy.ToLower().Equals("true"))
+                {
+                    // per proxy per HttpClient
+                    httpClient = HangfireHttpClientFactory.DingTalkInstance.GetProxiedHttpClient(globalProxy);
+                }
+                else
+                {
+                    //per host per HttpClient
+                    httpClient = HangfireHttpClientFactory.DingTalkInstance.GetHttpClient(requestUri);
+                }
 
                 var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
                 {
