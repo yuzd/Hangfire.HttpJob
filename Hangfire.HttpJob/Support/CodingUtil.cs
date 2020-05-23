@@ -82,7 +82,7 @@ namespace Hangfire.HttpJob.Support
         /// <returns></returns>
         public static bool TryGetGlobalProxy(out string proxy)
         {
-            proxy = GetGlobalAppsetting("globalProxy", "");
+            proxy = GetGlobalAppsetting("GlobalProxy", "");
             if (string.IsNullOrEmpty(proxy))
             {
                 proxy = HangfireHttpJobOptions.Proxy;
