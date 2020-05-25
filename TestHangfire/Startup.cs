@@ -69,8 +69,8 @@ namespace TestHangfire
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
                     DefaultBackGroundJobQueueName = "DEFAULT",
                     DefaultTimeZone = "Asia/Shanghai",
-                    EnableDingTalk = true,
-                    CurrentDomain = "http://localhost:5000"
+                    //EnableDingTalk = true,
+                    //CurrentDomain = "http://localhost:5000"
                     //RecurringJobTimeZone = TimeZoneInfo.Local,
                     // CheckHttpResponseStatusCode = code => (int)code < 400   //===》(default)
                     //AddHttpJobFilter = (jobContent) =>

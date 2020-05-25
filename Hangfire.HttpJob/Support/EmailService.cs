@@ -73,11 +73,11 @@ namespace Hangfire.HttpJob.Support
         {
             return new EmailService(new SmtpOptions
             {
-                Server = Server.HttpJob.HangfireHttpJobOptions.MailOption.Server,
-                Port = Server.HttpJob.HangfireHttpJobOptions.MailOption.Port,
-                UseSsl = Server.HttpJob.HangfireHttpJobOptions.MailOption.UseSsl,
-                User = Server.HttpJob.HangfireHttpJobOptions.MailOption.User,
-                Password = Server.HttpJob.HangfireHttpJobOptions.MailOption.Password
+                Server = CodingUtil.HangfireHttpJobOptions.MailOption.Server,
+                Port = CodingUtil.HangfireHttpJobOptions.MailOption.Port,
+                UseSsl = CodingUtil.HangfireHttpJobOptions.MailOption.UseSsl,
+                User = CodingUtil.HangfireHttpJobOptions.MailOption.User,
+                Password = CodingUtil.HangfireHttpJobOptions.MailOption.Password
             });
         }
 

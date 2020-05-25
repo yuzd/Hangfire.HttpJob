@@ -403,7 +403,7 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
-        ///   查找类似 Global Config 的本地化字符串。
+        ///   查找类似 GlobalConfig 的本地化字符串。
         /// </summary>
         public static string GobalSettingButtonName {
             get {
@@ -583,7 +583,7 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
-        ///   查找类似 Pause | Start 的本地化字符串。
+        ///   查找类似 Pause|Start 的本地化字符串。
         /// </summary>
         public static string PauseJobButtonName {
             get {
@@ -646,7 +646,7 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
-        ///   查找类似 Start With Param 的本地化字符串。
+        ///   查找类似 StartWithParam 的本地化字符串。
         /// </summary>
         public static string StartBackgroudJobButtonName {
             get {
@@ -727,7 +727,7 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
-        ///   查找类似 Stop Agent Job 的本地化字符串。
+        ///   查找类似 StopAgent 的本地化字符串。
         /// </summary>
         public static string StopBackgroudJobButtonName {
             get {

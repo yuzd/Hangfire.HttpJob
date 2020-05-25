@@ -241,7 +241,7 @@
     <value>NoSpecific</value>
   </data>
   <data name="PauseJobButtonName" xml:space="preserve">
-    <value>Pause | Start</value>
+    <value>Pause|Start</value>
   </data>
   <data name="QueuenName" xml:space="preserve">
     <value>QueuenName</value>
@@ -298,10 +298,10 @@
     <value>JobEnd</value>
   </data>
   <data name="StartBackgroudJobButtonName" xml:space="preserve">
-    <value>Start With Param</value>
+    <value>StartWithParam</value>
   </data>
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
-    <value>Stop Agent Job</value>
+    <value>StopAgent</value>
   </data>
   <data name="AgentJobDeatilButton" xml:space="preserve">
     <value>AgentJobDetail</value>
@@ -322,7 +322,7 @@
     <value>Callback Success</value>
   </data>
   <data name="GobalSettingButtonName" xml:space="preserve">
-    <value>Global Config</value>
+    <value>GlobalConfig</value>
   </data>
   <data name="ReplacePlaceHolder" xml:space="preserve">
     <value>Replace PlaceHolder</value>

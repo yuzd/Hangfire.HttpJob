@@ -127,9 +127,7 @@
                 SendSuccess: false,
                 SendFail: true,
                 Mail: "",
-                CallbackEL: "",
-                AssertInfo: config.AssertInfo,
-                CurrentDomain: config.CurrentDomain
+                CallbackEL: ""
             };
             if (config.EnableDingTalk && config.EnableDingTalk === "true") {
                 normalObj.DingTalk = {

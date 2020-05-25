@@ -63,7 +63,7 @@ namespace Hangfire.HttpJob
                 }
             }
 
-            Server.HttpJob.HangfireHttpJobOptions = options;
+            CodingUtil.HangfireHttpJobOptions = options;
 
             return config;
         }

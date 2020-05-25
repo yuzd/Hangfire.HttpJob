@@ -2,6 +2,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Hangfire.HttpJob.Support;
 
 namespace Hangfire.HttpJob.Dashboard
 {
@@ -13,19 +14,20 @@ namespace Hangfire.HttpJob.Dashboard
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public Task Dispatch(DashboardContext context)
+        public async Task Dispatch(DashboardContext context)
         {
             var builder = new StringBuilder();
 
+            string DefaultTimeZone = CodingUtil.GetGlobalAppsetting<string>("DefaultTimeZone",null);
+            bool EnableDingTalk = CodingUtil.GetGlobalAppsetting<bool>("EnableDingTalk", false);
+
             builder.Append(@"(function (hangFire) {")
                   .Append("hangFire.httpjobConfig =  {};")
-                  .AppendFormat("hangFire.httpjobConfig.DefaultTimeZone = '{0}';", _options.DefaultTimeZone)
-                  .AppendFormat("hangFire.httpjobConfig.AssertInfo = '{0}';", _options.AssertInfo)
-                  .AppendFormat("hangFire.httpjobConfig.CurrentDomain = '{0}';", _options.CurrentDomain)
+                  .AppendFormat("hangFire.httpjobConfig.DefaultTimeZone = '{0}';", DefaultTimeZone ?? _options.DefaultTimeZone)
                   .AppendFormat("hangFire.httpjobConfig.DingtalkToken = '{0}';", _options?.DingTalkOption?.Token ?? "")
                   .AppendFormat("hangFire.httpjobConfig.DingtalkPhones = '{0}';", _options?.DingTalkOption?.AtPhones ?? "")
                   .AppendFormat("hangFire.httpjobConfig.DingtalkAtAll = '{0}';", _options?.DingTalkOption?.IsAtAll ?? false ? "true" : "false")
-                  .AppendFormat("hangFire.httpjobConfig.EnableDingTalk = '{0}';", _options?.EnableDingTalk ?? false ? "true" : "false")
+                  .AppendFormat("hangFire.httpjobConfig.EnableDingTalk = '{0}';", EnableDingTalk ? "true":  _options?.EnableDingTalk ?? false ? "true" : "false")
                   .AppendFormat("hangFire.httpjobConfig.AddHttpJobButtonName = '{0}';", _options.AddHttpJobButtonName)
                   .AppendFormat("hangFire.httpjobConfig.ExportJobsButtonName = '{0}';", _options.ExportJobsButtonName)
                   .AppendFormat("hangFire.httpjobConfig.ImportJobsButtonName = '{0}';", _options.ImportJobsButtonName)
@@ -75,7 +77,7 @@ namespace Hangfire.HttpJob.Dashboard
                   .Append("})(window.Hangfire = window.Hangfire || {});")
                   .AppendLine();
 
-            return context.Response.WriteAsync(builder.ToString());
+            await context.Response.WriteAsync(builder.ToString());
         }
     }
 }

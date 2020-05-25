@@ -28,17 +28,7 @@ namespace Hangfire.HttpJob.Server
         #region Field
 
         private static readonly ILog Logger = LogProvider.For<HttpJob>();
-        public static HangfireHttpJobOptions HangfireHttpJobOptions;
-        /// <summary>
-        /// appsettions.json配置文件最后更新时间
-        /// </summary>
-        private static DateTime? _appJsonLastWriteTime;
-
-        /// <summary>
-        /// appsettions.json配置文件内容
-        /// </summary>
-        private static Dictionary<string, object> _appsettingsJson = new Dictionary<string, object>();
-
+      
         #endregion
 
         #region Public
@@ -185,12 +175,14 @@ namespace Hangfire.HttpJob.Server
                 RunWithTry(() => context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】"));
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;
-                if (!string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
+                
+                //当前job指定如果开启了proxy 并且 有配置代理 那么就走代理
+                if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("proxy", out var enableCurrentJobProxy) && !string.IsNullOrEmpty(enableCurrentJobProxy) && enableCurrentJobProxy.ToLower().Equals("true"))
                 {
                     // per proxy per HttpClient
-                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(HangfireHttpJobOptions.Proxy);
-                    RunWithTry(() => context.WriteLine($"Use Proxy:{HangfireHttpJobOptions.Proxy}"));
-                    logList.Add($"Proxy:{HangfireHttpJobOptions.Proxy}");
+                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(globalProxy);
+                    RunWithTry(() => context.WriteLine($"Use Proxy:{globalProxy}"));
+                    logList.Add($"Proxy:{globalProxy}");
                 }
                 else
                 {
@@ -211,7 +203,7 @@ namespace Hangfire.HttpJob.Server
                 logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
                 //检查HttpResponse StatusCode
-                if (HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
+                if (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
                 {
                     RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
                     logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");
@@ -297,10 +289,10 @@ namespace Hangfire.HttpJob.Server
         {
             if (item.Timeout < 1) item.Timeout = 5000;
             HttpClient client;
-            if (!string.IsNullOrEmpty(HangfireHttpJobOptions.Proxy))
+            if (!string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.Proxy))
             {
                 // per proxy per HttpClient
-                client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(HangfireHttpJobOptions.Proxy);
+                client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(CodingUtil.HangfireHttpJobOptions.Proxy);
             }
             else
             {
@@ -336,33 +328,32 @@ namespace Hangfire.HttpJob.Server
         private static void SendDingTalkNotice(HttpJobItem item, string jobId, string resString, bool isSuccess, Exception exception = null)
         {
             try
-            { 
+            {
+                //成功 并且开启了 成功通知 才进行钉钉播报
                 if (isSuccess && !item.SendSuccess)
                 {
                     return;
                 }
 
+                //失败 并且开启了 失败通知 才进行钉钉播报
                 if (!isSuccess && !item.SendFail)
                 {
                     return;
                 }
 
-                if (!HangfireHttpJobOptions.EnableDingTalk) // 成功的任务不用通知，钉钉消息容易被覆盖，只需关注失败的结果，或者这个做成每个job自定义
-                {
-                    return;
-                }
-
-                var dingTalk = item.DingTalk ?? HangfireHttpJobOptions.DingTalkOption;
+                DingTalkOption dingTalk = item.DingTalk ?? CodingUtil.HangfireHttpJobOptions.DingTalkOption;
                 if (dingTalk == null || string.IsNullOrEmpty(dingTalk.Token))
                 {
                     return;
                 }
 
-                var logDetail = string.IsNullOrEmpty(HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{HangfireHttpJobOptions.CurrentDomain}/job/jobs/details/{jobId}";
+                //优先使用全局配置里面的参数
+                CodingUtil.GetGlobalAppsettings().TryGetValue("CurrentDomain", out var currentDomain);
 
+                var logDetail = currentDomain!=null && !string.IsNullOrEmpty(currentDomain.ToString())? $"{currentDomain}/job/jobs/details/{jobId}":  string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{CodingUtil.HangfireHttpJobOptions.CurrentDomain}/job/jobs/details/{jobId}";
 
                 var content =
-                    $@"## {item.JobName}  {(isSuccess ? "Success" : "<font color=#E74C3C>Failed</font>")} {Strings.DingTalkTitle}
+                    $@"## {item.JobName} {(isSuccess?"Success": "<font color=#E74C3C>Failed</font>")}{Strings.DingTalkTitle}
 ### {Strings.DingTalkConfig}
 >#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)} 
 ### {Strings.DingTalkRequestUrl}: 
@@ -391,8 +382,19 @@ namespace Hangfire.HttpJob.Server
                 };
 
                 var requestUri = $"https://oapi.dingtalk.com/robot/send?access_token={dingTalk.Token}";
-                var httpClient = HangfireHttpClientFactory.DingTalkInstance.GetHttpClient(requestUri);
-
+                
+                HttpClient httpClient;
+                //当前job的钉钉如果开启了proxy 并且 有配置代理 那么就走代理
+                if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("dingProxy", out var enableDingProxy) && !string.IsNullOrEmpty(enableDingProxy) && enableDingProxy.ToLower().Equals("true"))
+                {
+                    // per proxy per HttpClient
+                    httpClient = HangfireHttpClientFactory.DingTalkInstance.GetProxiedHttpClient(globalProxy);
+                }
+                else
+                {
+                    //per host per HttpClient
+                    httpClient = HangfireHttpClientFactory.DingTalkInstance.GetHttpClient(requestUri);
+                }
 
                 var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
                 {
@@ -444,7 +446,7 @@ namespace Hangfire.HttpJob.Server
             {
                 if (!item.SendSuccess) return;
                 var mail = string.IsNullOrEmpty(item.Mail)
-                    ? string.Join(",", HangfireHttpJobOptions.MailOption.AlertMailList)
+                    ? string.Join(",", CodingUtil.HangfireHttpJobOptions.MailOption.AlertMailList)
                     : item.Mail;
 
                 if (string.IsNullOrWhiteSpace(mail)) return;
@@ -471,7 +473,7 @@ namespace Hangfire.HttpJob.Server
             {
                 if (!item.SendFail) return;
                 var mail = string.IsNullOrEmpty(item.Mail)
-                    ? string.Join(",", HangfireHttpJobOptions.MailOption.AlertMailList)
+                    ? string.Join(",", CodingUtil.HangfireHttpJobOptions.MailOption.AlertMailList)
                     : item.Mail;
 
                 if (string.IsNullOrWhiteSpace(mail)) return;
@@ -647,28 +649,13 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jsonFile = new FileInfo(HangfireHttpJobOptions.GlobalSettingJsonFilePath);
-                if (jsonFile.Exists && (_appJsonLastWriteTime == null || _appJsonLastWriteTime != jsonFile.LastWriteTime))
-                {
-                    _appJsonLastWriteTime = jsonFile.LastWriteTime;
-                    try
-                    {
-                        _appsettingsJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(File.ReadAllText(jsonFile.FullName));
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.WarnException($"HangfireHttpJobOptions.GlobalSettingJsonFilePath read fail", e);
-                    }
-                }
-
-
                 //先把 ${} 的 placehoder 全部替换掉
                 var parameterValue = ResolveEmbeddedValue(content, "${", ResolvePlaceholder);
 
 
                 if (param != null)
                 {
-                    var div = new Dictionary<string, object>(_appsettingsJson);
+                    var div = new Dictionary<string, object>(CodingUtil.GetGlobalAppsettings());
                     foreach (var keyValuePair in param)
                     {
                         if (div.ContainsKey(keyValuePair.Key))
@@ -682,7 +669,7 @@ namespace Hangfire.HttpJob.Server
                     return (parameterValue2, null);
                 }
 
-                var parameterValue22 = ResolveEmbeddedValue(parameterValue, "#{", (str) => ResolveSpringElPlaceholder(str, _appsettingsJson));
+                var parameterValue22 = ResolveEmbeddedValue(parameterValue, "#{", (str) => ResolveSpringElPlaceholder(str, CodingUtil.GetGlobalAppsettings()));
                 return (parameterValue22, null);
             }
             catch (Exception ex)
@@ -738,7 +725,7 @@ namespace Hangfire.HttpJob.Server
         private static string ResolvePlaceholder(string placeholder)
         {
 
-            _appsettingsJson.TryGetValue(placeholder, out var propertyValue);
+            CodingUtil.GetGlobalAppsettings().TryGetValue(placeholder, out var propertyValue);
 
             if (propertyValue == null)
             {
