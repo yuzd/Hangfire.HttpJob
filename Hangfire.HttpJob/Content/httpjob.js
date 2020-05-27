@@ -19,7 +19,7 @@
                     tdArr.eq(4).append('<span class="label label-success text-uppercase" title="" data-original-title="JobAgent">JobAgent</span>');
                 }
 
-                if (config.NeedAddRecurringHttpJobButton) {
+                if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
                     tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="JobAgent" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
                 }
             });

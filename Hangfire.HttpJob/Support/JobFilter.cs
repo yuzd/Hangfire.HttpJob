@@ -10,6 +10,7 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Tags;
+using Hangfire.Tags.Storage;
 using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Support
@@ -52,7 +53,7 @@ namespace Hangfire.HttpJob.Support
             {
                 throw new InvalidOperationException("can not found DistributedLock in filterContext");
             }
-           
+
             //删除设置运行时被设置的参数
             try
             {
@@ -62,7 +63,7 @@ namespace Hangfire.HttpJob.Support
                     {
                         //代表是运行期间没有throw 直接删除
                         filterContext.Items.Remove("runtimeKey");
-                        var hashKeyStr = hashKey as string; 
+                        var hashKeyStr = hashKey as string;
                         if (!string.IsNullOrEmpty(hashKeyStr))
                         {
                             using (var tran = filterContext.Connection.CreateWriteTransaction())
@@ -72,14 +73,14 @@ namespace Hangfire.HttpJob.Support
                             }
                         }
                     }
-                    
+
                 }
             }
             catch (Exception)
             {
                 //ignore
             }
-            
+
             try
             {
                 if (filterContext.Items.TryGetValue("runtimeKey_dic", out var hashDic))
@@ -124,7 +125,7 @@ namespace Hangfire.HttpJob.Support
                         return;
                     }
 
-                    if (!string.IsNullOrEmpty(job.JobName)) filterContext.BackgroundJob.Id.AddTags(job.JobName);
+                    if (!string.IsNullOrEmpty(job.JobName) && TagsServiceStorage.Current != null) filterContext.BackgroundJob.Id.AddTags(job.JobName);
                 }
 
                 //设置运行时被设置的参数
@@ -148,7 +149,7 @@ namespace Hangfire.HttpJob.Support
                             filterContext.Items.Add(keyvalue.Key, keyvalue.Value);
                         }
                     }
-                    
+
                 }
                 catch (Exception)
                 {
@@ -182,28 +183,28 @@ namespace Hangfire.HttpJob.Support
                 var jobItem = context.BackgroundJob.Job.Args.FirstOrDefault();
                 var httpJobItem = jobItem as HttpJobItem;
                 if (httpJobItem == null) return;
-                
+
                 var jobResult = context.GetJobParameter<string>("jobErr");//不跑出异常也能将job置成Fail
                 if (!string.IsNullOrEmpty(jobResult))
                 {
                     context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
                     if (httpJobItem != null && httpJobItem.DelayFromMinutes.Equals(-1))
                     {
-                        context.CandidateState = new ErrorState(jobResult,Strings.MultiBackgroundJobFailToContinue);
+                        context.CandidateState = new ErrorState(jobResult, Strings.MultiBackgroundJobFailToContinue);
                     }
                     else
                     {
                         context.CandidateState = new ErrorState(jobResult);
                     }
-                    
-                    
-//                    if (httpJobItem.DelayFromMinutes == -1)
-//                    {
-//                        context.CandidateState = new DeletedState
-//                        {
-//                            Reason = "Start Continue Job"
-//                        };
-//                    }
+
+
+                    //                    if (httpJobItem.DelayFromMinutes == -1)
+                    //                    {
+                    //                        context.CandidateState = new DeletedState
+                    //                        {
+                    //                            Reason = "Start Continue Job"
+                    //                        };
+                    //                    }
                 }
             }
             catch (Exception)

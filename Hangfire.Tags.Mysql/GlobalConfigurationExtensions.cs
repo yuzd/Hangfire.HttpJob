@@ -1,5 +1,6 @@
 ﻿using System;
 using Hangfire.MySql.Core;
+using Hangfire.Tags.Storage;
 
 namespace Hangfire.Tags.Mysql
 {
@@ -18,6 +19,7 @@ namespace Hangfire.Tags.Mysql
             sqlOptions = sqlOptions ?? new MySqlStorageOptions();
 
             options.Storage = new MysqlTagsServiceStorage(sqlOptions);
+            TagsServiceStorage.Current = options.Storage;
             var config = configuration.UseTags(options);
             return config;
         }

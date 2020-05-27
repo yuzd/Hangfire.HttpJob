@@ -3,6 +3,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Support;
+using Hangfire.Tags.Storage;
 
 namespace Hangfire.HttpJob.Dashboard
 {
@@ -68,6 +69,7 @@ namespace Hangfire.HttpJob.Dashboard
                    .AppendFormat("hangFire.httpjobConfig.StopBackgroudJobUrl = '{0}/httpjob?op=StopBackgroundJob';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.GetJobListUrl = '{0}/httpjob?op=GetJobList';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.IsReadonly = '{0}';", context.Request.PathBase.Contains("read"))
+                   .AppendFormat("hangFire.httpjobConfig.ShowTag = '{0}';", TagsServiceStorage.Current != null)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddNomalHttpJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.ScheduledEndPath)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddRecurringHttpJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddCronButton = location.href.indexOf('{0}') >= 0;;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)
