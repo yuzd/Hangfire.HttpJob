@@ -61,7 +61,7 @@ namespace Hangfire.HttpJob.Agent
                 }
 
                 agentAction = agentAction.ToLower();
-                var requestBody = GetJobItem(httpContext);
+                var requestBody = await GetJobItem(httpContext);
                 var agentClassType = GetAgentType(agentClass);
                 var jobHeaders = GetJobHeaders(httpContext);
                 if (!string.IsNullOrEmpty(agentClassType.Item2))
@@ -316,22 +316,20 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        private string GetJobItem(HttpContext context)
+        private async Task<string> GetJobItem(HttpContext context)
         {
             try
             {
-                using (MemoryStream ms = new MemoryStream())
+                using (var reader = new StreamReader(context.Request.Body))
                 {
-                    context.Request.Body.CopyTo(ms);
-                    ms.Flush();
-                    ms.Seek(0, SeekOrigin.Begin);
-                    var sr = new StreamReader(ms);
-                    var requestBody = sr.ReadToEnd();
+                    var requestBody =await reader.ReadToEndAsync();
                     return requestBody;
+                    // Do something
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogWarning("ready body content from Request.Body err:"+e.Message);
                 return string.Empty;
             }
         }

@@ -28,7 +28,6 @@ namespace TestSqlserverHangfireAgent
         {
             #region NLOG
             NLog.LogManager.LoadConfiguration("NLog.Config");
-            logging.AddNLog();
             #endregion
 
             app.UseHangfireHttpJobAgent();

@@ -12,7 +12,7 @@ namespace Hangfire.HttpJob.Client.Test
             var serverUrl = "http://localhost:5000/job";
             var result = HangfireJobClient.AddBackgroundJob(serverUrl, new BackgroundJob
             {
-                JobName = "²âÊÔapi",
+                JobName = "æµ‹è¯•api",
                 Method = "Get",
                 Url = "http://localhost:5000/testaaa",
                 Mail = new List<string> {"1877682825@qq.com"},
@@ -72,7 +72,7 @@ namespace Hangfire.HttpJob.Client.Test
             var serverUrl = "http://localhost:5000/job";
             var result = HangfireJobClient.AddRecurringJob(serverUrl, new RecurringJob()
             {
-                JobName = "²âÊÔ5µã40Ö´ÐÐ",
+                JobName = "æµ‹è¯•5ç‚¹40æ‰§è¡Œ",
                 Method = "Post",
                 Data = new {name = "aaa",age = 10},
                 Url = "http://localhost:5000/testpost",
@@ -109,7 +109,7 @@ namespace Hangfire.HttpJob.Client.Test
         public void TestRemoveRecurringJob()
         {
             var serverUrl = "http://localhost:5000/job";
-            var result = HangfireJobClient.RemoveRecurringJob(serverUrl, "²âÊÔ5µã40Ö´ÐÐ", new HangfireServerPostOption
+            var result = HangfireJobClient.RemoveRecurringJob(serverUrl, "æµ‹è¯•5ç‚¹40æ‰§è¡Œ", new HangfireServerPostOption
             {
                 BasicUserName = "admin",
                 BasicPassword = "test"
@@ -123,7 +123,7 @@ namespace Hangfire.HttpJob.Client.Test
             var serverUrl = "http://localhost:5000/job";
             var result = HangfireJobClient.AddBackgroundJob(serverUrl, new BackgroundJob
             {
-                JobName = "²âÊÔapi",
+                JobName = "æµ‹è¯•api",
                 Method = "Get",
                 Url = "http://localhost:5000/testaaa",
                 Mail = new List<string> { "1877682825@qq.com" },
