@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Data;
 using Hangfire.Tags;
 using Hangfire.Tags.Mysql;
+using Microsoft.AspNetCore.Localization;
 using Newtonsoft.Json;
 
 namespace TestHangfire
@@ -100,11 +101,18 @@ namespace TestHangfire
             #endregion
 
 
-            //强制显示中文
-            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("zh-CN");
+            #region 强制显示中文
+            var options = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("zh")
+            };
 
-            //强制显示英文
-            //System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("");
+            app.UseRequestLocalization(options);
+
+            //强制显示中文
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("zh");
+
+            #endregion
 
             if (env.IsDevelopment())
             {

@@ -12,6 +12,7 @@ using Hangfire.Tags.SqlServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -79,8 +80,19 @@ namespace TestSqlserver
             logging.AddNLog();
 
             #endregion
+
+            #region 强制显示中文
+            var options = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("zh")
+            };
+
+            app.UseRequestLocalization(options);
+
             //强制显示中文
-            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("zh-CN");
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("zh");
+
+            #endregion
 
             var queues = JsonConfig.GetSection("HangfireQueues").Get<List<string>>().ToArray();
             app.UseHangfireServer(new BackgroundJobServerOptions

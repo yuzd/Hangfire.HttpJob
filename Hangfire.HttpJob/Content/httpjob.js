@@ -671,7 +671,7 @@
 
 
             //全局配置
-            $('#GlobalSet').click(function () {
+            $('#GlobalSet').click(function (e) {
                 $(".modal-title").html(config.GlobalSetButtonName);
                 $.ajax({
                     type: "post",
@@ -759,7 +759,7 @@
             }
 
             //编辑任务
-            $("#EditJob").click(function () {
+            $("#EditJob").click(function (e) {
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
