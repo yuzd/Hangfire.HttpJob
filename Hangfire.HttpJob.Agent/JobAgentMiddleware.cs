@@ -40,7 +40,7 @@ namespace Hangfire.HttpJob.Agent
             {
                 if (!CheckAuth(httpContext, _options))
                 {
-                    message = "basic auth invaild!";
+                    message = "err:basic auth invaild!";
                     _logger.LogError(message);
                     return;
                 }
@@ -48,14 +48,14 @@ namespace Hangfire.HttpJob.Agent
                 var agentAction = httpContext.Request.Headers["x-job-agent-action"].ToString();
                 if (string.IsNullOrEmpty(agentClass))
                 {
-                    message = "x-job-agent-class in headers can not be empty!";
+                    message = "err:x-job-agent-class in headers can not be empty!";
                     _logger.LogError(message);
                     return;
                 }
 
                 if (string.IsNullOrEmpty(agentAction))
                 {
-                    message = $"x-job-agent-action in headers can not be empty!";
+                    message = $"err:x-job-agent-action in headers can not be empty!";
                     _logger.LogError(message);
                     return;
                 }
@@ -66,14 +66,14 @@ namespace Hangfire.HttpJob.Agent
                 var jobHeaders = GetJobHeaders(httpContext);
                 if (!string.IsNullOrEmpty(agentClassType.Item2))
                 {
-                    message = $"JobClass:{agentClass} GetType err:{agentClassType.Item2}";
+                    message = $"err:JobClass:{agentClass} GetType err:{agentClassType.Item2}";
                     _logger.LogError(message);
                     return;
                 }
 
                 if (!JobAgentServiceConfigurer.JobAgentDic.TryGetValue(agentClassType.Item1, out var metaData))
                 {
-                    message = $"JobClass:{agentClass} is not registered!";
+                    message = $"err:JobClass:{agentClass} is not registered!";
                     _logger.LogWarning(message);
                     return;
                 }
@@ -88,7 +88,7 @@ namespace Hangfire.HttpJob.Agent
                         //单例的 一次只能运行一次
                         if (job.JobStatus == JobStatus.Running || job.JobStatus == JobStatus.Stopping)
                         {
-                            message = $"JobClass:{agentClass} can not start, is already Running!";
+                            message = $"err:JobClass:{agentClass} can not start, is already Running!";
                             _logger.LogWarning(message);
                             return;
                         }
@@ -109,14 +109,14 @@ namespace Hangfire.HttpJob.Agent
                     {
                         if (job.JobStatus == JobStatus.Stopping)
                         {
-                            message = $"JobClass:{agentClass} is Stopping!";
+                            message = $"err:JobClass:{agentClass} is Stopping!";
                             _logger.LogWarning(message);
                             return;
                         }
 
                         if (job.JobStatus == JobStatus.Stoped)
                         {
-                            message = $"JobClass:{agentClass} is already Stoped!";
+                            message = $"err:JobClass:{agentClass} is already Stoped!";
                             _logger.LogWarning(message);
                             return;
                         }
@@ -134,7 +134,7 @@ namespace Hangfire.HttpJob.Agent
                         return;
                     }
 
-                    message = $"agentAction:{agentAction} invaild";
+                    message = $"err:agentAction:{agentAction} invaild";
                     _logger.LogError(message);
                     return;
                 }
@@ -161,7 +161,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count < 1)
                     {
-                        message = $"Transient JobClass:{agentClass} have no running job!";
+                        message = $"err:Transient JobClass:{agentClass} have no running job!";
                         _logger.LogWarning(message);
                         return;
                     }
@@ -197,7 +197,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     if (!transitentJob.TryGetValue(agentClass, out var jobAgentList) || jobAgentList.Count < 1)
                     {
-                        message = $"Transient JobClass:{agentClass} have no running job!";
+                        message = $"err:Transient JobClass:{agentClass} have no running job!";
                         _logger.LogWarning(message);
                         return;
                     }
@@ -219,7 +219,7 @@ namespace Hangfire.HttpJob.Agent
                     }
                     if (jobInfo.Count < 1)
                     {
-                        message = $"Transient JobClass:{agentClass} have no running job!";
+                        message = $"err:Transient JobClass:{agentClass} have no running job!";
                         _logger.LogWarning(message);
                         return;
                     }
@@ -228,18 +228,20 @@ namespace Hangfire.HttpJob.Agent
                     return;
                 }
 
-                message = $"agentAction:{agentAction} invaild";
+                message = $"err:agentAction:{agentAction} invaild";
                 _logger.LogError(message);
 
             }
             catch (Exception e)
             {
+                httpContext.Response.StatusCode = 500;
                 await httpContext.Response.WriteAsync(e.ToString());
             }
             finally
             {
                 if (!string.IsNullOrEmpty(message))
                 {
+                    if(message.StartsWith("err:")) httpContext.Response.StatusCode = 500;
                     await httpContext.Response.WriteAsync(message);
                 }
             }

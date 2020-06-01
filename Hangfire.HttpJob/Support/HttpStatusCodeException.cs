@@ -31,4 +31,12 @@ namespace Hangfire.HttpJob.Support
             
         }
     }
+
+    public class AgentJobException : Exception
+    {
+        public AgentJobException(string agentClass,string err) : base($"AgentClass:"+ agentClass + "=>" + err)
+        {
+
+        }
+    }
 }

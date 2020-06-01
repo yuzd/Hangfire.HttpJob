@@ -100,7 +100,7 @@ namespace Hangfire.HttpJob.Server
                     }
                     SendFail(context.BackgroundJob.Id, item, string.Join("<br/>", logList), ex);
                     AddErrToJob(context, ex);
-                    return;
+                    throw;
                 }
 
                 //获取重试次数
@@ -201,9 +201,13 @@ namespace Hangfire.HttpJob.Server
                 logList.Add($"{Strings.JobResult}:{result}");
                 RunWithTry(() => context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-
+                //如果agent那边调度报错
+                if (!string.IsNullOrEmpty(item.AgentClass) && httpResponse.StatusCode ==  HttpStatusCode.InternalServerError)
+                {
+                    throw new AgentJobException(item.AgentClass,result);
+                }
                 //检查HttpResponse StatusCode
-                if (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
+                else if (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
                 {
                     RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
                     logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");
