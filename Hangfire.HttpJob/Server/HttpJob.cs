@@ -202,7 +202,7 @@ namespace Hangfire.HttpJob.Server
                 RunWithTry(() => context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 //如果agent那边调度报错
-                if (!string.IsNullOrEmpty(item.AgentClass) && httpResponse.StatusCode ==  HttpStatusCode.InternalServerError)
+                if (CodingUtil.HangfireHttpJobOptions.EnableJobAgentErrorThrow && !string.IsNullOrEmpty(item.AgentClass) && httpResponse.StatusCode ==  HttpStatusCode.InternalServerError)
                 {
                     throw new AgentJobException(item.AgentClass,result);
                 }
@@ -575,6 +575,9 @@ namespace Hangfire.HttpJob.Server
                 {
                     request.Headers.Add("x-job-agent-console", JsonConvert.SerializeObject(consoleInfo));
                 }
+
+                var basicItem = item as BaseJobItems;
+                request.Headers.Add("x-job-body",Newtonsoft.Json.JsonConvert.SerializeObject(basicItem));
             }
 
             if (context != null)

@@ -71,20 +71,21 @@ namespace Hangfire.HttpJob.Agent
 
         public abstract Task OnStart(JobContext jobContext);
         public abstract void OnStop(JobContext jobContext);
-        public abstract void OnException(Exception ex);
+        public abstract void OnException(JobContext jobContext,Exception ex);
 
 
-        internal void Run(string param, IHangfireConsole console, ConcurrentDictionary<string, string> headers)
+        internal void Run(JobItem jobItem, IHangfireConsole console, ConcurrentDictionary<string, string> headers)
         {
             if (JobStatus == JobStatus.Running) return;
             lock (this)
             {
                 if (JobStatus == JobStatus.Running) return;
                 _mainThread = new ManualResetEvent(false);
-                Param = param;
+                Param = jobItem.JobParam;
                 var jobContext = new JobContext
                 {
-                    Param = param,
+                    Param = Param,
+                    JobItem = jobItem,
                     Console = console,
                     Headers = headers
                 };
@@ -93,7 +94,7 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        internal void Stop(IHangfireConsole console, ConcurrentDictionary<string, string> headers)
+        internal void Stop(JobItem jobItem, IHangfireConsole console, ConcurrentDictionary<string, string> headers)
         {
             if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
                 return;
@@ -120,6 +121,7 @@ namespace Hangfire.HttpJob.Agent
                     var jobContext = new JobContext
                     {
                         Param = Param,
+                        JobItem = jobItem,
                         Console = console,
                         Headers = headers
                     };
@@ -136,7 +138,14 @@ namespace Hangfire.HttpJob.Agent
                     e.Data.Add("AgentClass", AgentClass);
                     try
                     {
-                        OnException(e);
+                        var jobContext = new JobContext
+                        {
+                            Param = Param,
+                            JobItem = jobItem,
+                            Console = console,
+                            Headers = headers
+                        };
+                        OnException(jobContext,e);
                     }
                     catch (Exception)
                     {
@@ -182,7 +191,7 @@ namespace Hangfire.HttpJob.Agent
                 e.Data.Add("AgentClass", AgentClass);
                 try
                 {
-                    OnException(e);
+                    OnException(jobContext,e);
                 }
                 catch (Exception)
                 {

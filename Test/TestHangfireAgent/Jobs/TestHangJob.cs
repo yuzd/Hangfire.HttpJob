@@ -32,7 +32,7 @@ namespace TestHangfireAgent.Jobs
             _logger.LogInformation("OnStop");
         }
 
-        public override void OnException(Exception ex)
+        public override void OnException(JobContext jobContext,Exception ex)
         {
             _logger.LogError(ex, nameof(OnException) + (ex.Data["Method"] ?? string.Empty));
         }

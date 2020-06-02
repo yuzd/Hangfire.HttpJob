@@ -50,6 +50,11 @@ namespace Hangfire.HttpJob
         public string Proxy { get; set; }
 
         /// <summary>
+        /// JobAgent调度的时候Agent有响应但是响应的Body是err:开头的，要不要作为异常抛出默认是true
+        /// </summary>
+        public bool EnableJobAgentErrorThrow { get; set; } = true;
+
+        /// <summary>
         /// 邮件配置
         /// </summary>
         public MailOption MailOption { get; set; } = new MailOption();

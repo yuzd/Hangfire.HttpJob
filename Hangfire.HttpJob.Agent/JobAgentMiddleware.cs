@@ -46,6 +46,7 @@ namespace Hangfire.HttpJob.Agent
                 }
                 var agentClass = httpContext.Request.Headers["x-job-agent-class"].ToString();
                 var agentAction = httpContext.Request.Headers["x-job-agent-action"].ToString();
+                var jobBody = httpContext.Request.Headers["x-job-body"].ToString();
                 if (string.IsNullOrEmpty(agentClass))
                 {
                     message = "err:x-job-agent-class in headers can not be empty!";
@@ -59,6 +60,14 @@ namespace Hangfire.HttpJob.Agent
                     _logger.LogError(message);
                     return;
                 }
+
+                JobItem jobItem = null;
+                if (!string.IsNullOrEmpty(jobBody))
+                {
+                    jobItem = Newtonsoft.Json.JsonConvert.DeserializeObject<JobItem>(jobBody);
+                }
+
+                if(jobItem== null)jobItem = new JobItem();
 
                 agentAction = agentAction.ToLower();
                 var requestBody = await GetJobItem(httpContext);
@@ -99,7 +108,8 @@ namespace Hangfire.HttpJob.Agent
                         }
 
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        job.Run(requestBody, console, jobHeaders);
+                        jobItem.JobParam = requestBody;
+                        job.Run(jobItem, console, jobHeaders);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
                         
@@ -121,7 +131,7 @@ namespace Hangfire.HttpJob.Agent
                             return;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        job.Stop(console,jobHeaders);
+                        job.Stop(jobItem,console,jobHeaders);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
                         return;
@@ -151,7 +161,8 @@ namespace Hangfire.HttpJob.Agent
                     var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string,JobAgent>());
                     jobAgentList.TryAdd(job.Guid,job);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                    job.Run(requestBody, console, jobHeaders);
+                    jobItem.JobParam = requestBody;
+                    job.Run(jobItem, console, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
 
@@ -179,7 +190,7 @@ namespace Hangfire.HttpJob.Agent
                             continue;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        runingJob.Value.Stop(console, jobHeaders);
+                        runingJob.Value.Stop(jobItem,console, jobHeaders);
                         instanceCount++;
                     }
 
@@ -332,7 +343,7 @@ namespace Hangfire.HttpJob.Agent
             catch (Exception e)
             {
                 _logger.LogWarning("ready body content from Request.Body err:"+e.Message);
-                return string.Empty;
+                throw new Exception("ready body content from Request.Body err:" + e.Message);
             }
         }
         private (Type, string) GetAgentType(string agentClass)
