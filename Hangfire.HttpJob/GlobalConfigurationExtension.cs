@@ -55,7 +55,8 @@ namespace Hangfire.HttpJob
             {
                 try
                 {
-                    File.WriteAllText(options.GlobalSettingJsonFilePath,"");//如果没有权限则会报错
+                    var fileAll = File.ReadAllText(options.GlobalSettingJsonFilePath);
+                    File.WriteAllText(options.GlobalSettingJsonFilePath, fileAll);//如果没有权限则会报错
                 }
                 catch (Exception e)
                 {
