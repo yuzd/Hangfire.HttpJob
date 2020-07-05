@@ -556,6 +556,8 @@ namespace Hangfire.HttpJob.Server
                 foreach (var header in item.Headers)
                 {
                     if (string.IsNullOrEmpty(header.Key)) continue;
+                    //detect-if-a-character-is-a-non-ascii-character
+                    if (System.Text.Encoding.UTF8.GetByteCount(header.Key) != header.Key.Length) continue;
                     request.Headers.Add(header.Key, header.Value);
                 }
 
