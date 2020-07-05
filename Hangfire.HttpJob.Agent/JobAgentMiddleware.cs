@@ -314,11 +314,11 @@ namespace Hangfire.HttpJob.Agent
                     return result;
                 }
 
-                var arr = agentHeader.Split(new string[] {"；"}, StringSplitOptions.None);
+                var arr = agentHeader.Split(new string[] { "_@_" }, StringSplitOptions.None);
                 foreach (var header in arr)
                 {
                     var value =  context.Request.Headers[header].ToString();
-                    result.TryAdd(header,value);
+                    result.TryAdd(header,Encoding.UTF8.GetString(Convert.FromBase64String(value)));
                 }
             }
             catch (Exception)

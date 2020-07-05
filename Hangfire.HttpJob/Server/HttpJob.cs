@@ -562,10 +562,11 @@ namespace Hangfire.HttpJob.Server
                         RunWithTry(() => context.WriteLine($"Request headers must contain only ASCII characters:{header.Key}"));
                         continue;
                     }
-                    request.Headers.Add(header.Key, header.Value);
+
+                    request.Headers.Add(header.Key, Convert.ToBase64String(Encoding.UTF8.GetBytes(header.Value)));
                 }
 
-                headerKeys = string.Join("；", item.Headers.Keys);
+                headerKeys = string.Join("_@_", item.Headers.Keys);
             }
 
             if (!string.IsNullOrEmpty(item.AgentClass))
