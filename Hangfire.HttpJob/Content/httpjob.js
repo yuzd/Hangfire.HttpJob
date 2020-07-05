@@ -1002,8 +1002,8 @@
                 $('#jsonModel').modal('hide');
 
                 window.jsonEditor.setText("{}");
-                window.jsonViewEditor.setText("{}");
-                window.jsonEditor3.setText("{}");
+                if (window.jsonViewEditor)window.jsonViewEditor.setText("{}");
+                if (window.jsonEditor3)window.jsonEditor3.setText("{}");
             }
 
             function getIOEditorData() {

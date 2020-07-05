@@ -155,14 +155,15 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var content = await GetRequestBody<string>(context);
-                if (string.IsNullOrEmpty(content))
+                var contentBody = await GetRequestBody<string>(context);
+                
+                if (string.IsNullOrEmpty(contentBody.Item1))
                 {
-                    await context.Response.WriteAsync("err: json invaild");
+                    await context.Response.WriteAsync($"err: json invaild:{contentBody.Item2}");
                     return;
                 }
 
-                var jsonString = ConvertJsonString(content);
+                var jsonString = ConvertJsonString(contentBody.Item1);
                 if (string.IsNullOrEmpty(jsonString))
                 {
                     await context.Response.WriteAsync($"err: invaild json !");
@@ -299,10 +300,11 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task<(HttpJobItem, string)> GetCheckedJobItem(DashboardContext context)
         {
-            var jobItem = await GetRequestBody<HttpJobItem>(context);
+            var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+            var jobItem = jobItemBody.Item1;
             if (jobItem == null)
             {
-                return (null, "get job data fail");
+                return (null, $"get job data fail:{jobItemBody.Item2}");
             }
 
             string CheckHttpJobItem(HttpJobItem item, bool isParent)
@@ -373,12 +375,12 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task GetRecurringJobDetail(DashboardContext context)
         {
-            var jobItem = await GetRequestBody<HttpJobItem>(context);
-
+            var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+            var jobItem = jobItemBody.Item1;
             if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                await context.Response.WriteAsync("invalid request body");
+                await context.Response.WriteAsync($"invalid request body:{jobItemBody.Item2}");
                 return;
             }
 
@@ -404,7 +406,7 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         /// <param name="_context"></param>
         /// <returns></returns>
-        public async Task<T> GetRequestBody<T>(DashboardContext _context)
+        public async Task<Tuple<T,string>> GetRequestBody<T>(DashboardContext _context)
         {
             try
             {
@@ -426,7 +428,7 @@ namespace Hangfire.HttpJob.Server
                     if (owinContext == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
-                        return default(T);
+                        return new Tuple<T, string>(default(T),$"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
                     }
 
                     var request = owinContext.GetType().GetProperty("Request")?.GetValue(owinContext);
@@ -434,20 +436,20 @@ namespace Hangfire.HttpJob.Server
                     if (request == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
-                        return default(T);
+                        return new Tuple<T, string>(default(T),$"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
                     }
 
                     body = request.GetType().GetProperty("Body")?.GetValue(request) as Stream;
                     if (body == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
-                        return default(T);
+                        return new Tuple<T, string>(default(T),$"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
                     }
                 }
 
                 if (body == null)
                 {
-                    return default(T);
+                    return new Tuple<T, string>(default(T),$"get body stream from request fail");
                 }
 
                 using (MemoryStream ms = new MemoryStream())
@@ -459,15 +461,14 @@ namespace Hangfire.HttpJob.Server
                     var requestBody = await sr.ReadToEndAsync();
                     if (typeof(T) == typeof(String))
                     {
-                        return (T)(object)requestBody;
+                        return new Tuple<T, string>((T)(object)requestBody,null);
                     }
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(requestBody);
+                    return new Tuple<T, string>(Newtonsoft.Json.JsonConvert.DeserializeObject<T>(requestBody),null);
                 }
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("HttpJobDispatcher.GetJobItem", ex);
-                return default(T);
+                return new Tuple<T, string>(default(T),ex.Message);
             }
         }
 
@@ -511,12 +512,12 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jobItem = await GetRequestBody<HttpJobItem>(context);
-
+                var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+                var jobItem = jobItemBody.Item1;
                 if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsync("invalid request body");
+                    await context.Response.WriteAsync($"invalid request body:{jobItemBody.Item2}");
                     return;
                 }
 
@@ -559,12 +560,13 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jobItem = await GetRequestBody<HttpJobItem>(context);
-
+                
+                var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+                var jobItem = jobItemBody.Item1;
                 if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsync("invalid request body");
+                    await context.Response.WriteAsync($"invalid request body:{jobItemBody.Item2}");
                     return;
                 }
 
@@ -669,11 +671,12 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task DoPauseOrRestartJob(DashboardContext context)
         {
-            var jobItem = await GetRequestBody<HttpJobItem>(context);
-            if (string.IsNullOrEmpty(jobItem.JobName))
+            var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+            var jobItem = jobItemBody.Item1;
+            if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                await context.Response.WriteAsync("jobName invaild");
+                await context.Response.WriteAsync($"invalid request body:{jobItemBody.Item2}");
                 return;
             }
 
@@ -698,11 +701,12 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var jobItem = await GetRequestBody<HttpJobItem>(context);
-                if (string.IsNullOrEmpty(jobItem.JobName))
+                var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+                var jobItem = jobItemBody.Item1;
+                if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsync("jobName invaild");
+                    await context.Response.WriteAsync($"invalid request body:{jobItemBody.Item2}");
                     return;
                 }
 
@@ -850,9 +854,17 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private async Task<JobDetailInfo> GetBackGroundJobDetail(DashboardContext context)
         {
-            var jobItem = await GetRequestBody<HttpJobItem>(context);
             var result = new JobDetailInfo();
             var jobName = string.Empty;
+            
+            var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+            var jobItem = jobItemBody.Item1;
+            if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
+            {
+                result.Info = "GetJobDetail Error：can not found job by id:" + jobItemBody.Item2;
+                return result;
+            }
+         
             try
             {
                 using (var connection = JobStorage.Current.GetConnection())
