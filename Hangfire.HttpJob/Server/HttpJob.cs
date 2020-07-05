@@ -563,7 +563,15 @@ namespace Hangfire.HttpJob.Server
                         continue;
                     }
 
-                    request.Headers.Add(header.Key, Convert.ToBase64String(Encoding.UTF8.GetBytes(header.Value)));
+                    //如果是agent的job
+                    if (!string.IsNullOrEmpty(item.AgentClass))
+                    {
+                        request.Headers.Add(header.Key, Convert.ToBase64String(Encoding.UTF8.GetBytes(header.Value)));
+                        continue;
+                    }
+
+                    request.Headers.Add(header.Key, header.Value);
+
                 }
 
                 headerKeys = string.Join("_@_", item.Headers.Keys);
