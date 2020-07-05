@@ -9,7 +9,7 @@
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <Description>agent job console to hangfire dashbord</Description>
-    <Version>1.1.4</Version>
+    <Version>1.1.7</Version>
   </PropertyGroup>
 
   <ItemGroup>
