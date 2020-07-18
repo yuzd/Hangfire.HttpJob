@@ -24,12 +24,8 @@ namespace TestSqlserverHangfireAgent
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logging)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory logging)
         {
-            #region NLOG
-            NLog.LogManager.LoadConfiguration("NLog.Config");
-            #endregion
-
             app.UseHangfireHttpJobAgent();
             app.UseJobAgentConsoleToSqlServer();
         }

@@ -16,6 +16,7 @@ using System.Data;
 using Hangfire.Tags;
 using Hangfire.Tags.Mysql;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace TestHangfire
@@ -91,15 +92,8 @@ namespace TestHangfire
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logging)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory logging)
         {
-            #region NLOG
-
-            NLog.LogManager.LoadConfiguration("NLog.Config");
-            logging.AddNLog();
-
-            #endregion
-
 
             #region 强制显示中文
             var options = new RequestLocalizationOptions
