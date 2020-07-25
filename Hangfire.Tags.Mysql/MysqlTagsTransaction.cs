@@ -73,7 +73,7 @@ namespace Hangfire.Tags.Mysql
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             AcquireSetLock();
-            QueueCommand(r => r.Execute($@"update `{_options.TablesPrefix}set` set ExpireAt = @expireAt where `Key` = @key and `Value` = @value",
+            QueueCommand(r => r.Execute($@"update `{_options.TablesPrefix}Set` set ExpireAt = @expireAt where `Key` = @key and `Value` = @value",
                 new
                 {
                     key = key,
@@ -88,7 +88,7 @@ namespace Hangfire.Tags.Mysql
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             AcquireSetLock();
-            QueueCommand( r=> r.Execute($"update `{_options.TablesPrefix}set` set ExpireAt = null where `Key` = @key and `Value` = @value",
+            QueueCommand( r=> r.Execute($"update `{_options.TablesPrefix}Set` set ExpireAt = null where `Key` = @key and `Value` = @value",
                 new
                 {
                     key = key,
