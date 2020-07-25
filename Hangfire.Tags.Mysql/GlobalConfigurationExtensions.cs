@@ -1,5 +1,5 @@
 ﻿using System;
-using Hangfire.MySql.Core;
+using Hangfire.MySql;
 using Hangfire.Tags.Storage;
 
 namespace Hangfire.Tags.Mysql

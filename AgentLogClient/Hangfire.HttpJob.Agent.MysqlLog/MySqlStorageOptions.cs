@@ -6,7 +6,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
     public class MySqlStorageOptions
     {
-        public string TablePrefix { get; set; } = "Hangfire";
+        public string TablePrefix { get; set; } = "hangfire";
         public string HangfireDb { get; set; } 
         public int ExpireAtDays { get; set; } = 7;
 

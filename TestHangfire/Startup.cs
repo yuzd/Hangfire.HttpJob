@@ -2,7 +2,6 @@
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.HttpJob;
-using Hangfire.MySql.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,11 +12,13 @@ using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Hangfire.MySql;
 using Hangfire.Tags;
 using Hangfire.Tags.Mysql;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace TestHangfire
 {
@@ -47,7 +48,7 @@ namespace TestHangfire
                 PrepareSchemaIfNecessary = true,
                 DashboardJobListLimit = 50000,
                 TransactionTimeout = TimeSpan.FromMinutes(1),
-                TablePrefix = "hangfire"
+                TablesPrefix = "hangfire"
             };
             globalConfiguration.UseStorage(
                     new MySqlStorage(

@@ -4,10 +4,10 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
 using Dapper;
-using Hangfire.MySql.Core;
+using Hangfire.MySql;
 using Hangfire.Storage;
 using Hangfire.Tags.Storage;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Hangfire.Tags.Mysql
 {
@@ -73,7 +73,7 @@ namespace Hangfire.Tags.Mysql
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             AcquireSetLock();
-            QueueCommand(r => r.Execute($@"update `{_options.TablePrefix}_Set` set ExpireAt = @expireAt where `Key` = @key and `Value` = @value",
+            QueueCommand(r => r.Execute($@"update `{_options.TablesPrefix}set` set ExpireAt = @expireAt where `Key` = @key and `Value` = @value",
                 new
                 {
                     key = key,
@@ -88,7 +88,7 @@ namespace Hangfire.Tags.Mysql
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             AcquireSetLock();
-            QueueCommand( r=> r.Execute($"update `{_options.TablePrefix}_Set` set ExpireAt = null where `Key` = @key and `Value` = @value",
+            QueueCommand( r=> r.Execute($"update `{_options.TablesPrefix}set` set ExpireAt = null where `Key` = @key and `Value` = @value",
                 new
                 {
                     key = key,
