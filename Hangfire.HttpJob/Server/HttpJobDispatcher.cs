@@ -966,8 +966,13 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var requestStr = GetRequestBody(context);
-                var jobItems = JsonConvert.DeserializeObject<List<HttpJobItem>>(requestStr);
+                var contentBody = await GetRequestBody<string>(context);
+                if (string.IsNullOrEmpty(contentBody.Item1))
+                {
+                    await context.Response.WriteAsync($"err: json invaild:{contentBody.Item2}");
+                    return;
+                }
+                var jobItems = JsonConvert.DeserializeObject<List<HttpJobItem>>(contentBody.Item1);
                 foreach (var jobItem in jobItems)
                 {
                     AddHttprecurringjob(jobItem);
@@ -1038,14 +1043,6 @@ namespace Hangfire.HttpJob.Server
             return jobList;
         }
 
-        string GetRequestBody(DashboardContext context)
-        {
-            using (var reader = new StreamReader(context.GetHttpContext().Request.Body))
-            {
-                return reader.ReadToEnd();
-            }
-
-        }
 
     }
 }
