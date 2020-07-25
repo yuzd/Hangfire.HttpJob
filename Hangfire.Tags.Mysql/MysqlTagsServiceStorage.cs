@@ -42,12 +42,12 @@ namespace Hangfire.Tags.Mysql
                     tag = "[^0-9]"; // Exclude tags:<id> entries
 
                 var sql =
-                    $@"select count(*) as Amount from `{_options.TablesPrefix}set` s where s.Key REGEXP '{setKey}:{tag}'";
+                    $@"select count(*) as Amount from `{_options.TablesPrefix}Set` s where s.Key REGEXP '{setKey}:{tag}'";
                 var total = connection.ExecuteScalar<int>(sql);
 
                 sql =
                     $@"select INSERT(`Key`, 1, 5, '') AS Tag, COUNT(*) AS Amount, ROUND(count(*) * 1.0 / @total * 100, 0) as Percentage
-from `{_options.TablesPrefix}set` s where s.Key REGEXP '{setKey}:{tag}' group by s.Key";
+from `{_options.TablesPrefix}Set` s where s.Key REGEXP '{setKey}:{tag}' group by s.Key";
 
                 return connection.Query<TagDto>(
                     sql,
@@ -62,7 +62,7 @@ from `{_options.TablesPrefix}set` s where s.Key REGEXP '{setKey}:{tag}' group by
             return monitoringApi.UseConnection(connection =>
             {
                 var sql =
-                    $@"select Value from `{_options.TablesPrefix}set` s where s.Key='tags' and s.Value like '@setKey:%@tag%'";
+                    $@"select Value from `{_options.TablesPrefix}Set` s where s.Key='tags' and s.Value like '@setKey:%@tag%'";
 
                 return connection.Query<string>(
                     sql,
@@ -88,21 +88,21 @@ from `{_options.TablesPrefix}set` s where s.Key REGEXP '{setKey}:{tag}' group by
                     $@"
 
   select j.Id
-  from `{_options.TablesPrefix}job` j";
+  from `{_options.TablesPrefix}Job` j";
 
                 for (var i = 0; i < tags.Length; i++)
                 {
                     parameters["tag" + i] = tags[i];
                     jobsSql +=
-                        $"  inner join `{_options.TablesPrefix}set` s{i} on j.Id=s{i}.Value and s{i}.Key=@tag{i}";
+                        $"  inner join `{_options.TablesPrefix}Set` s{i} on j.Id=s{i}.Value and s{i}.Key=@tag{i}";
                 }
 
                 var sql2 =
                     $@"
 select j.StateName AS `Key`, count(*) AS Value
-from `{_options.TablesPrefix}job` j
+from `{_options.TablesPrefix}Job` j
 inner join ({jobsSql}) as cte on cte.Id = j.Id 
-left join `{_options.TablesPrefix}state` s on j.StateId = s.Id
+left join `{_options.TablesPrefix}State` s on j.StateId = s.Id
 group by j.StateName order by count(*) desc limit {maxTags} ";
 
                 return connection.Query<KeyValuePair<string, int>>(
@@ -141,12 +141,12 @@ group by j.StateName order by count(*) desc limit {maxTags} ";
             var jobsSql =
                 $@"
   select j.Id
-  from `{_options.TablesPrefix}job` j ";
+  from `{_options.TablesPrefix}Job` j ";
 
             for (var i = 0; i < tags.Length; i++)
             {
                 parameters["tag" + i] = tags[i];
-                jobsSql += $"  inner join `{_options.TablesPrefix}set` s{i} on j.Id=s{i}.Value and s{i}.Key=@tag{i}";
+                jobsSql += $"  inner join `{_options.TablesPrefix}Set` s{i} on j.Id=s{i}.Value and s{i}.Key=@tag{i}";
             }
 
             jobsSql +=
@@ -154,9 +154,9 @@ group by j.StateName order by count(*) desc limit {maxTags} ";
   where (@stateName IS NULL OR LENGTH(@stateName) = 0 OR j.StateName=@stateName)";
             var sql2 = $@"
 select j.*, s.Reason as StateReason, s.Data as StateData
-from `{_options.TablesPrefix}job` j
+from `{_options.TablesPrefix}Job` j
 inner join ({jobsSql}) as cte on cte.Id = j.Id 
-left join `{_options.TablesPrefix}state` s on j.StateId = s.Id
+left join `{_options.TablesPrefix}State` s on j.StateId = s.Id
 order by j.Id desc
 limit @start,@end 
 ";
@@ -228,12 +228,12 @@ limit @start,@end
             var jobsSql =
                 $@"
   select j.Id
-  from `{_options.TablesPrefix}job` j ";
+  from `{_options.TablesPrefix}Job` j ";
 
             for (var i = 0; i < tags.Length; i++)
             {
                 parameters["tag" + i] = tags[i];
-                jobsSql += $"  inner join `{_options.TablesPrefix}set` s{i} on j.Id=s{i}.Value and s{i}.Key=@tag{i}";
+                jobsSql += $"  inner join `{_options.TablesPrefix}Set` s{i} on j.Id=s{i}.Value and s{i}.Key=@tag{i}";
             }
 
             jobsSql +=
@@ -241,9 +241,9 @@ limit @start,@end
   where (@stateName IS NULL OR LENGTH(@stateName)=0 OR j.StateName=@stateName)";
 var sql2 = $@"
 select count(*)
-from `{_options.TablesPrefix}job` j 
+from `{_options.TablesPrefix}Job` j 
 inner join ({jobsSql}) as cte on cte.Id = j.Id 
-left join `{_options.TablesPrefix}state` s  on j.StateId = s.Id";
+left join `{_options.TablesPrefix}State` s  on j.StateId = s.Id";
 
             return connection.ExecuteScalar<int>(
                 sql2,

@@ -120,7 +120,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                 foreach (var keyValuePair in keyValuePairs)
                 {
                     connection.Execute(
-                        $"insert into {_options.TablePrefix}hash (`Key`, Field, Value,ExpireAt) " +
+                        $"insert into {_options.TablePrefix}Hash (`Key`, Field, Value,ExpireAt) " +
                         "value (@key, @field, @value,@ExpireAt) " +
                         "on duplicate key update Value = @value",
                         new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = DateTime.Now.AddDays(_options.ExpireAtDays) });
@@ -139,7 +139,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
             UseTransaction(connection =>
             {
                 connection.Execute(
-                    $"INSERT INTO `{_options.TablePrefix}set` (`Key`, `Value`, `Score`,`ExpireAt`) " +
+                    $"INSERT INTO `{_options.TablePrefix}Set` (`Key`, `Value`, `Score`,`ExpireAt`) " +
                     "VALUES (@Key, @Value, @Score,@ExpireAt) " +
                     "ON DUPLICATE KEY UPDATE `Score` = @Score",
                     new { Key = key, Value =value, Score=score, ExpireAt=DateTime.Now.AddDays(_options.ExpireAtDays) });
