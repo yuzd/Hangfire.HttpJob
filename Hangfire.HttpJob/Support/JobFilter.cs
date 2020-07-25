@@ -125,7 +125,7 @@ namespace Hangfire.HttpJob.Support
                         return;
                     }
 
-                    if (!string.IsNullOrEmpty(job.JobName) && TagsServiceStorage.Current != null) filterContext.BackgroundJob.Id.AddTags(job.JobName);
+                    if (!string.IsNullOrEmpty(job.JobName) && (TagsServiceStorage.Current != null || JobStorage.Current.GetType().Name.Contains("Redis")) ) filterContext.BackgroundJob.Id.AddTags(job.JobName);
                 }
 
                 //设置运行时被设置的参数

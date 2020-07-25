@@ -88,7 +88,11 @@ namespace Hangfire.HttpJob.Client
             var url = hangfireServerUrl.EndsWith("/httpjob?op=backgroundjob")
                 ? hangfireServerUrl
                 : hangfireServerUrl + "/httpjob?op=backgroundjob";
-            
+
+            if (backgroundJob.RunAt != null && backgroundJob.RunAt > DateTime.Now)
+            {
+                backgroundJob.DelayFromMinutes = (int) (backgroundJob.RunAt.Value - DateTime.Now).TotalMinutes;
+            }
             HttpJobItem jobItem = new HttpJobItem(url, option)
             {
                 Url = backgroundJob.Url,

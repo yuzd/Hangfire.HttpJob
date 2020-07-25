@@ -120,6 +120,8 @@ namespace Hangfire.HttpJob.Client
         /// </summary>
         public int DelayFromMinutes { get; set; }
 
+        public DateTime? RunAt { get; set; }
+
         /// <summary>
         /// Job名称
         /// </summary>
