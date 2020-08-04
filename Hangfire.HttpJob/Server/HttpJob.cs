@@ -531,7 +531,22 @@ namespace Hangfire.HttpJob.Server
             {
                 if (!string.IsNullOrEmpty(item.Data))
                 {
-                    var replaceData = placeHolderCheck(item.Data, parentJob == null ? null : new Dictionary<string, object> { { "parent", parentJob.Cron } });
+                    Dictionary<string, object> param = new Dictionary<string, object>();
+                    if (parentJob!=null && !string.IsNullOrEmpty(parentJob.Cron))
+                    {
+                        param["parentBody"] = parentJob.Cron;
+                        try
+                        {
+                            param["parent"] = JsonConvert.DeserializeObject<ExpandoObject>(parentJob.Cron);
+                        }
+                        catch (Exception)
+                        {
+                            param["parent"] = parentJob.Cron;
+                        }
+                    }
+
+                    //parentJob.Cron 代表了 上一个执行的返回string
+                    var replaceData = placeHolderCheck(item.Data, parentJob == null ? null : param);
 
                     if (replaceData.Item2 != null)
                     {
@@ -543,7 +558,7 @@ namespace Hangfire.HttpJob.Server
                     {
                         if (item.Data.Contains("#{") || item.Data.Contains("${"))
                         {
-                            RunWithTry(() => context.WriteLine($"【{Strings.ReplacePlaceHolder}】" + replaceData));
+                            RunWithTry(() => context.WriteLine($"【{Strings.ReplacePlaceHolder}】" + replaceData.Item1));
                         }
                         request.Content = new StringContent(replaceData.Item1, Encoding.UTF8, item.ContentType);
                     }
