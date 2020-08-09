@@ -527,11 +527,11 @@ namespace Hangfire.HttpJob.Server
         {
             var request = new HttpRequestMessage(new HttpMethod(item.Method), item.Url);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(item.ContentType));
+            Dictionary<string, object> param = new Dictionary<string, object>();
             if (!item.Method.ToLower().Equals("get"))
             {
                 if (!string.IsNullOrEmpty(item.Data))
                 {
-                    Dictionary<string, object> param = new Dictionary<string, object>();
                     if (parentJob!=null && !string.IsNullOrEmpty(parentJob.Cron))
                     {
                         param["parentBody"] = parentJob.Cron;
@@ -571,6 +571,43 @@ namespace Hangfire.HttpJob.Server
                 foreach (var header in item.Headers)
                 {
                     if (string.IsNullOrEmpty(header.Key)) continue;
+                    
+                    //查看是否需要替换;
+                    var headerKey = string.Empty;
+                    if (header.Key.Contains("#{") || header.Key.Contains("${"))
+                    {
+                        var replaceData = placeHolderCheck(header.Key, parentJob == null ? null : param);
+                        if (replaceData.Item2 != null)
+                        {
+                            RunWithTry(() => context.WriteLine($"【Header】【{Strings.ReplacePlaceHolder}】Error:"));
+                            RunWithTry(() => context.WriteLine(replaceData.Item2));
+                        }
+                        else
+                        {
+                            RunWithTry(() => context.WriteLine($"【Header】【{Strings.ReplacePlaceHolder}】" + replaceData.Item1));
+                            headerKey = replaceData.Item1;
+                        }
+                    }
+
+                    var headerValue = string.Empty;
+                    if (header.Value.Contains("#{") || header.Value.Contains("${"))
+                    {
+                        var replaceData = placeHolderCheck(header.Value, parentJob == null ? null : param);
+                        if (replaceData.Item2 != null)
+                        {
+                            RunWithTry(() => context.WriteLine($"【Header】【{Strings.ReplacePlaceHolder}】Error:"));
+                            RunWithTry(() => context.WriteLine(replaceData.Item2));
+                        }
+                        else
+                        {
+                            RunWithTry(() => context.WriteLine($"【Header】【{Strings.ReplacePlaceHolder}】" + replaceData.Item1));
+                            headerValue = replaceData.Item1;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(headerKey)) headerKey = header.Key;
+                    if (string.IsNullOrEmpty(headerValue)) headerValue = header.Value;
+
                     //detect-if-a-character-is-a-non-ascii-character
                     if (System.Text.Encoding.UTF8.GetByteCount(header.Key) != header.Key.Length)
                     {
@@ -581,12 +618,11 @@ namespace Hangfire.HttpJob.Server
                     //如果是agent的job
                     if (!string.IsNullOrEmpty(item.AgentClass))
                     {
-                        request.Headers.Add(header.Key, Convert.ToBase64String(Encoding.UTF8.GetBytes(header.Value)));
+                        request.Headers.Add(headerKey, Convert.ToBase64String(Encoding.UTF8.GetBytes(headerValue)));
                         continue;
                     }
 
-                    request.Headers.Add(header.Key, header.Value);
-
+                    request.Headers.Add(headerKey, headerValue);
                 }
 
                 headerKeys = string.Join("_@_", item.Headers.Keys);
