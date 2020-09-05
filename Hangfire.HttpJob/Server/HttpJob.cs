@@ -528,23 +528,26 @@ namespace Hangfire.HttpJob.Server
             var request = new HttpRequestMessage(new HttpMethod(item.Method), item.Url);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(item.ContentType));
             Dictionary<string, object> param = new Dictionary<string, object>();
-            if (!item.Method.ToLower().Equals("get"))
-            {
-                if (!string.IsNullOrEmpty(item.Data))
-                {
-                    if (parentJob!=null && !string.IsNullOrEmpty(parentJob.Cron))
-                    {
-                        param["parentBody"] = parentJob.Cron;
-                        try
-                        {
-                            param["parent"] = JsonConvert.DeserializeObject<ExpandoObject>(parentJob.Cron);
-                        }
-                        catch (Exception)
-                        {
-                            param["parent"] = parentJob.Cron;
-                        }
-                    }
 
+            //不管是get还是post请求都可能遇到header里面有SPEL表达式
+            if (parentJob != null && !string.IsNullOrEmpty(parentJob.Cron))
+            {
+                param["parentBody"] = parentJob.Cron;
+                try
+                {
+                    param["parent"] = JsonConvert.DeserializeObject<ExpandoObject>(parentJob.Cron);
+                }
+                catch (Exception ex)
+                {
+                    RunWithTry(() => context.WriteLine($"Parse parentJob responseData Error:" + ex.Message));
+                    param["parent"] = parentJob.Cron;
+                }
+            }
+
+            //post请求的时候 检测是否SPEL表达式需要替换Body内容
+            if (!item.Method.ToLower().Equals("get") && !string.IsNullOrEmpty(item.Data))
+            {
+                {
                     //parentJob.Cron 代表了 上一个执行的返回string
                     var replaceData = placeHolderCheck(item.Data, parentJob == null ? null : param);
 
@@ -608,21 +611,14 @@ namespace Hangfire.HttpJob.Server
                     if (string.IsNullOrEmpty(headerKey)) headerKey = header.Key;
                     if (string.IsNullOrEmpty(headerValue)) headerValue = header.Value;
 
-                    //detect-if-a-character-is-a-non-ascii-character
-                    if (System.Text.Encoding.UTF8.GetByteCount(header.Key) != header.Key.Length)
-                    {
-                        RunWithTry(() => context.WriteLine($"Request headers must contain only ASCII characters:{header.Key}"));
-                        continue;
-                    }
-
                     //如果是agent的job
                     if (!string.IsNullOrEmpty(item.AgentClass))
                     {
-                        request.Headers.Add(headerKey, Convert.ToBase64String(Encoding.UTF8.GetBytes(headerValue)));
+                        request.Headers.TryAddWithoutValidation(headerKey, Convert.ToBase64String(Encoding.UTF8.GetBytes(headerValue)));
                         continue;
                     }
 
-                    request.Headers.Add(headerKey, headerValue);
+                    request.Headers.TryAddWithoutValidation(headerKey, headerValue);
                 }
 
                 headerKeys = string.Join("_@_", item.Headers.Keys);

@@ -171,7 +171,7 @@ namespace TestHangfire
             }
            
 
-            app.Run(async (context) => { await context.Response.WriteAsync(JsonConvert.SerializeObject(new { Success = false, Info = "ok" })); });
+            app.Run(async (context) => { await context.Response.WriteAsync(JsonConvert.SerializeObject(new { Success = false, Info = "ok",token_type="Bearer",token="dddd" })); });
         }
     }
 }

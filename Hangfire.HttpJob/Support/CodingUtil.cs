@@ -49,7 +49,7 @@ namespace Hangfire.HttpJob.Support
                 }
             }
 
-            return _appsettingsJson;
+            return _appsettingsJson??new Dictionary<string, object>();
         }
         
         /// <summary>
@@ -63,7 +63,7 @@ namespace Hangfire.HttpJob.Support
         {
             try
             {
-                if (_appsettingsJson.TryGetValue(value, out var v))
+                if (_appsettingsJson!=null && _appsettingsJson.TryGetValue(value, out var v))
                 {
                     return (T)TypeConversionUtils.ConvertValueIfNecessary(typeof(T), v, null);
                 }
