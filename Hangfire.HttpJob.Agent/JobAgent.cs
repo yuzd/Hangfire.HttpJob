@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Agent.Util;
+using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Agent
 {
     public abstract class JobAgent
     {
+
         private ManualResetEvent _mainThread;
 
         /// <summary>
@@ -71,10 +75,65 @@ namespace Hangfire.HttpJob.Agent
 
         public abstract Task OnStart(JobContext jobContext);
         public abstract void OnStop(JobContext jobContext);
-        public abstract void OnException(JobContext jobContext,Exception ex);
+
+        public virtual void OnException(JobContext jobContext, Exception ex)
+        {
+            SendDingTalk(jobContext, ex);
+        }
+
+        private static void SendDingTalk(JobContext context, Exception ex)
+        {
+            var options = context.DingTalkOption;
+            if (string.IsNullOrEmpty(options.Token)) return;
+            if (context.JobItem == null) return;
+
+            var item = context.JobItem;
+
+            var content = $@"
+## 任务【{item.JobName}】 执行失败;
+时间:{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}
+
+### 详情
+**代理类**
+```
+{item.AgentClass}
+```
+
+**失败原因**
+```
+{ex.Message}
+```
+";
+            var obj = new
+            {
+                msgtype = "markdown",
+                markdown = new
+                {
+                    title = $"{context.JobItem.JobName} 失败",
+                    text = content
+                },
+                at = new
+                {
+                    atMobiles = options.AtPhones,
+                    isAtAll = options.IsAtAll,
+                }
+            };
+            var uri = $"https://oapi.dingtalk.com/robot/send?access_token={options.Token}";
+
+            using (var client = new HttpClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, uri)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json")
+                };
+
+                var res = client.SendAsync(request).Result;
+            }
+        }
 
 
-        internal void Run(JobItem jobItem, IHangfireConsole console, ConcurrentDictionary<string, string> headers)
+
+        internal void Run(JobItem jobItem, IHangfireConsole console, ConcurrentDictionary<string, string> headers, DingTalkOption option = null)
         {
             if (JobStatus == JobStatus.Running) return;
             lock (this)
@@ -87,7 +146,8 @@ namespace Hangfire.HttpJob.Agent
                     Param = Param,
                     JobItem = jobItem,
                     Console = console,
-                    Headers = headers
+                    Headers = headers,
+                    DingTalkOption = option
                 };
                 thd = new Thread(async () => { await start(jobContext); });
                 thd.Start();
@@ -145,7 +205,7 @@ namespace Hangfire.HttpJob.Agent
                             Console = console,
                             Headers = headers
                         };
-                        OnException(jobContext,e);
+                        OnException(jobContext, e);
                     }
                     catch (Exception)
                     {
@@ -191,7 +251,7 @@ namespace Hangfire.HttpJob.Agent
                 e.Data.Add("AgentClass", AgentClass);
                 try
                 {
-                    OnException(jobContext,e);
+                    OnException(jobContext, e);
                 }
                 catch (Exception)
                 {
@@ -283,7 +343,7 @@ namespace Hangfire.HttpJob.Agent
         /// <param name="console"></param>
         protected void Abort(IHangfireConsole console = null)
         {
-           
+
             try
             {
                 //停止线程

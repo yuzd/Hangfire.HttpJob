@@ -11,7 +11,9 @@ namespace Hangfire.HttpJob.Agent
         public IHangfireConsole Console { get; set; }
 
         public JobItem JobItem { get; internal set; }
-        public ConcurrentDictionary<string,string> Headers { get; set; }
+        public ConcurrentDictionary<string, string> Headers { get; set; }
+
+        public DingTalkOption DingTalkOption { get; set; }
     }
 
     public class JobItem
@@ -139,5 +141,10 @@ namespace Hangfire.HttpJob.Agent
         ///  通知是否@所有人
         /// </summary>
         public bool IsAtAll { get; set; }
+
+        /// <summary>
+        /// 模板
+        /// </summary>
+        public string Template { get; set; }
     }
 }

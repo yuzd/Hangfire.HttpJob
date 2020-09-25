@@ -19,18 +19,21 @@ namespace Hangfire.HttpJob.Agent
     {
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
+        private readonly IOptions<DingTalkOption> _dingTalkOption;
         private readonly ILoggerFactory _loggerFactory;
         private readonly LazyConcurrentDictionary transitentJob;
-        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, ILoggerFactory loggerFactory)
+        public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, IOptions<DingTalkOption> dingTalkOption, ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             _logger = logger;
             _options = options;
+            _dingTalkOption = dingTalkOption;
+
             transitentJob = new LazyConcurrentDictionary();
         }
 
-       
-       
+
+
 
         public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
         {
@@ -71,7 +74,7 @@ namespace Hangfire.HttpJob.Agent
                     jobItem = Newtonsoft.Json.JsonConvert.DeserializeObject<JobItem>(jobBody);
                 }
 
-                if(jobItem== null)jobItem = new JobItem();
+                if (jobItem == null) jobItem = new JobItem();
 
                 agentAction = agentAction.ToLower();
                 var requestBody = await GetJobItem(httpContext);
@@ -113,10 +116,10 @@ namespace Hangfire.HttpJob.Agent
 
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                         jobItem.JobParam = requestBody;
-                        job.Run(jobItem, console, jobHeaders);
+                        job.Run(jobItem, console, jobHeaders, _dingTalkOption.Value);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
-                        
+
                         return;
                     }
                     else if (agentAction.Equals("stop"))
@@ -135,7 +138,7 @@ namespace Hangfire.HttpJob.Agent
                             return;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        job.Stop(jobItem,console,jobHeaders);
+                        job.Stop(jobItem, console, jobHeaders);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
                         return;
@@ -161,12 +164,12 @@ namespace Hangfire.HttpJob.Agent
                     job.AgentClass = agentClass;
                     job.Hang = metaData.Hang;
                     job.Guid = Guid.NewGuid().ToString("N");
-                    job.TransitentJobDisposeEvent +=  transitentJob.JobRemove;
-                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string,JobAgent>());
-                    jobAgentList.TryAdd(job.Guid,job);
+                    job.TransitentJobDisposeEvent += transitentJob.JobRemove;
+                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string, JobAgent>());
+                    jobAgentList.TryAdd(job.Guid, job);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                     jobItem.JobParam = requestBody;
-                    job.Run(jobItem, console, jobHeaders);
+                    job.Run(jobItem, console, jobHeaders, _dingTalkOption.Value);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
 
@@ -194,13 +197,13 @@ namespace Hangfire.HttpJob.Agent
                             continue;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        runingJob.Value.Stop(jobItem,console, jobHeaders);
+                        runingJob.Value.Stop(jobItem, console, jobHeaders);
                         instanceCount++;
                     }
 
                     foreach (var stopedJob in stopedJobList)
                     {
-                        jobAgentList.TryRemove(stopedJob.Guid,out _);
+                        jobAgentList.TryRemove(stopedJob.Guid, out _);
                     }
 
                     transitentJob.TryRemove(agentClass, out _);
@@ -230,7 +233,7 @@ namespace Hangfire.HttpJob.Agent
                     }
                     foreach (var stopedJob in stopedJobList)
                     {
-                        jobAgentList.TryRemove(stopedJob.Guid,out _);
+                        jobAgentList.TryRemove(stopedJob.Guid, out _);
                     }
                     if (jobInfo.Count < 1)
                     {
@@ -256,7 +259,7 @@ namespace Hangfire.HttpJob.Agent
             {
                 if (!string.IsNullOrEmpty(message))
                 {
-                    if(message.StartsWith("err:")) httpContext.Response.StatusCode = 500;
+                    if (message.StartsWith("err:")) httpContext.Response.StatusCode = 500;
                     await httpContext.Response.WriteAsync(message);
                 }
             }
@@ -303,9 +306,9 @@ namespace Hangfire.HttpJob.Agent
             return credentials;
         }
 
-        private ConcurrentDictionary<string,string> GetJobHeaders(HttpContext context)
+        private ConcurrentDictionary<string, string> GetJobHeaders(HttpContext context)
         {
-            var result = new ConcurrentDictionary<string,string>();
+            var result = new ConcurrentDictionary<string, string>();
             try
             {
                 var agentHeader = context.Request.Headers["x-job-agent-header"].ToString();
@@ -317,8 +320,8 @@ namespace Hangfire.HttpJob.Agent
                 var arr = agentHeader.Split(new string[] { "_@_" }, StringSplitOptions.None);
                 foreach (var header in arr)
                 {
-                    var value =  context.Request.Headers[header].ToString();
-                    result.TryAdd(header,Encoding.UTF8.GetString(Convert.FromBase64String(value)));
+                    var value = context.Request.Headers[header].ToString();
+                    result.TryAdd(header, Encoding.UTF8.GetString(Convert.FromBase64String(value)));
                 }
             }
             catch (Exception)
@@ -339,14 +342,14 @@ namespace Hangfire.HttpJob.Agent
             {
                 using (var reader = new StreamReader(context.Request.Body))
                 {
-                    var requestBody =await reader.ReadToEndAsync();
+                    var requestBody = await reader.ReadToEndAsync();
                     return requestBody;
                     // Do something
                 }
             }
             catch (Exception e)
             {
-                _logger.LogWarning("ready body content from Request.Body err:"+e.Message);
+                _logger.LogWarning("ready body content from Request.Body err:" + e.Message);
                 throw new Exception("ready body content from Request.Body err:" + e.Message);
             }
         }
