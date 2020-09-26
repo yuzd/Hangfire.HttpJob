@@ -8,7 +8,7 @@ using StackExchange.Redis;
 
 namespace Hangfire.HttpJob.Agent.RedisConsole
 {
-    internal class RedisStorage : IConsoleStorage, IDisposable
+    internal class RedisStorage : IHangfireStorage, IDisposable
     {
         private readonly RedisStorageOptions _options;
         private readonly IDatabase _redis;

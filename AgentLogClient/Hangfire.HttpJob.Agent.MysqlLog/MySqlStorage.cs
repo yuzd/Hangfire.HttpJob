@@ -9,7 +9,7 @@ using MySql.Data.MySqlClient;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
-    internal class MySqlStorage : IConsoleStorage, IDisposable
+    internal class MySqlStorage : IHangfireStorage, IDisposable
     {
         private readonly string _connectionString;
         private readonly MySqlStorageOptions _options;

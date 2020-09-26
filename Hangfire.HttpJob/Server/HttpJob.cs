@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Common;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using Spring.Expressions;
@@ -44,7 +45,7 @@ namespace Hangfire.HttpJob.Server
         [AutomaticRetrySet(Attempts = 3, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [DisplayName("[{1} | {2} | Retry:{3}]")]
-        [JobFilter(timeoutInSeconds: 3600)]
+        [Support.JobFilter(timeoutInSeconds: 3600)]
         public static void Excute(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
         {
             var logList = new List<string>();
@@ -202,9 +203,19 @@ namespace Hangfire.HttpJob.Server
                 RunWithTry(() => context.WriteLine($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
                 logList.Add($"{Strings.JobEnd}:{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 //如果agent那边调度报错
-                if (CodingUtil.HangfireHttpJobOptions.EnableJobAgentErrorThrow && !string.IsNullOrEmpty(item.AgentClass) && httpResponse.StatusCode ==  HttpStatusCode.InternalServerError)
+                if (!string.IsNullOrEmpty(item.AgentClass))
                 {
-                    throw new AgentJobException(item.AgentClass,result);
+                    if (CodingUtil.HangfireHttpJobOptions.EnableJobAgentErrorThrow && httpResponse.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        throw new AgentJobException(item.AgentClass, result);
+                    }
+
+                    //jobagent的单例没有执行完重复调度的case是否要作为异常
+                    if (!CodingUtil.IgnoreJobAgentSingletonMultExcuteError() && httpResponse.StatusCode == HttpStatusCode.NotImplemented)
+                    {
+                        throw new AgentJobException(item.AgentClass, result);
+                    }
+                  
                 }
                 //检查HttpResponse StatusCode
                 else if (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
@@ -351,13 +362,10 @@ namespace Hangfire.HttpJob.Server
                     return;
                 }
 
-                //优先使用全局配置里面的参数
-                CodingUtil.GetGlobalAppsettings().TryGetValue("CurrentDomain", out var currentDomain);
-
-                var logDetail = currentDomain!=null && !string.IsNullOrEmpty(currentDomain.ToString())? $"{currentDomain}/job/jobs/details/{jobId}":  string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{CodingUtil.HangfireHttpJobOptions.CurrentDomain}/job/jobs/details/{jobId}";
+                var logDetail = CodingUtil.GetCurrentJobDetailUrl(jobId);
 
                 var content =
-                    $@"## {item.JobName} {(isSuccess?"Success": "<font color=#E74C3C>Failed</font>")}{Strings.DingTalkTitle}
+                    $@"## {item.JobName+(!string.IsNullOrEmpty(item.RecurringJobIdentifier) ? "-" + item.RecurringJobIdentifier : "")} {(isSuccess?"Success": "<font color=#E74C3C>Failed</font>")}{Strings.DingTalkTitle}
 ### {Strings.DingTalkConfig}
 >#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName)?"DEFAULT": item.QueueName)} 
 ### {Strings.DingTalkRequestUrl}: 
@@ -454,7 +462,7 @@ namespace Hangfire.HttpJob.Server
                     : item.Mail;
 
                 if (string.IsNullOrWhiteSpace(mail)) return;
-                var subject = $"【JOB】[Success]" + item.JobName;
+                var subject = $"【JOB】[Success]" + item.JobName+(!string.IsNullOrEmpty(item.RecurringJobIdentifier)?"-"+item.RecurringJobIdentifier : "");
                 result = result.Replace("\n", "<br/>");
                 result = result.Replace("\r\n", "<br/>");
                 EmailService.Instance.Send(mail, subject, result);
@@ -639,6 +647,17 @@ namespace Hangfire.HttpJob.Server
                 }
 
                 var basicItem = item as BaseJobItems;
+
+                //查看是否当前job没有配置Dingding参数 但是全局有配置
+                if (basicItem.DingTalk == null)
+                {
+                    basicItem.DingTalk = CodingUtil.HangfireHttpJobOptions.DingTalkOption;
+                }
+
+                var jobUrl =  CodingUtil.GetCurrentJobDetailUrl(context.BackgroundJob.Id);
+                request.Headers.Add("x-job-url",Convert.ToBase64String(Encoding.UTF8.GetBytes(jobUrl)));
+                request.Headers.Add("x-job-id", context.BackgroundJob.Id);
+
                 //detect-if-a-character-is-a-non-ascii-character
                 request.Headers.Add("x-job-body", Convert.ToBase64String(Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(basicItem))));
             }
@@ -699,10 +718,15 @@ namespace Hangfire.HttpJob.Server
 
                 var dateValue = consoleValue.GetType().GetProperty("DateValue", BindingFlags.Instance | BindingFlags.Public)?.GetValue(consoleValue);
 
+                var startAt = DateTime.UtcNow;
+                var consoleId = new ConsoleId(context.BackgroundJob.Id, startAt);
+                context.SetJobParameter("jobAgentConsoleId", consoleId.ToString());
+                context.SetJobParameter("jobAgentStartAt", JobHelper.SerializeDateTime(startAt));
+
                 return new ConsoleInfo
                 {
-                    HashKey = $"console:refs:{consoleValue}",
-                    SetKey = $"console:{consoleValue}",
+                    HashKey = $"console:refs:{consoleId}",
+                    SetKey = $"console:{consoleId}",
                     StartTime = (DateTime?)dateValue ?? DateTime.Now
                 };
             }

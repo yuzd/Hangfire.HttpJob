@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Hangfire.Common;
 using Hangfire.HttpJob.Server;
@@ -133,6 +134,8 @@ namespace Hangfire.HttpJob.Support
             {
                 return;
             }
+
+            //如果先执行失败的话 就直接失败
             var failedState = context.CandidateState as FailedState;
             if (failedState == null)
             {

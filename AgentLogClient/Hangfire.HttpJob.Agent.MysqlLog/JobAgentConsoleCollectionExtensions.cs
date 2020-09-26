@@ -14,7 +14,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
         {
             serviceCollection.AddOptions();
             serviceCollection.TryAddSingleton<IConfigureOptions<MySqlStorageOptions>, MysqlConsoleOptionsConfigurer>();
-            serviceCollection.TryAddSingleton<IConsoleStorage, MySqlStorage>();
+            serviceCollection.TryAddSingleton<IHangfireStorage, MySqlStorage>();
             serviceCollection.TryAddTransient<IHangfireConsole, MysqlConsole>();
             return serviceCollection;
         }

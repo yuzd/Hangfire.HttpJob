@@ -488,6 +488,15 @@ namespace Hangfire.HttpJob.Server
                     queueName = EnqueuedState.DefaultQueue;
                 }
 
+                if (!string.IsNullOrEmpty(jobItem.RunAt))
+                {
+                    //如果设置了 指定的运行时间 先parse一下
+                    if (DateTimeOffset.TryParse(jobItem.RunAt, out var runAtTime))
+                    {
+                        return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), runAtTime);
+                    }
+                }
+
                 if (jobItem.DelayFromMinutes <= 0)
                 {
                     return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
@@ -778,17 +787,20 @@ namespace Hangfire.HttpJob.Server
                 { 
                     timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
                 }
-                
-                if(timeZone == null) timeZone = CodingUtil.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
+
+                //https://github.com/yuzd/Hangfire.HttpJob/issues/78
+                var jobidentifier = string.IsNullOrEmpty(jobItem.RecurringJobIdentifier) ? jobItem.JobName : jobItem.RecurringJobIdentifier;
+
+                if (timeZone == null) timeZone = CodingUtil.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的
-                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
+                    RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
                         timeZone, jobItem.QueueName.ToLower());
                     return true;
                 }
 
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
+                RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
                     timeZone, jobItem.QueueName.ToLower());
                 return true;
             }

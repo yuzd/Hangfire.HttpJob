@@ -47,6 +47,8 @@ namespace Hangfire.HttpJob.Agent
                 var agentClass = httpContext.Request.Headers["x-job-agent-class"].ToString();
                 var agentAction = httpContext.Request.Headers["x-job-agent-action"].ToString();
                 var jobBody = httpContext.Request.Headers["x-job-body"].ToString();
+                var jobUrl = httpContext.Request.Headers["x-job-url"].ToString();
+                var runJobId = httpContext.Request.Headers["x-job-id"].ToString();
                 if (!string.IsNullOrEmpty(jobBody))//是base64的
                 {
                     jobBody = Encoding.UTF8.GetString(Convert.FromBase64String(jobBody));
@@ -72,6 +74,15 @@ namespace Hangfire.HttpJob.Agent
                 }
 
                 if(jobItem== null)jobItem = new JobItem();
+
+                if (!string.IsNullOrEmpty(jobUrl))//是base64的
+                {
+                    jobUrl = Encoding.UTF8.GetString(Convert.FromBase64String(jobUrl));
+                    jobItem.JobDetailUrl = jobUrl;
+                }
+
+                jobItem.JobId = runJobId;
+
 
                 agentAction = agentAction.ToLower();
                 var requestBody = await GetJobItem(httpContext);
@@ -112,8 +123,9 @@ namespace Hangfire.HttpJob.Agent
                         }
 
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
+                        var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
                         jobItem.JobParam = requestBody;
-                        job.Run(jobItem, console, jobHeaders);
+                        job.Run(jobItem, console, jobStorage,jobHeaders);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
                         
@@ -135,7 +147,8 @@ namespace Hangfire.HttpJob.Agent
                             return;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        job.Stop(jobItem,console,jobHeaders);
+                        var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+                        job.Stop(jobItem,console, jobStorage,jobHeaders);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
                         return;
@@ -166,7 +179,8 @@ namespace Hangfire.HttpJob.Agent
                     jobAgentList.TryAdd(job.Guid,job);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                     jobItem.JobParam = requestBody;
-                    job.Run(jobItem, console, jobHeaders);
+                    var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+                    job.Run(jobItem, console, jobStorage, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
 
@@ -194,7 +208,8 @@ namespace Hangfire.HttpJob.Agent
                             continue;
                         }
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        runingJob.Value.Stop(jobItem,console, jobHeaders);
+                        var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+                        runingJob.Value.Stop(jobItem,console, jobStorage, jobHeaders);
                         instanceCount++;
                     }
 
@@ -256,7 +271,18 @@ namespace Hangfire.HttpJob.Agent
             {
                 if (!string.IsNullOrEmpty(message))
                 {
-                    if(message.StartsWith("err:")) httpContext.Response.StatusCode = 500;
+                    if (message.StartsWith("err:"))
+                    {
+                        if (message.Contains("already Running") || message.Contains("already Stoped"))
+                        {
+                            httpContext.Response.StatusCode = 501;
+                        }
+                        else 
+                        {
+                            httpContext.Response.StatusCode = 500;
+                        }
+                       
+                    }
                     await httpContext.Response.WriteAsync(message);
                 }
             }

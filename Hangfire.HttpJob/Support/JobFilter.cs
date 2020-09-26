@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.HttpJob.Content.resx;
@@ -196,16 +197,46 @@ namespace Hangfire.HttpJob.Support
                     {
                         context.CandidateState = new ErrorState(jobResult);
                     }
-
-
-                    //                    if (httpJobItem.DelayFromMinutes == -1)
-                    //                    {
-                    //                        context.CandidateState = new DeletedState
-                    //                        {
-                    //                            Reason = "Start Continue Job"
-                    //                        };
-                    //                    }
                 }
+
+                //先第一步会变成执行中的状态
+                var processingState = context.CandidateState as ProcessingState;
+                if (processingState != null)
+                {
+                    context.SetJobParameter("serverInfo", processingState.ServerId + "@_@" + processingState.WorkerId);
+                    return;
+                }
+
+                //如果先执行失败的话 就直接失败
+                var failedState = context.CandidateState as FailedState;
+                if (failedState != null)
+                {
+                    // This filter accepts only failed job state.
+                    return;
+                }
+
+                //如果执行成功 其实对于jobagent的话 只是调度成功 这里强制把状态回改执行中 
+                var successState = context.CandidateState as SucceededState;
+                if (successState != null && !string.IsNullOrEmpty(httpJobItem.AgentClass))
+                {
+                    //要改成成功的状态 但是是jobagent 需要等待agent上报后再改成
+                    var serverInfo = context.GetJobParameter<string>("serverInfo");
+                    context.SetJobParameter("serverInfo", string.Empty);
+                    if (!string.IsNullOrEmpty(serverInfo))
+                    {
+                        //拿到JobAgent的consoleId
+                        var serverInfoArr = serverInfo.Split(new string[] { "@_@" }, StringSplitOptions.None);
+                        var ctor = typeof(ProcessingState).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic);
+                        var instance = (ProcessingState)ctor[0].Invoke(new object[] { serverInfoArr[0], "JobAgent" });
+                        var field = typeof(ProcessingState).GetField("<StartedAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
+                        var startAt = context.GetJobParameter<string>("jobAgentStartAt");
+                        var startedAt = JobHelper.DeserializeDateTime(startAt);
+                        field.SetValue(instance, startedAt);
+                        context.CandidateState = instance;
+                        return;
+                    }
+                }
+
             }
             catch (Exception)
             {

@@ -12,10 +12,13 @@ namespace Hangfire.HttpJob.Agent
 
         public JobItem JobItem { get; internal set; }
         public ConcurrentDictionary<string,string> Headers { get; set; }
+
+        internal IHangfireStorage HangfireStorage { get; set; }
     }
 
     public class JobItem
     {
+
         /// <summary>
         /// 请求Url
         /// </summary>
@@ -54,6 +57,22 @@ namespace Hangfire.HttpJob.Agent
         /// job名称
         /// </summary>
         public string JobName { get; set; }
+
+        /// <summary>
+        /// job里面的url
+        /// </summary>
+        public string JobDetailUrl  { get; set; }
+
+        /// <summary>
+        /// 周期性job的唯一标识
+        /// </summary>
+        public string RecurringJobIdentifier { get; set; }
+
+        /// <summary>
+        /// Job运行的Id
+        /// </summary>
+        public string JobId { get; set; }
+
         /// <summary>
         /// 指定的队列名称
         /// </summary>

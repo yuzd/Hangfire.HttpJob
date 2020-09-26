@@ -11,12 +11,12 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
     {
         private double _lastTimeOffset;
         private const int ValueFieldLimit = 256;
-        protected IConsoleStorage Storage;
+        protected IHangfireStorage Storage;
         protected ConsoleInfo ConsoleInfo;
         private int _nextProgressBarId;
-        public MssqlConsole(IConsoleStorage storage)
+        public MssqlConsole(IHangfireStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(IConsoleStorage));
+            if (storage == null) throw new ArgumentNullException(nameof(IHangfireStorage));
             Storage = storage;
             _lastTimeOffset = 0;
 

@@ -88,6 +88,7 @@
                 ContentType: "application/json",
                 Url: "http://",
                 DelayFromMinutes: 1,
+                RunAt: "",
                 Headers: {},
                 Data: {},
                 Timeout: config.GlobalHttpTimeOut,
@@ -1109,9 +1110,22 @@ var jobSearcher = new function () {
             $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
                 function () {
                     var table = $('.table-responsive').find('table');
-                    var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('td[class=min-width]:contains(' + keyword + ')').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
+                        var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) + ')').closest('tr');
+                    } else {
+                        var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    }
                     $(table).find('tbody tr').remove();
-                    $(table).find('tbody').append(filtered);
+                    //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
+                    if (location.href.endsWith('jobs/failed')) {
+                        for (var j = 0; j < filtered.length; j++) {
+                            $(table).find('tbody').append(filtered[j]);
+                            $(table).find('tbody').append('<tr></tr>');
+                        }
+                        $('.js-jobs-list .expander').remove();
+                    } else {
+                        $(table).find('tbody').append(filtered);
+                    }
                     //如果作业已经暂停，则用红色字体标识
                     $(table).find('tbody').find('tr').each(function () {
                         var tdArr = $(this).children();
@@ -1131,9 +1145,23 @@ var jobSearcher = new function () {
         $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
             function () {
                 var table = $('.table-responsive').find('table');
-                var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
+                    var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) +')').closest('tr');
+                } else {
+                    var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                }
+                 
                 $(table).find('tbody tr').remove();
-                $(table).find('tbody').append(filtered);
+                //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
+                if (location.href.endsWith('jobs/failed')) {
+                    for (var j = 0; j < filtered.length; j++) {
+                        $(table).find('tbody').append(filtered[j]);
+                        $(table).find('tbody').append('<tr></tr>');
+                    }
+                    $('.js-jobs-list .expander').remove();
+                } else {
+                    $(table).find('tbody').append(filtered);
+                }
                 //如果作业已经暂停，则用红色字体标识
                 $(table).find('tbody').find('tr').each(function () {
                     var tdArr = $(this).children();
@@ -1378,17 +1406,17 @@ $(function () {
         if ($('.page-header').html().indexOf('JobAgent ') < 0) {
             return;
         }
+        $('.console.collapsed').click();
+        //$(".console").each(function (index) {
+        //    var $this = $(this),
+        //        c = new Hangfire.Console2($this);
 
-        $(".console").each(function (index) {
-            var $this = $(this),
-                c = new Hangfire.Console2($this);
 
-
-            if (index === 0) {
-                debugger;
-                // poll on the first console
-                c.poll();
-            }
-        });
+        //    if (index === 0) {
+        //        debugger;
+        //        // poll on the first console
+        //        c.poll();
+        //    }
+        //});
     }
 });

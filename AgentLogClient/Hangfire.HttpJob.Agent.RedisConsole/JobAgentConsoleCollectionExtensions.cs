@@ -14,7 +14,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         {
             serviceCollection.AddOptions();
             serviceCollection.TryAddSingleton<IConfigureOptions<RedisStorageOptions>, RedisConsoleOptions>();
-            serviceCollection.TryAddSingleton<IConsoleStorage, RedisStorage>();
+            serviceCollection.TryAddSingleton<IHangfireStorage, RedisStorage>();
             serviceCollection.TryAddTransient<IHangfireConsole, RedisConsole>();
             return serviceCollection;
         }

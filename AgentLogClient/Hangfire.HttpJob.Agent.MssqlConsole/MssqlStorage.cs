@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Hangfire.HttpJob.Agent.MssqlConsole
 {
-    public class MssqlStorage : IConsoleStorage, IDisposable
+    public class MssqlStorage : IHangfireStorage, IDisposable
     {
         private readonly MssqlStorageOptions _options;
 

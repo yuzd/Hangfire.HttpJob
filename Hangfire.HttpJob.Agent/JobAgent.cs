@@ -71,10 +71,39 @@ namespace Hangfire.HttpJob.Agent
 
         public abstract Task OnStart(JobContext jobContext);
         public abstract void OnStop(JobContext jobContext);
-        public abstract void OnException(JobContext jobContext,Exception ex);
+
+        /// <summary>
+        /// job实例如果不实现的话 就会走默认的 
+        /// </summary>
+        /// <param name="jobContext"></param>
+        /// <param name="ex"></param>
+        public virtual void OnException(JobContext jobContext, Exception ex)
+        {
+            //这个变成虚方法了 如果job不实现的话 设置.
+            ReportToHangfireServer(jobContext, ex);
+        }
+
+        /// <summary>
+        /// 上报 不管成功还是错误 一个job只会上报一次
+        /// </summary>
+        /// <param name="jobContext"></param>
+        /// <param name="ex"></param>
+        private void ReportToHangfireServer(JobContext jobContext, Exception ex)
+        {
+            try
+            {
+                var key = "_agent_result_";
+                var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
+                jobContext.HangfireStorage.AddToSet(key,value,1);
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+        }
 
 
-        internal void Run(JobItem jobItem, IHangfireConsole console, ConcurrentDictionary<string, string> headers)
+        internal void Run(JobItem jobItem, IHangfireConsole console, IHangfireStorage storage,ConcurrentDictionary<string, string> headers)
         {
             if (JobStatus == JobStatus.Running) return;
             lock (this)
@@ -87,20 +116,30 @@ namespace Hangfire.HttpJob.Agent
                     Param = Param,
                     JobItem = jobItem,
                     Console = console,
-                    Headers = headers
+                    Headers = headers,
+                    HangfireStorage = storage
                 };
                 thd = new Thread(async () => { await start(jobContext); });
                 thd.Start();
             }
         }
 
-        internal void Stop(JobItem jobItem, IHangfireConsole console, ConcurrentDictionary<string, string> headers)
+        internal void Stop(JobItem jobItem, IHangfireConsole console,IHangfireStorage storage, ConcurrentDictionary<string, string> headers)
         {
             if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
                 return;
 
             lock (this)
             {
+                JobContext jobContext = new JobContext
+                {
+                    Param = Param,
+                    JobItem = jobItem,
+                    Console = console,
+                    Headers = headers,
+                    HangfireStorage = storage
+                };
+                var isErrorReport = false;
                 try
                 {
                     if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
@@ -118,13 +157,6 @@ namespace Hangfire.HttpJob.Agent
                     }
 
                     JobStatus = JobStatus.Stopping;
-                    var jobContext = new JobContext
-                    {
-                        Param = Param,
-                        JobItem = jobItem,
-                        Console = console,
-                        Headers = headers
-                    };
                     OnStop(jobContext);
                 }
                 catch (Exception e)
@@ -138,23 +170,19 @@ namespace Hangfire.HttpJob.Agent
                     e.Data.Add("AgentClass", AgentClass);
                     try
                     {
-                        var jobContext = new JobContext
-                        {
-                            Param = Param,
-                            JobItem = jobItem,
-                            Console = console,
-                            Headers = headers
-                        };
                         OnException(jobContext,e);
                     }
-                    catch (Exception)
+                    catch (Exception ex2)
                     {
-                        //ignore
+                        //自己overide OnException了 但是里面又抛出异常了
+                        ReportToHangfireServer(jobContext, ex2);
+                        isErrorReport = true;
                     }
                 }
 
                 JobStatus = JobStatus.Stoped;
                 DisposeJob(console);
+                if(!isErrorReport) ReportToHangfireServer(jobContext, null);
             }
         }
 
@@ -163,6 +191,7 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         private async Task start(JobContext jobContext)
         {
+            var isErrorReport = false;
             try
             {
                 if (JobStatus == JobStatus.Running) return;
@@ -193,14 +222,17 @@ namespace Hangfire.HttpJob.Agent
                 {
                     OnException(jobContext,e);
                 }
-                catch (Exception)
+                catch (Exception ex2)
                 {
-                    //ignore
+                    //自己overide OnException了 但是里面又抛出异常了
+                    ReportToHangfireServer(jobContext, ex2);
+                    isErrorReport = true;
                 }
             }
 
             JobStatus = JobStatus.Stoped;
             DisposeJob(jobContext.Console);
+            if(!isErrorReport) ReportToHangfireServer(jobContext, null);
         }
 
         private void WriteToDashBordConsole(IHangfireConsole console, string message)

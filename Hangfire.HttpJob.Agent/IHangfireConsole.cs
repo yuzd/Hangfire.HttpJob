@@ -5,7 +5,7 @@ using System.Text;
 namespace Hangfire.HttpJob.Agent
 {
 
-    public interface IConsoleStorage
+    public interface IHangfireStorage
     {
         void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
 

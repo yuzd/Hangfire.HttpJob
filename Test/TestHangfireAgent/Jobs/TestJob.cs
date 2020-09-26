@@ -45,6 +45,7 @@ namespace TestHangfireAgent.Jobs
 
         public override void OnStop(JobContext jobContext)
         {
+            jobContext.Console.WriteLine("接收到stop指令", ConsoleFontColor.Cyan);
             _logger.LogInformation(nameof(OnStop));
         }
 
