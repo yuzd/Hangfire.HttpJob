@@ -20,7 +20,7 @@ namespace Hangfire.HttpJob.Support
         }
 
         [JsonIgnore]
-        public DateTime FailedAt { get; }
+        public DateTime FailedAt { get; set; }
 
         [JsonIgnore]
         public string Name => StateName;

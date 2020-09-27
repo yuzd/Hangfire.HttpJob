@@ -94,7 +94,13 @@ namespace Hangfire.HttpJob.Agent
             {
                 var key = "_agent_result_";
                 var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
-                jobContext.HangfireStorage.AddToSet(key,value,1);
+                
+                jobContext.HangfireStorage.AddToSet(key,jobContext.JobItem.JobId,1);
+                
+                jobContext.HangfireStorage.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(jobContext.JobItem.JobId,value)
+                });
             }
             catch (Exception)
             {

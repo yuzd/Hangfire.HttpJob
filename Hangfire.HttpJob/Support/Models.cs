@@ -4,6 +4,32 @@ using System.Text;
 
 namespace Hangfire.HttpJob.Support
 {
+    public class PauseRecurringJob
+    {
+        public string Id { get; set; }
+    }
+
+
+    public class JobDetailInfo
+    {
+        public string JobName { get; set; }
+        public string Info { get; set; }
+    }
+
+    public class JobAgentResult
+    {
+        public string Id { get; set; }
+        public string R { get; set; }
+        public string E { get; set; }
+    }
+
+    public class ConsoleInfo
+    {
+        public string SetKey { get; set; }
+        public string HashKey { get; set; }
+        public DateTime StartTime { get; set; }
+    }
+
     internal class ConsoleId : IEquatable<ConsoleId>
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -36,7 +62,7 @@ namespace Hangfire.HttpJob.Support
                 throw new ArgumentNullException(nameof(jobId));
 
             JobId = jobId;
-            Timestamp = (long)(timestamp - UnixEpoch).TotalMilliseconds;
+            Timestamp = (long) (timestamp - UnixEpoch).TotalMilliseconds;
 
             if (Timestamp <= 0 || Timestamp > int.MaxValue * 1000L)
                 throw new ArgumentOutOfRangeException(nameof(timestamp));
@@ -78,7 +104,7 @@ namespace Hangfire.HttpJob.Support
                 timestamp = (timestamp << 4) + x;
             }
 
-            return new ConsoleId(value.Substring(11), timestamp) { _cachedString = value };
+            return new ConsoleId(value.Substring(11), timestamp) {_cachedString = value};
         }
 
         /// <inheritdoc />
@@ -88,7 +114,7 @@ namespace Hangfire.HttpJob.Support
             if (ReferenceEquals(other, this)) return true;
 
             return other.Timestamp == Timestamp
-                && other.JobId == JobId;
+                   && other.JobId == JobId;
         }
 
         /// <inheritdoc />
@@ -102,7 +128,7 @@ namespace Hangfire.HttpJob.Support
                 for (var i = 0; i < 11; i++, timestamp >>= 4)
                 {
                     var c = timestamp & 0x0F;
-                    buffer[i] = (c < 10) ? (char)(c + '0') : (char)(c - 10 + 'a');
+                    buffer[i] = (c < 10) ? (char) (c + '0') : (char) (c - 10 + 'a');
                 }
 
                 JobId.CopyTo(0, buffer, 11, JobId.Length);

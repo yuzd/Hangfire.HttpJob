@@ -7,6 +7,10 @@ namespace Hangfire.HttpJob.Agent
 {
     public class JobContext
     {
+        public JobContext()
+        {
+            
+        }
         public string Param { get; set; }
         public IHangfireConsole Console { get; set; }
 
