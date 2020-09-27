@@ -197,6 +197,8 @@ namespace Hangfire.HttpJob.Support
                     {
                         context.CandidateState = new ErrorState(jobResult);
                     }
+
+                    return;
                 }
 
                 //先第一步会变成执行中的状态

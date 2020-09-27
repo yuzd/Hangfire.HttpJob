@@ -3,14 +3,26 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 
 namespace Hangfire.HttpJob.Agent
 {
     public class JobContext
-    {
+    { 
+        private Stopwatch _stopwatch;
+
+        public JobContext()
+        {
+            CancelToken = new CancellationTokenSource();
+        }
+        public JobContext(CancellationTokenSource cancelToken)
+        {
+            CancelToken = cancelToken;
+        }
+        
         #region Stopwatch
 
-        private Stopwatch _stopwatch;
+       
         
         internal void StartWatch()
         {
@@ -33,6 +45,9 @@ namespace Hangfire.HttpJob.Agent
         
         
         public string Param { get; set; }
+
+        public CancellationTokenSource CancelToken { get; }
+
         public IHangfireConsole Console { get; set; }
 
         public JobItem JobItem { get; internal set; }

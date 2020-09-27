@@ -24,10 +24,14 @@ namespace Hangfire.HttpJob.Agent
         internal volatile bool Singleton = true;
 
         /// <summary>
-        ///     线程
+        /// 线程
         /// </summary>
-        private Thread thd;
-
+        private Task runTask;
+        
+        /// <summary>
+        ///     取消
+        /// </summary>
+        private CancellationTokenSource _cancelToken;
 
         /// <summary>
         ///     运行参数
@@ -70,7 +74,16 @@ namespace Hangfire.HttpJob.Agent
         internal event EventHandler<TransitentJobDisposeArgs> TransitentJobDisposeEvent;
 
         public abstract Task OnStart(JobContext jobContext);
-        public abstract void OnStop(JobContext jobContext);
+
+        /// <summary>
+        /// 接收hangfire调度的stop指令
+        /// </summary>
+        /// <param name="jobContext"></param>
+        public virtual Task OnStop(JobContext jobContext)
+        {
+            this._cancelToken?.Cancel();
+            return Task.CompletedTask;
+        }
 
         /// <summary>
         /// job实例如果不实现的话 就会走默认的 
@@ -97,13 +110,14 @@ namespace Hangfire.HttpJob.Agent
                 var key = "_agent_result_";
                 var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
                 
-                jobContext.HangfireStorage.AddToSet(key,jobContext.JobItem.JobId,1);
-                
                 jobContext.HangfireStorage.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
                 {
                     //拿到实际的执行时间
                     new KeyValuePair<string, string>(excuteTime+"",value)
                 });
+                
+                jobContext.HangfireStorage.AddToSet(key,jobContext.JobItem.JobId,1);
+                
             }
             catch (Exception)
             {
@@ -119,8 +133,9 @@ namespace Hangfire.HttpJob.Agent
             {
                 if (JobStatus == JobStatus.Running) return;
                 _mainThread = new ManualResetEvent(false);
+                _cancelToken = new CancellationTokenSource();
                 Param = jobItem.JobParam;
-                var jobContext = new JobContext
+                var jobContext = new JobContext(_cancelToken)
                 {
                     Param = Param,
                     JobItem = jobItem,
@@ -128,11 +143,23 @@ namespace Hangfire.HttpJob.Agent
                     Headers = headers,
                     HangfireStorage = storage
                 };
-                thd = new Thread(async () =>
-                {    
-                    await start(jobContext);
-                });
-                thd.Start();
+
+                if (this.Hang)
+                {
+                    runTask = Task.Factory.StartNew(async () => {
+                        await start(jobContext);
+                    }, TaskCreationOptions.LongRunning).Unwrap();
+                }
+                else
+                {
+                    runTask = Task.Factory.StartNew(async () => {
+                        await start(jobContext);
+                    }).Unwrap();
+                }
+                
+                runTask.ContinueWith(
+                    _ => { ReportToHangfireServer(jobContext,new TaskSchedulerException("runTask fail:"+_?.Exception?.Message)); }, 
+                    TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -143,7 +170,7 @@ namespace Hangfire.HttpJob.Agent
 
             lock (this)
             {
-                JobContext jobContext = new JobContext
+                JobContext jobContext = new JobContext(_cancelToken)
                 {
                     Param = Param,
                     JobItem = jobItem,
@@ -152,49 +179,61 @@ namespace Hangfire.HttpJob.Agent
                     HangfireStorage = storage
                 };
                 jobContext.StartWatch();
+                
+                if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
+                    return;
+                
+                if (Hang)
+                {
+                    _mainThread?.Set();
+                }
+                
+                Task.Factory.StartNew(async () => {
+                    await stop(jobContext);
+                }).Unwrap();
+            }
+        }
+
+        private async Task stop(JobContext jobContext)
+        {
+            try
+            {
+                if (Hang)
+                {
+                    WriteToDashBordConsole(jobContext.Console, $"【Job Hang OnStop】{AgentClass}");
+                }
+                else
+                {
+                    WriteToDashBordConsole(jobContext.Console,
+                        $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop】{AgentClass}");
+                }
+
+                JobStatus = JobStatus.Stopping;
+                await OnStop(jobContext);
+            }
+            catch (Exception e)
+            {
+                WriteToDashBordConsole(jobContext.Console, Hang
+                    ? $"【HangJob OnStop With Error】{AgentClass}，ex：{e.Message}"
+                    : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop With Error】{AgentClass}，ex：{e.Message}");
+
+
+                e.Data.Add("Method", "OnStop");
+                e.Data.Add("AgentClass", AgentClass);
                 try
                 {
-                    if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
-                        return;
-
-                    if (Hang)
-                    {
-                        WriteToDashBordConsole(console, $"【Job Hang OnStop】{AgentClass}");
-                        _mainThread.Set();
-                    }
-                    else
-                    {
-                        WriteToDashBordConsole(console,
-                            $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop】{AgentClass}");
-                    }
-
-                    JobStatus = JobStatus.Stopping;
-                    OnStop(jobContext);
+                    OnException(jobContext,e);
                 }
-                catch (Exception e)
+                catch (Exception ex2)
                 {
-                    WriteToDashBordConsole(console, Hang
-                        ? $"【HangJob OnStop With Error】{AgentClass}，ex：{e.Message}"
-                        : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop With Error】{AgentClass}，ex：{e.Message}");
-
-
-                    e.Data.Add("Method", "OnStop");
-                    e.Data.Add("AgentClass", AgentClass);
-                    try
-                    {
-                        OnException(jobContext,e);
-                    }
-                    catch (Exception ex2)
-                    {
-                        //自己overide OnException了 但是里面又抛出异常了
-                        ReportToHangfireServer(jobContext, ex2);
-                    }
+                    //自己overide OnException了 但是里面又抛出异常了
+                    ReportToHangfireServer(jobContext, ex2);
                 }
-
-                JobStatus = JobStatus.Stoped;
-                DisposeJob(console);
-                ReportToHangfireServer(jobContext, null);
             }
+
+            JobStatus = JobStatus.Stoped;
+            DisposeJob(jobContext.Console);
+            ReportToHangfireServer(jobContext, null);
         }
 
         /// <summary>
@@ -216,6 +255,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     WriteToDashBordConsole(jobContext.Console, $"【Job Hang Success】{AgentClass}");
                     _mainThread.WaitOne();
+                    _mainThread = null;
                 }
             }
             catch (Exception e)
@@ -274,21 +314,9 @@ namespace Hangfire.HttpJob.Agent
             if (JobStatus == JobStatus.Running && StartTime != null)
             {
                 list.Add($"RunningTime:【{CodingUtil.ParseTimeSeconds((int)(DateTime.Now - StartTime.Value).TotalSeconds)}】");
-                if (thd != null)
+                if (this.runTask != null)
                 {
-                    list.Add($"ThreadState:【{thd.ThreadState.ToString()}】");
-                    try
-                    {
-                        //如果线程被挂起了 结束线程
-                        if (thd.ThreadState == ThreadState.Suspended)
-                        {
-                            thd.Abort();
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //ignore
-                    }
+                    list.Add($"ThreadState:【{runTask.Status.ToString()}】");
                 }
             }
             return string.Join("\r\n", list);
@@ -307,7 +335,6 @@ namespace Hangfire.HttpJob.Agent
             try
             {
                 if (!Singleton) TransitentJobDisposeEvent?.Invoke(null, new TransitentJobDisposeArgs(AgentClass, Guid));
-                _mainThread?.Dispose();
             }
             catch (Exception)
             {
@@ -316,29 +343,6 @@ namespace Hangfire.HttpJob.Agent
 
         }
 
-        /// <summary>
-        /// 停止线程
-        /// </summary>
-        /// <param name="console"></param>
-        protected void Abort(IHangfireConsole console = null)
-        {
-           
-            try
-            {
-                //停止线程
-                this.thd?.Abort();
-
-                if (console != null)
-                {
-                    WriteToDashBordConsole(console, Hang
-                        ? $"【HangJob Abort】{AgentClass}"
-                        : $"【{(Singleton ? "SingletonJob" : "TransientJob")} Abort】{AgentClass}");
-                }
-            }
-            catch (Exception)
-            {
-                //ignore
-            }
-        }
+        
     }
 }

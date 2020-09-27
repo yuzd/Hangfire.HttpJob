@@ -58,7 +58,7 @@ namespace Hangfire.HttpJob.Server
                             long latency = (long) totalMilliseconds;
 
                             //如果job存在 但是没有拿到hash数据 认为成功
-                            if (!result.Any())
+                            if (result == null || !result.Any())
                             {
                                 tran.SetJobState(jobId, new SucceededState(jobId, latency, latency));
                                 tran.RemoveFromSet(keyPrefix, jobId);
