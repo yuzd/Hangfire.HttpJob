@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Data;
 using Hangfire.MySql;
 using Hangfire.Tags;
-using Hangfire.Tags.Mysql;
+using Hangfire.Tags.MySql;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -89,7 +89,7 @@ namespace TestHangfire
                     //    return false;
                     //}
                 })
-                .UseTagsWithMysql(sqlOptions: mysqlOption);
+                .UseTagsWithMySql(sqlOptions:mysqlOption);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
