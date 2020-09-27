@@ -65,7 +65,7 @@ namespace Hangfire.HttpJob
             }
 
             CodingUtil.HangfireHttpJobOptions = options;
-
+            JobAgentServer.Start();
             return config;
         }
 

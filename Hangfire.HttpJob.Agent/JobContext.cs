@@ -20,8 +20,13 @@ namespace Hangfire.HttpJob.Agent
         internal long GetElapsedMilliseconds()
         {
             if (_stopwatch == null) return 0;
-            _stopwatch.Stop();
-            return (long)_stopwatch.ElapsedMilliseconds;
+            lock (_stopwatch)
+            {
+                _stopwatch.Stop();
+                var result = (long)_stopwatch.ElapsedMilliseconds;
+                _stopwatch = null;
+                return result;
+            }
         }
 
         #endregion

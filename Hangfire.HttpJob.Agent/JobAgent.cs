@@ -92,6 +92,8 @@ namespace Hangfire.HttpJob.Agent
         {
             try
             {
+                var excuteTime = jobContext.GetElapsedMilliseconds();
+                if (excuteTime < 1) return;
                 var key = "_agent_result_";
                 var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
                 
@@ -100,7 +102,7 @@ namespace Hangfire.HttpJob.Agent
                 jobContext.HangfireStorage.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
                 {
                     //拿到实际的执行时间
-                    new KeyValuePair<string, string>(jobContext.GetElapsedMilliseconds()+"",value)
+                    new KeyValuePair<string, string>(excuteTime+"",value)
                 });
             }
             catch (Exception)
@@ -150,7 +152,6 @@ namespace Hangfire.HttpJob.Agent
                     HangfireStorage = storage
                 };
                 jobContext.StartWatch();
-                var isErrorReport = false;
                 try
                 {
                     if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
@@ -187,13 +188,12 @@ namespace Hangfire.HttpJob.Agent
                     {
                         //自己overide OnException了 但是里面又抛出异常了
                         ReportToHangfireServer(jobContext, ex2);
-                        isErrorReport = true;
                     }
                 }
 
                 JobStatus = JobStatus.Stoped;
                 DisposeJob(console);
-                if(!isErrorReport) ReportToHangfireServer(jobContext, null);
+                ReportToHangfireServer(jobContext, null);
             }
         }
 
@@ -202,7 +202,6 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         private async Task start(JobContext jobContext)
         {
-            var isErrorReport = false;
             try
             {
                 if (JobStatus == JobStatus.Running) return;
@@ -236,12 +235,11 @@ namespace Hangfire.HttpJob.Agent
                 {
                     //自己overide OnException了 但是里面又抛出异常了
                     ReportToHangfireServer(jobContext, ex2);
-                    isErrorReport = true;
                 }
             }
             JobStatus = JobStatus.Stoped;
             DisposeJob(jobContext.Console);
-            if(!isErrorReport) ReportToHangfireServer(jobContext, null);
+            ReportToHangfireServer(jobContext, null);
         }
 
         private void WriteToDashBordConsole(IHangfireConsole console, string message)

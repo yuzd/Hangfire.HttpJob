@@ -16,10 +16,15 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 每隔2s获取一次
         /// </summary>
-        private static readonly System.Threading.Timer mDetectionTimer  = new System.Threading.Timer(OnVerify, null, 1000 * 2, 1000 * 2);
+        private static  System.Threading.Timer mDetectionTimer ;
 
         private static string keyPrefix = "_agent_result_";
 
+        public static void Start()
+        {
+            mDetectionTimer  = new System.Threading.Timer(OnVerify, null, 1000 * 2, 1000 * 2);
+        }
+        
         private static void OnVerify(object state)
         {
             mDetectionTimer.Change(-1, -1);
@@ -48,7 +53,7 @@ namespace Hangfire.HttpJob.Server
                                 tran.Commit();
                                 continue;
                             }
-
+                            
                             double totalMilliseconds = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                             long latency = (long) totalMilliseconds;
 
@@ -86,12 +91,14 @@ namespace Hangfire.HttpJob.Server
                             // realTotalMilliseconds 代表的是 jobagent开始执行 到 实际结束的 总共的时长
                             if (isSuccess)
                             {
-                                tran.SetJobState(jobId, new SucceededState(jobId, latency, realTotalMilliseconds));
+                                new BackgroundJobClient().ChangeState(jobId, new SucceededState(null, latency, realTotalMilliseconds));
                             }
                             else
                             {
-                                tran.SetJobState(jobId, new ErrorState(resultData.E,"JobAgent"));
+                                new BackgroundJobClient().ChangeState(jobId, new FailedState(new AgentJobException((jobData.Job.Args.FirstOrDefault() as HttpJobItem).AgentClass,resultData.E)));
                             }
+                            
+                            //出错的话 需要走通用的出错流程
                             tran.Commit();
                         }
                     }
