@@ -99,7 +99,8 @@ namespace Hangfire.HttpJob.Agent
                 
                 jobContext.HangfireStorage.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>(jobContext.JobItem.JobId,value)
+                    //拿到实际的执行时间
+                    new KeyValuePair<string, string>(jobContext.GetElapsedMilliseconds()+"",value)
                 });
             }
             catch (Exception)
@@ -125,7 +126,10 @@ namespace Hangfire.HttpJob.Agent
                     Headers = headers,
                     HangfireStorage = storage
                 };
-                thd = new Thread(async () => { await start(jobContext); });
+                thd = new Thread(async () =>
+                {    
+                    await start(jobContext);
+                });
                 thd.Start();
             }
         }
@@ -145,6 +149,7 @@ namespace Hangfire.HttpJob.Agent
                     Headers = headers,
                     HangfireStorage = storage
                 };
+                jobContext.StartWatch();
                 var isErrorReport = false;
                 try
                 {
@@ -203,11 +208,10 @@ namespace Hangfire.HttpJob.Agent
                 if (JobStatus == JobStatus.Running) return;
                 StartTime = DateTime.Now;
                 JobStatus = JobStatus.Running;
-
                 WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob OnStart】{AgentClass}"
                     : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStart】{AgentClass}");
-
+                jobContext.StartWatch();   
                 await OnStart(jobContext);
                 if (Hang)
                 {
@@ -235,7 +239,6 @@ namespace Hangfire.HttpJob.Agent
                     isErrorReport = true;
                 }
             }
-
             JobStatus = JobStatus.Stoped;
             DisposeJob(jobContext.Console);
             if(!isErrorReport) ReportToHangfireServer(jobContext, null);

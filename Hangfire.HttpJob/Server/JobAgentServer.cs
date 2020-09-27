@@ -62,8 +62,8 @@ namespace Hangfire.HttpJob.Server
                                 continue;
                             }
 
-                            var resultAagent = result.First();
-                            JobAgentResult resultData = CodingUtil.FromJson<JobAgentResult>(resultAagent.Value);
+                            var resultOfAgent = result.First();
+                            JobAgentResult resultData = CodingUtil.FromJson<JobAgentResult>(resultOfAgent.Value);
 
                             //异常数据 认为成功
                             if (resultData == null)
@@ -76,10 +76,9 @@ namespace Hangfire.HttpJob.Server
                             }
 
                             //jobagent实际上运行的时长
-                            long.TryParse(resultAagent.Key, out var realTotalMilliseconds);
+                            long.TryParse(resultOfAgent.Key, out var realTotalMilliseconds);
                             if (realTotalMilliseconds < 1) realTotalMilliseconds = latency;
                             var isSuccess = resultData.R == "ok";
-
                             tran.RemoveFromSet(keyPrefix, jobId);
                             tran.RemoveHash(hashKey);
                             

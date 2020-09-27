@@ -1,16 +1,32 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Hangfire.HttpJob.Agent
 {
     public class JobContext
     {
-        public JobContext()
+        #region Stopwatch
+
+        private Stopwatch _stopwatch;
+        
+        internal void StartWatch()
         {
-            
+            _stopwatch = Stopwatch.StartNew();
         }
+
+        internal long GetElapsedMilliseconds()
+        {
+            if (_stopwatch == null) return 0;
+            _stopwatch.Stop();
+            return (long)_stopwatch.ElapsedMilliseconds;
+        }
+
+        #endregion
+        
+        
         public string Param { get; set; }
         public IHangfireConsole Console { get; set; }
 
