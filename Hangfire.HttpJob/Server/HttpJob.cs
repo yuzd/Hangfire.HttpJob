@@ -437,7 +437,7 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 发送失败通知
         /// </summary>
-        private static void SendFail(string jobId, HttpJobItem item, string result, Exception exception)
+        internal static void SendFail(string jobId, HttpJobItem item, string result, Exception exception)
         {
             new Task(() =>
             {

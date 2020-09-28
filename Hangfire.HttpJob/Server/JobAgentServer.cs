@@ -95,7 +95,10 @@ namespace Hangfire.HttpJob.Server
                             }
                             else
                             {
-                                new BackgroundJobClient().ChangeState(jobId, new FailedState(new AgentJobException((jobData.Job.Args.FirstOrDefault() as HttpJobItem).AgentClass,resultData.E)));
+                                var jobItem = jobData.Job.Args.FirstOrDefault() as HttpJobItem;
+                                var ex = new AgentJobException(jobItem.AgentClass, resultData.E);
+                                new BackgroundJobClient().ChangeState(jobId, new FailedState(ex));
+                                HttpJob.SendFail(jobId,jobItem,"AgentJobFail",ex);
                             }
                             
                             //出错的话 需要走通用的出错流程
