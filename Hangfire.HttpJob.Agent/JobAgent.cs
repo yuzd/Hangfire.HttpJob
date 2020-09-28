@@ -110,13 +110,13 @@ namespace Hangfire.HttpJob.Agent
                 var key = "_agent_result_";
                 var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
                 
-                jobContext.HangfireStorage.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
+                jobContext.HangfireStorage?.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
                 {
                     //拿到实际的执行时间
                     new KeyValuePair<string, string>(excuteTime+"",value)
                 });
                 
-                jobContext.HangfireStorage.AddToSet(key,jobContext.JobItem.JobId,1);
+                jobContext.HangfireStorage?.AddToSet(key,jobContext.JobItem.JobId,1);
                 
             }
             catch (Exception)
@@ -316,7 +316,15 @@ namespace Hangfire.HttpJob.Agent
                 list.Add($"RunningTime:【{CodingUtil.ParseTimeSeconds((int)(DateTime.Now - StartTime.Value).TotalSeconds)}】");
                 if (this.runTask != null)
                 {
-                    list.Add($"ThreadState:【{runTask.Status.ToString()}】");
+                    try
+                    {
+                        list.Add($"ThreadState:【{runTask.Status.ToString()}】");
+                    }
+                    catch (Exception)
+                    {
+                        //ignore Dispose
+                    }
+
                 }
             }
             return string.Join("\r\n", list);
@@ -335,6 +343,8 @@ namespace Hangfire.HttpJob.Agent
             try
             {
                 if (!Singleton) TransitentJobDisposeEvent?.Invoke(null, new TransitentJobDisposeArgs(AgentClass, Guid));
+
+                runTask?.Dispose();
             }
             catch (Exception)
             {
