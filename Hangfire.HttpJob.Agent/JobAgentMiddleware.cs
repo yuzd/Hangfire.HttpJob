@@ -49,6 +49,7 @@ namespace Hangfire.HttpJob.Agent
                 var jobBody = httpContext.Request.Headers["x-job-body"].ToString();
                 var jobUrl = httpContext.Request.Headers["x-job-url"].ToString();
                 var runJobId = httpContext.Request.Headers["x-job-id"].ToString();
+                var storage = httpContext.Request.Headers["x-job-storage"].ToString();
                 if (!string.IsNullOrEmpty(jobBody))//是base64的
                 {
                     jobBody = Encoding.UTF8.GetString(Convert.FromBase64String(jobBody));
@@ -67,6 +68,8 @@ namespace Hangfire.HttpJob.Agent
                     return;
                 }
 
+                
+
                 JobItem jobItem = null;
                 if (!string.IsNullOrEmpty(jobBody))
                 {
@@ -79,6 +82,25 @@ namespace Hangfire.HttpJob.Agent
                 {
                     jobUrl = Encoding.UTF8.GetString(Convert.FromBase64String(jobUrl));
                     jobItem.JobDetailUrl = jobUrl;
+                }
+
+                //本地没有配置过 从服务端里面拿
+                if (JobStorageConfig.LocalJobStorageConfig != null && string.IsNullOrEmpty(JobStorageConfig.LocalJobStorageConfig.HangfireDb) && !string.IsNullOrEmpty(storage))
+                {
+                    jobItem.Storage = Newtonsoft.Json.JsonConvert.DeserializeObject<JobStorageConfig>(Encoding.UTF8.GetString(Convert.FromBase64String(storage)));
+                    if(jobItem.Storage.Type != JobStorageConfig.LocalJobStorageConfig.Type)
+                    {
+                        message = $"err:x-job-agent-type use storage： {JobStorageConfig.LocalJobStorageConfig.Type} ，but hangfire server storage is {jobItem.Storage.Type}，please check!";
+                        _logger.LogError(message);
+                        return;
+                    }
+
+                    if (string.IsNullOrEmpty(jobItem.Storage.HangfireDb))
+                    {
+                        message = $"err:x-job-agent-type use invaild storage config，please check!";
+                        _logger.LogError(message);
+                        return;
+                    }
                 }
 
                 jobItem.JobId = runJobId;
@@ -179,6 +201,8 @@ namespace Hangfire.HttpJob.Agent
                     jobAgentList.TryAdd(job.Guid,job);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1);
                     jobItem.JobParam = requestBody;
+                    //如果本地没有配置 远程配置了
+
                     var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
                     job.Run(jobItem, console, jobStorage, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";

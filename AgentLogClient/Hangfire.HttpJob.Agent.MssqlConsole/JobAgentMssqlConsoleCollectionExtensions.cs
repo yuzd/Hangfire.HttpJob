@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Hangfire.HttpJob.Agent.Config;
 using Hangfire.HttpJob.Agent.MssqlConsole.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,22 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
 {
     public static class JobAgentMssqlConsoleCollectionExtensions
     {
+        public static IServiceCollection AddHangfireJobAgent(this IServiceCollection services, Action<JobAgentServiceConfigurer> configure = null)
+        {
+            services.AddHangfireHttpJobAgent(configure);
+            services.AddJobAgentConsoleToSqlServer();
+            return services;
+        }
+
+
+        public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MssqlConsoleOptionsConfigurer> configureStorageOptions = null)
+        {
+            app.UseHangfireHttpJobAgent(configureOptions);
+            app.UseJobAgentConsoleToSqlServer(configureStorageOptions);
+            return app;
+        }
+
         public static IServiceCollection AddJobAgentConsoleToSqlServer(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddOptions();
@@ -37,16 +54,12 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
                 logger.LogCritical(evt, exception, "【Hangfire.HttpJob.Agent.MssqlConsole】 - Failed to configure Hangfire.HttpJob.Agent.MssqlConsole middleware");
             }
 
-            if (options.Value == null)
+            JobStorageConfig.LocalJobStorageConfig = new JobStorageConfig
             {
-                logger.LogCritical(evt, "【Hangfire.HttpJob.Agent.MssqlConsole】 - MssqlStorageOptions can not be null");
-                return app;
-            }
-
-            if (string.IsNullOrEmpty(options.Value.HangfireDb))
-            {
-                throw new ArgumentException(nameof(MssqlStorageOptions.HangfireDb));
-            }
+                Type = "sqlserver",
+                HangfireDb = options.Value?.HangfireDb,
+                ExpireAtDays = options.Value?.ExpireAtDays
+            };
 
             logger.LogInformation(evt, "【Hangfire.HttpJob.Agent.MssqlConsole】 - Registered MssqlConsole middleware Success!");
 

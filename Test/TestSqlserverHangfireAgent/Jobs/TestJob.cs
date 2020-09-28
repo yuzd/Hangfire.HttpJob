@@ -19,13 +19,19 @@ namespace TestSqlserverHangfireAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            jobContext.Console.WriteLine("开始等待10秒");
-            await Task.Delay(1000 * 10);
-            jobContext.Console.WriteLine("结束等待10秒");
-            jobContext.Console.WriteLine("哈哈哈哈",ConsoleFontColor.Cyan);
-            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
+            jobContext.Console.WriteLine("开始等待1秒");
+            await Task.Delay(1000 * 1);
+            jobContext.Console.WriteLine("结束等待1秒");
+            jobContext.Console.WriteLine("开始测试Progressbar", ConsoleFontColor.Cyan);
+
+            var bar = jobContext.Console.WriteProgressBar("testbar");
+            for (int i = 0; i < 10; i++)
+            {
+                bar.SetValue(i * 10);
+                await Task.Delay(1000);
+            }
         }
 
-     
+
     }
 }

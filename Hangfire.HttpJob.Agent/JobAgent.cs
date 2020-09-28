@@ -81,7 +81,11 @@ namespace Hangfire.HttpJob.Agent
         /// <param name="jobContext"></param>
         public virtual Task OnStop(JobContext jobContext)
         {
-            this._cancelToken?.Cancel();
+            lock (this)
+            {
+                this._cancelToken?.Cancel();
+            }
+
             return Task.CompletedTask;
         }
 

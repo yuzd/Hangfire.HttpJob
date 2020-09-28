@@ -9,16 +9,31 @@ using MySql.Data.MySqlClient;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
+
+    internal class IMysqlStorageFactory : IStorageFactory
+    {
+        public IHangfireStorage CreateHangfireStorage(JobStorageConfig config)
+        {
+            return new MySqlStorage(new MySqlStorageOptions
+            {
+                ExpireAtDays = config.ExpireAtDays ?? 7,
+                HangfireDb = config.HangfireDb,
+                TablePrefix = config.TablePrefix
+            });
+        }
+    }
+
+
     internal class MySqlStorage : IHangfireStorage, IDisposable
     {
         private readonly string _connectionString;
         private readonly MySqlStorageOptions _options;
 
-        public MySqlStorage(IOptions<MySqlStorageOptions> options)
+        public MySqlStorage(MySqlStorageOptions options)
         {
-            if (options == null || options.Value == null) throw new ArgumentNullException(nameof(MySqlStorageOptions));
-            _connectionString = options.Value.HangfireDb;
-            _options = options.Value;
+            if (options == null) throw new ArgumentNullException(nameof(MySqlStorageOptions));
+            _connectionString = options.HangfireDb;
+            _options = options;
             if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (_connectionString == null) throw new ArgumentNullException("connectionString");
 
@@ -43,6 +58,11 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                         "Could not find connection string with name '{0}' in application config file",
                         _connectionString));
             }
+        }
+
+        public MySqlStorage(IOptions<MySqlStorageOptions> options):this(options.Value)
+        {
+           
         }
 
 

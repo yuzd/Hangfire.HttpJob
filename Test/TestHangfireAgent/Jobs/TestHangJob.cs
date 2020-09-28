@@ -20,8 +20,6 @@ namespace TestHangfireAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            // await Task.Delay(1000 * 10);
-           
             jobContext.Console.WriteLine(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
             while (!jobContext.CancelToken.IsCancellationRequested)
@@ -31,9 +29,5 @@ namespace TestHangfireAgent.Jobs
             }
             jobContext.Console.WriteLine("game over");
         }
-
-       
-
-        
     }
 }

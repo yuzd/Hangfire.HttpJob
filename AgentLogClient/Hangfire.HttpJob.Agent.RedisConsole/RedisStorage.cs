@@ -8,21 +8,38 @@ using StackExchange.Redis;
 
 namespace Hangfire.HttpJob.Agent.RedisConsole
 {
+    internal class IRedisStorageFactory : IStorageFactory
+    {
+        public IHangfireStorage CreateHangfireStorage(JobStorageConfig config)
+        {
+            return new RedisStorage(new RedisStorageOptions
+            {
+                ExpireAtDays = config.ExpireAtDays ?? 7,
+                HangfireDb = config.HangfireDb,
+                DataBase = config.Db??0
+            });
+        }
+    }
+
+
     internal class RedisStorage : IHangfireStorage, IDisposable
     {
         private readonly RedisStorageOptions _options;
         private readonly IDatabase _redis;
         private readonly ConnectionMultiplexer connection;
-
-        public RedisStorage(IOptions<RedisStorageOptions> options)
+        public RedisStorage(RedisStorageOptions options)
         {
-            if (options == null || options.Value == null) throw new ArgumentNullException(nameof(RedisStorageOptions));
-            var connectionString = options.Value.HangfireDb;
-            _options = options.Value;
+            if (options == null ) throw new ArgumentNullException(nameof(RedisStorageOptions));
+            var connectionString = options.HangfireDb;
+            _options = options;
             if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (connectionString == null) throw new ArgumentNullException("connectionString");
             connection = ConnectionMultiplexer.Connect(connectionString);
-            _redis = connection.GetDatabase(options.Value.DataBase);
+            _redis = connection.GetDatabase(options.DataBase);
+        }
+        public RedisStorage(IOptions<RedisStorageOptions> options):this(options.Value)
+        {
+           
         }
 
         public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)

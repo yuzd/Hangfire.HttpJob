@@ -8,14 +8,32 @@ using Microsoft.Extensions.Options;
 
 namespace Hangfire.HttpJob.Agent.MssqlConsole
 {
+    internal class IMssqlStorageFactory : IStorageFactory
+    {
+        public IHangfireStorage CreateHangfireStorage(JobStorageConfig config)
+        {
+            return new MssqlStorage(new MssqlStorageOptions
+            {
+                ExpireAtDays = config.ExpireAtDays ?? 7,
+                HangfireDb = config.HangfireDb,
+                TablePrefix = config.TablePrefix
+            });
+        }
+    }
+
     public class MssqlStorage : IHangfireStorage, IDisposable
     {
         private readonly MssqlStorageOptions _options;
 
 
-        public MssqlStorage(IOptions<MssqlStorageOptions> options)
+        public MssqlStorage(IOptions<MssqlStorageOptions> options):this(options.Value)
         {
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(MssqlStorageOptions));
+            
+        }
+
+        public MssqlStorage(MssqlStorageOptions options)
+        {
+            _options = options ?? throw new ArgumentNullException(nameof(MssqlStorageOptions));
             if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (string.IsNullOrEmpty(_options.HangfireDb))
             {

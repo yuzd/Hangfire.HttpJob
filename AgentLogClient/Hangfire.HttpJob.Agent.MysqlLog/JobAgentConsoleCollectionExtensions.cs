@@ -5,11 +5,31 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using Hangfire.HttpJob.Agent.Config;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
     public static class JobAgentConsoleCollectionExtensions
     {
+
+        public static IServiceCollection AddHangfireJobAgent(this IServiceCollection services, Action<JobAgentServiceConfigurer> configure = null)
+        {
+            services.AddHangfireHttpJobAgent(configure);
+            services.AddJobAgentConsoleToMysql();
+            return services;
+        }
+
+
+
+        public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MysqlConsoleServiceConfigurer> configureStorageOptions = null)
+        {
+            app.UseHangfireHttpJobAgent(configureOptions);
+            app.UseJobAgentConsoleToMysql(configureStorageOptions);
+            return app;
+        }
+
+
         public static IServiceCollection AddJobAgentConsoleToMysql(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddOptions();
@@ -37,16 +57,13 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                 logger.LogCritical(evt, exception, "【Hangfire.HttpJob.Agent.MysqlConsole】 - Failed to configure Hangfire.HttpJob.Agent.MysqlConsole middleware");
             }
 
-            if (options.Value == null)
+            JobStorageConfig.LocalJobStorageConfig = new JobStorageConfig
             {
-                logger.LogCritical(evt, "【Hangfire.HttpJob.Agent.MysqlConsole】 - MySqlStorageOptions can not be null");
-                return app;
-            }
-
-            if (string.IsNullOrEmpty(options.Value.HangfireDb))
-            {
-                throw new ArgumentException(nameof(MySqlStorageOptions.HangfireDb));
-            }
+                Type = "mysql",
+                HangfireDb = options.Value?.HangfireDb,
+                TablePrefix = options.Value?.TablePrefix,
+                ExpireAtDays = options.Value?.ExpireAtDays
+            };
 
             logger.LogInformation(evt, "【Hangfire.HttpJob.Agent.MysqlConsole】 - Registered MysqlConsole middleware Success!");
 

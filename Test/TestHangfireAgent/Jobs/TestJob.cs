@@ -11,36 +11,23 @@ namespace TestHangfireAgent.Jobs
 {
     public class TestJob : JobAgent
     {
-        private readonly ILogger<TestJob> _logger;
-
         public TestJob(ILogger<TestJob> logger)
         {
-            _logger = logger;
-            _logger.LogInformation($"Create {nameof(TestJob)} Instance Success");
+            logger.LogInformation($"Create {nameof(TestJob)} Instance Success");
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            //jobContext.Console.WriteLine("开始等待10秒");
-            //await Task.Delay(1000 * 10);
-            //jobContext.Console.WriteLine("结束等待10秒");
+            jobContext.Console.WriteLine("开始等待1秒");
+            await Task.Delay(1000 * 1);
+            jobContext.Console.WriteLine("结束等待1秒");
             jobContext.Console.WriteLine("开始测试Progressbar",ConsoleFontColor.Cyan);
-            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
             var bar = jobContext.Console.WriteProgressBar("testbar");
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
-                bar.SetValue(i);
+                bar.SetValue(i * 10);
                 await Task.Delay(1000);
             }
-
-
-            //var list = new List<string>{"dddd","2","222"};
-
-            //foreach (var item in list.WithProgress(jobContext.Console))
-            //{
-            //    jobContext.Console.WriteLine(item);
-            //}
-
         }
 
 

@@ -640,6 +640,12 @@ namespace Hangfire.HttpJob.Server
                     request.Headers.Add("x-job-agent-header", headerKeys);
                 }
 
+                var jobstorage = GetJobStorage().Value;
+                if (!string.IsNullOrEmpty(jobstorage))
+                {
+                    request.Headers.Add("x-job-storage", Convert.ToBase64String(Encoding.UTF8.GetBytes(jobstorage)));
+                }
+
                 var consoleInfo = GetConsoleInfo(context);
                 if (consoleInfo != null)
                 {
@@ -684,6 +690,69 @@ namespace Hangfire.HttpJob.Server
 
             return request;
         }
+
+        #region 利用反射获取当前的Storage的配置参数 只支持mysql sqlserver redis
+
+        private static Lazy<string> GetJobStorage()
+        {
+            return new Lazy<string>(GetCurrentJobStorage);
+        }
+
+        private static string GetCurrentJobStorage()
+        {
+            var storage = JobStorage.Current;
+
+            var storageType = storage.GetType();
+
+            if(storageType.Name == "MySqlStorage")
+            {
+                var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
+                var _connectionString = _connectionStringField?.GetValue(storage);
+                var _storageOptionsField = storageType.GetField("_storageOptions", BindingFlags.Instance | BindingFlags.NonPublic);
+                var _storageOptions = _storageOptionsField?.GetValue(storage);
+                // TablesPrefix
+                var tablePrefixField = _storageOptions?.GetType()?.GetProperty("TablesPrefix");
+                var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+
+                if (_connectionString!=null && string.IsNullOrEmpty(_connectionString.ToString()))
+                {
+                    return "";
+                }
+                return JsonConvert.SerializeObject(new {Type="mysql",TablePrefix = tablePrefix, HangfireDb = _connectionString?.ToString()});
+            }
+            else if (storageType.Name == "SqlServerStorage")
+            {
+                var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
+                var _connectionString = _connectionStringField?.GetValue(storage);
+                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                {
+                    return "";
+                }
+                return JsonConvert.SerializeObject(new { Type = "sqlserver", HangfireDb = _connectionString?.ToString() });
+            }
+            else if (storageType.Name == "RedisStorage")
+            {
+                var _connectionStringField = storageType.GetProperty("ConnectionString");
+                var _connectionString = _connectionStringField?.GetValue(storage);
+                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                {
+                    return "";
+                }
+
+                var _dbField = storageType.GetProperty("Db");
+                var _dbString = _dbField?.GetValue(storage);
+
+                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                {
+                    return "";
+                }
+                return JsonConvert.SerializeObject(new { Type = "redis", Db = _dbString?.ToString(), HangfireDb = _connectionString?.ToString() });
+            }
+
+            return "";
+        }
+
+        #endregion
 
         /// <summary>
         /// AgentJob的话 取得Console的参数

@@ -181,6 +181,11 @@ namespace Hangfire.HttpJob.Agent
         /// 钉钉配置
         /// </summary>
         public DingTalkOption DingTalk { get; set; }
+
+        /// <summary>
+        /// 服务端传过来的storage配置
+        /// </summary>
+        internal JobStorageConfig Storage { get; set; }
     }
     public class DingTalkOption
     {
@@ -198,5 +203,16 @@ namespace Hangfire.HttpJob.Agent
         ///  通知是否@所有人
         /// </summary>
         public bool IsAtAll { get; set; }
+    }
+
+    public class JobStorageConfig
+    {
+        public static JobStorageConfig LocalJobStorageConfig;
+
+        public string Type { get; set; } 
+        public string TablePrefix { get; set; } 
+        public string HangfireDb { get; set; }
+        public int? ExpireAtDays { get; set; }
+        public int? Db { get; set; } 
     }
 }

@@ -11,7 +11,7 @@ namespace Hangfire.HttpJob.Agent
 {
     public static class JobAgentServiceCollectionExtensions
     {
-        public static IServiceCollection AddHangfireHttpJobAgent(this IServiceCollection serviceCollection, Action<JobAgentServiceConfigurer> configure)
+        public static IServiceCollection AddHangfireHttpJobAgent(this IServiceCollection serviceCollection, Action<JobAgentServiceConfigurer> configure = null)
         {
             serviceCollection.AddOptions();
             serviceCollection.TryAddSingleton<IConfigureOptions<JobAgentOptions>, ConfigureJobAgentOptions>();
@@ -27,10 +27,6 @@ namespace Hangfire.HttpJob.Agent
 
         }
 
-        public static IServiceCollection AddHangfireHttpJobAgent(this IServiceCollection serviceCollection)
-        {
-            return serviceCollection.AddHangfireHttpJobAgent(null);
-        }
 
     }
 }
