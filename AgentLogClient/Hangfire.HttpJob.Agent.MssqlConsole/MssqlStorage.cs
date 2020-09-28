@@ -19,6 +19,11 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
                 TablePrefix = config.TablePrefix
             });
         }
+
+        public IHangfireConsole CreateHangforeConsole(IHangfireStorage storage)
+        {
+            return new MssqlConsole(storage);
+        }
     }
 
     public class MssqlStorage : IHangfireStorage, IDisposable

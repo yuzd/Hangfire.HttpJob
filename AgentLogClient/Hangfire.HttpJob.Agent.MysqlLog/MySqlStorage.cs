@@ -21,6 +21,11 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                 TablePrefix = config.TablePrefix
             });
         }
+
+        public IHangfireConsole CreateHangforeConsole(IHangfireStorage storage)
+        {
+            return new MysqlConsole(storage);
+        }
     }
 
 
@@ -62,7 +67,6 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
 
         public MySqlStorage(IOptions<MySqlStorageOptions> options):this(options.Value)
         {
-           
         }
 
 

@@ -35,6 +35,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             serviceCollection.TryAddSingleton<IConfigureOptions<RedisStorageOptions>, RedisConsoleOptions>();
             serviceCollection.TryAddSingleton<IHangfireStorage, RedisStorage>();
             serviceCollection.TryAddTransient<IHangfireConsole, RedisConsole>();
+            serviceCollection.TryAddTransient<IStorageFactory, IRedisStorageFactory>();
             return serviceCollection;
         }
 
@@ -61,7 +62,8 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
                 Type = "redis",
                 HangfireDb = options.Value?.HangfireDb,
                 Db = options.Value?.DataBase,
-                ExpireAtDays = options.Value?.ExpireAtDays
+                ExpireAtDays = options.Value?.ExpireAtDays,
+                TablePrefix = options.Value?.TablePrefix
             };
 
             logger.LogInformation(evt, "【Hangfire.HttpJob.Agent.RedisConsole】 - Registered RedisConsole middleware Success!");

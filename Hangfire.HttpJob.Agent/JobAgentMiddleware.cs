@@ -87,7 +87,8 @@ namespace Hangfire.HttpJob.Agent
                 //本地没有配置过 从服务端里面拿
                 if (JobStorageConfig.LocalJobStorageConfig != null && string.IsNullOrEmpty(JobStorageConfig.LocalJobStorageConfig.HangfireDb) && !string.IsNullOrEmpty(storage))
                 {
-                    jobItem.Storage = Newtonsoft.Json.JsonConvert.DeserializeObject<JobStorageConfig>(Encoding.UTF8.GetString(Convert.FromBase64String(storage)));
+                    var storageStr = Encoding.UTF8.GetString(Convert.FromBase64String(storage));
+                    jobItem.Storage = Newtonsoft.Json.JsonConvert.DeserializeObject<JobStorageConfig>(storageStr);
                     if(jobItem.Storage.Type != JobStorageConfig.LocalJobStorageConfig.Type)
                     {
                         message = $"err:x-job-agent-type use storage： {JobStorageConfig.LocalJobStorageConfig.Type} ，but hangfire server storage is {jobItem.Storage.Type}，please check!";
@@ -101,6 +102,9 @@ namespace Hangfire.HttpJob.Agent
                         _logger.LogError(message);
                         return;
                     }
+
+                    if (jobItem.Storage.ExpireAtDays == null || jobItem.Storage.ExpireAtDays.Value < 1)
+                        jobItem.Storage.ExpireAtDays = 7;
                 }
 
                 jobItem.JobId = runJobId;
@@ -144,8 +148,9 @@ namespace Hangfire.HttpJob.Agent
                             job.AgentClass = agentClass;
                         }
 
-                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+                        var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                        
                         jobItem.JobParam = requestBody;
                         job.Run(jobItem, console, jobStorage,jobHeaders);
                         message = $"JobClass:{agentClass} run success!";
@@ -168,8 +173,10 @@ namespace Hangfire.HttpJob.Agent
                             _logger.LogWarning(message);
                             return;
                         }
-                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+
+                        var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                        
                         job.Stop(jobItem,console, jobStorage,jobHeaders);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
@@ -199,11 +206,11 @@ namespace Hangfire.HttpJob.Agent
                     job.TransitentJobDisposeEvent +=  transitentJob.JobRemove;
                     var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string,JobAgent>());
                     jobAgentList.TryAdd(job.Guid,job);
-                    var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                    jobItem.JobParam = requestBody;
-                    //如果本地没有配置 远程配置了
 
-                    var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+                    var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                    var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                    jobItem.JobParam = requestBody;
+                  
                     job.Run(jobItem, console, jobStorage, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
@@ -231,8 +238,10 @@ namespace Hangfire.HttpJob.Agent
                             stopedJobList.Add(runingJob.Value);
                             continue;
                         }
-                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        var jobStorage = httpContext.RequestServices.GetService<IHangfireStorage>();
+
+                        var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                      
                         runingJob.Value.Stop(jobItem,console, jobStorage, jobHeaders);
                         instanceCount++;
                     }
@@ -310,6 +319,18 @@ namespace Hangfire.HttpJob.Agent
                     await httpContext.Response.WriteAsync(message);
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取Storage 通过这个媒介来处理jobagent的job的统一状态
+        /// </summary>
+        /// <returns></returns>
+        private IHangfireStorage GetHangfireStorage(HttpContext httpContext, JobItem jobItem)
+        {
+            if (jobItem.Storage == null) return httpContext.RequestServices.GetService<IHangfireStorage>();
+            var storageFactory = httpContext.RequestServices.GetService<IStorageFactory>();
+            if (storageFactory == null) return null;
+            return storageFactory.CreateHangfireStorage(jobItem.Storage);
         }
 
         /// <summary>
@@ -424,13 +445,14 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType)
+        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType,IHangfireStorage storage)
         {
             IHangfireConsole console = null;
             try
             {
                 //默认每次都是有一个新的实例
-                console = httpContext.RequestServices.GetService<IHangfireConsole>();
+                var consoleFactory = httpContext.RequestServices.GetService<IStorageFactory>();
+                console = consoleFactory.CreateHangforeConsole(storage);
 
                 ConsoleInfo consoleInfo = null;
                 var agentConsole = httpContext.Request.Headers["x-job-agent-console"].ToString();

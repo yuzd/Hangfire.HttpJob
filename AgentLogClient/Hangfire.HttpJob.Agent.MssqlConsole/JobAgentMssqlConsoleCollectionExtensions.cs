@@ -35,6 +35,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
             serviceCollection.TryAddSingleton<IConfigureOptions<MssqlStorageOptions>, MssqlConsoleOptions>();
             serviceCollection.TryAddSingleton<IHangfireStorage, MssqlStorage>();
             serviceCollection.TryAddTransient<IHangfireConsole, MssqlConsole>();
+            serviceCollection.TryAddTransient<IStorageFactory, IMssqlStorageFactory>();
             return serviceCollection;
         }
 

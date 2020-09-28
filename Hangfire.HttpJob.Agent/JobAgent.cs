@@ -236,8 +236,8 @@ namespace Hangfire.HttpJob.Agent
             }
 
             JobStatus = JobStatus.Stoped;
-            DisposeJob(jobContext.Console);
             ReportToHangfireServer(jobContext, null);
+            DisposeJob(jobContext);
         }
 
         /// <summary>
@@ -282,8 +282,8 @@ namespace Hangfire.HttpJob.Agent
                 }
             }
             JobStatus = JobStatus.Stoped;
-            DisposeJob(jobContext.Console);
             ReportToHangfireServer(jobContext, null);
+            DisposeJob(jobContext);
         }
 
         private void WriteToDashBordConsole(IHangfireConsole console, string message)
@@ -334,11 +334,11 @@ namespace Hangfire.HttpJob.Agent
             return string.Join("\r\n", list);
         }
 
-        private void DisposeJob(IHangfireConsole console = null)
+        private void DisposeJob(JobContext jobContext)
         {
-            if (console != null)
+            if (jobContext.Console != null)
             {
-                WriteToDashBordConsole(console, Hang
+                WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob End】{AgentClass}"
                     : $"【{(Singleton ? "SingletonJob" : "TransientJob")} End】{AgentClass}");
             }
@@ -347,8 +347,6 @@ namespace Hangfire.HttpJob.Agent
             try
             {
                 if (!Singleton) TransitentJobDisposeEvent?.Invoke(null, new TransitentJobDisposeArgs(AgentClass, Guid));
-
-                runTask?.Dispose();
             }
             catch (Exception)
             {

@@ -703,8 +703,8 @@ namespace Hangfire.HttpJob.Server
             var storage = JobStorage.Current;
 
             var storageType = storage.GetType();
-
-            if(storageType.Name == "MySqlStorage")
+            var days = CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay < 1 ? 1 : CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay;
+            if (storageType.Name == "MySqlStorage")
             {
                 var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
                 var _connectionString = _connectionStringField?.GetValue(storage);
@@ -718,7 +718,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     return "";
                 }
-                return JsonConvert.SerializeObject(new {Type="mysql",TablePrefix = tablePrefix, HangfireDb = _connectionString?.ToString()});
+                return JsonConvert.SerializeObject(new {Type="mysql", ExpireAtDays = days,  TablePrefix = tablePrefix, HangfireDb = _connectionString?.ToString()});
             }
             else if (storageType.Name == "SqlServerStorage")
             {
@@ -728,7 +728,14 @@ namespace Hangfire.HttpJob.Server
                 {
                     return "";
                 }
-                return JsonConvert.SerializeObject(new { Type = "sqlserver", HangfireDb = _connectionString?.ToString() });
+
+                var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
+                var _storageOptions = _storageOptionsField?.GetValue(storage);
+                // TablesPrefix
+                var tablePrefixField = _storageOptions?.GetType()?.GetField("_schemaName", BindingFlags.Instance | BindingFlags.NonPublic);
+                var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+
+                return JsonConvert.SerializeObject(new { Type = "sqlserver",TablePrefix = tablePrefix, ExpireAtDays = days, HangfireDb = _connectionString?.ToString() });
             }
             else if (storageType.Name == "RedisStorage")
             {
@@ -746,7 +753,13 @@ namespace Hangfire.HttpJob.Server
                 {
                     return "";
                 }
-                return JsonConvert.SerializeObject(new { Type = "redis", Db = _dbString?.ToString(), HangfireDb = _connectionString?.ToString() });
+
+                var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
+                var _storageOptions = _storageOptionsField?.GetValue(storage);
+                // TablesPrefix
+                var tablePrefixField = _storageOptions?.GetType()?.GetProperty("Prefix");
+                var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+                return JsonConvert.SerializeObject(new { Type = "redis", ExpireAtDays = days, TablePrefix = tablePrefix, Db = _dbString?.ToString(), HangfireDb = _connectionString?.ToString() });
             }
 
             return "";

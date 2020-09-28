@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -16,8 +17,14 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             {
                 ExpireAtDays = config.ExpireAtDays ?? 7,
                 HangfireDb = config.HangfireDb,
-                DataBase = config.Db??0
+                DataBase = config.Db??0,
+                TablePrefix = config.TablePrefix
             });
+        }
+
+        public IHangfireConsole CreateHangforeConsole(IHangfireStorage storage)
+        {
+            return new RedisConsole(storage);
         }
     }
 
@@ -26,7 +33,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
     {
         private readonly RedisStorageOptions _options;
         private readonly IDatabase _redis;
-        private readonly ConnectionMultiplexer connection;
+        private static readonly ConcurrentDictionary<string, IDatabase> _redisConnectionCache = new ConcurrentDictionary<string, IDatabase>();
         public RedisStorage(RedisStorageOptions options)
         {
             if (options == null ) throw new ArgumentNullException(nameof(RedisStorageOptions));
@@ -34,12 +41,18 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             _options = options;
             if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (connectionString == null) throw new ArgumentNullException("connectionString");
-            connection = ConnectionMultiplexer.Connect(connectionString);
-            _redis = connection.GetDatabase(options.DataBase);
+            var cachekey = connectionString + options.DataBase;
+            if (!_redisConnectionCache.TryGetValue(cachekey, out var redis))
+            {
+                var connection = ConnectionMultiplexer.Connect(connectionString);
+                redis = connection.GetDatabase(options.DataBase);
+                _redisConnectionCache.TryAdd(cachekey, redis);
+            }
+
+            this._redis = redis;
         }
         public RedisStorage(IOptions<RedisStorageOptions> options):this(options.Value)
         {
-           
         }
 
         public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -71,7 +84,6 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         }
         public void Dispose()
         {
-            connection?.Dispose();
         }
     }
 
