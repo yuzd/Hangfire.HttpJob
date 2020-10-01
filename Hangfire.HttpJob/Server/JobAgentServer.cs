@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -34,7 +35,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     //拿到有上报的jobId集合
                     var jobIdList = connection.GetAllItemsFromSet(keyPrefix);
-
+                    
                     if (!jobIdList.Any()) return;
 
                     foreach (var jobId in jobIdList)
@@ -99,6 +100,15 @@ namespace Hangfire.HttpJob.Server
                                 var ex = new AgentJobException(jobItem.AgentClass, resultData.E);
                                 new BackgroundJobClient().ChangeState(jobId, new FailedState(ex));
                                 HttpJob.SendFail(jobId,jobItem,"AgentJobFail",ex);
+                            }
+                            
+                            //如果是stop上报过来的时候 记录这个job最后的执行id 
+                            if(!string.IsNullOrEmpty(resultData.Action) && resultData.Action.Equals("stop") && !string.IsNullOrEmpty(resultData.RunId))
+                            {
+                                var jobItem = jobData.Job.Args.FirstOrDefault() as HttpJobItem;
+                                var jobKeyName =
+                                    $"recurring-job:{(!string.IsNullOrEmpty(jobItem.RecurringJobIdentifier) ? jobItem.RecurringJobIdentifier : jobItem.JobName)}";
+                                tran.SetRangeInHash(jobKeyName, new List<KeyValuePair<string, string>>{new KeyValuePair<string, string>("LastJobId",resultData.RunId)});
                             }
                             
                             //出错的话 需要走通用的出错流程

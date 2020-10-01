@@ -44,6 +44,11 @@ namespace Hangfire.HttpJob.Agent
         ///     唯一标示
         /// </summary>
         internal string Guid { get; set; }
+        
+        /// <summary>
+        /// 记录run这个命令执行的时候的jobid
+        /// </summary>
+        internal string RunActionJobId { get; set; }
 
         /// <summary>
         ///     开始时间
@@ -103,8 +108,6 @@ namespace Hangfire.HttpJob.Agent
         /// <summary>
         /// 上报 不管成功还是错误 一个job只会上报一次
         /// </summary>
-        /// <param name="jobContext"></param>
-        /// <param name="ex"></param>
         private void ReportToHangfireServer(JobContext jobContext, Exception ex)
         {
             try
@@ -112,7 +115,7 @@ namespace Hangfire.HttpJob.Agent
                 var excuteTime = jobContext.GetElapsedMilliseconds();
                 if (excuteTime < 1) return;
                 var key = "_agent_result_";
-                var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
+                var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,Action=jobContext.ActionType,RunId=jobContext.RunJobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
                 
                 jobContext.HangfireStorage?.SetRangeInHash(key+jobContext.JobItem.JobId,new List<KeyValuePair<string, string>>
                 {
@@ -145,9 +148,13 @@ namespace Hangfire.HttpJob.Agent
                     JobItem = jobItem,
                     Console = console,
                     Headers = headers,
-                    HangfireStorage = storage
+                    HangfireStorage = storage,
+                    RunJobId = jobItem.JobId,
+                    ActionType = "run"
                 };
-
+                
+                this.RunActionJobId = jobItem.JobId;
+                
                 if (this.Hang)
                 {
                     runTask = Task.Factory.StartNew(async () => {
@@ -180,7 +187,9 @@ namespace Hangfire.HttpJob.Agent
                     JobItem = jobItem,
                     Console = console,
                     Headers = headers,
-                    HangfireStorage = storage
+                    HangfireStorage = storage,
+                    RunJobId = this.RunActionJobId,
+                    ActionType = "stop"
                 };
                 jobContext.StartWatch();
                 

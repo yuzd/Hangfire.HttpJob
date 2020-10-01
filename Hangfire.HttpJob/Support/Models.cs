@@ -18,9 +18,30 @@ namespace Hangfire.HttpJob.Support
 
     public class JobAgentResult
     {
+        /// <summary>
+        /// 上报的jobId
+        /// </summary>
         public string Id { get; set; }
+        
+        /// <summary>
+        /// 执行结果
+        /// </summary>
         public string R { get; set; }
+        
+        /// <summary>
+        /// 若有异常 则为 异常的内容
+        /// </summary>
         public string E { get; set; }
+        
+        /// <summary>
+        /// 是 run命令 还是 stop命令
+        /// </summary>
+        public string Action { get; set; }
+        
+        /// <summary>
+        /// 若是stop命令 上报过来的执行run命令的jobId
+        /// </summary>
+        public string RunId { get; set; }
     }
 
     public class ConsoleInfo

@@ -45,6 +45,8 @@ namespace Hangfire.HttpJob.Agent
         
         
         public string Param { get; set; }
+        internal string RunJobId { get; set; }
+        internal string ActionType { get; set; }
 
         public CancellationTokenSource CancelToken { get; }
 

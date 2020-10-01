@@ -231,7 +231,7 @@ namespace Hangfire.HttpJob.Server
                 }
             }
             var result = AddHttprecurringjob(jobItemRt.Item1);
-            if (result)
+            if (string.IsNullOrEmpty(result))
             {
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.NoContent;
@@ -239,8 +239,8 @@ namespace Hangfire.HttpJob.Server
             }
             else
             {
-                context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(result);
                 return;
             }
         }
@@ -752,7 +752,7 @@ namespace Hangfire.HttpJob.Server
         /// <param name="jobItem"></param>
         /// <param name="timeZone">job 时区信息</param>
         /// <returns></returns>
-        public bool AddHttprecurringjob(HttpJobItem jobItem)
+        public string AddHttprecurringjob(HttpJobItem jobItem)
         {
             if (string.IsNullOrEmpty(jobItem.QueueName))
             {
@@ -764,6 +764,10 @@ namespace Hangfire.HttpJob.Server
                 // ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
                 var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0).FirstOrDefault();
                 // ReSharper disable once PossibleNullReferenceException
+                if (server == null)
+                {
+                    return "active server not exist!";
+                }
                 var queues = server.Queues.ToList();
                 if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
                 {
@@ -797,17 +801,17 @@ namespace Hangfire.HttpJob.Server
                     //支持添加一个 只能手动出发的
                     RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
                         timeZone, jobItem.QueueName.ToLower());
-                    return true;
+                    return string.Empty;
                 }
 
                 RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
                     timeZone, jobItem.QueueName.ToLower());
-                return true;
+                return string.Empty;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.AddHttprecurringjob", ex);
-                return false;
+                return ex.Message;
             }
         }
 
