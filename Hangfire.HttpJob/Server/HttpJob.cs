@@ -520,7 +520,7 @@ namespace Hangfire.HttpJob.Server
 
                 return sb.ToString();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return string.Empty;
             }
@@ -812,7 +812,7 @@ namespace Hangfire.HttpJob.Server
                     StartTime = (DateTime?)dateValue ?? DateTime.Now
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

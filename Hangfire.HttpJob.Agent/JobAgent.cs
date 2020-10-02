@@ -181,6 +181,9 @@ namespace Hangfire.HttpJob.Agent
 
             lock (this)
             {
+                if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
+                    return;
+                
                 JobContext jobContext = new JobContext(_cancelToken)
                 {
                     Param = Param,
@@ -192,9 +195,6 @@ namespace Hangfire.HttpJob.Agent
                     ActionType = "stop"
                 };
                 jobContext.StartWatch();
-                
-                if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
-                    return;
                 
                 if (Hang)
                 {
