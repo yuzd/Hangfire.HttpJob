@@ -17,6 +17,12 @@
     <None Remove="Content\jsoneditor.js" />
     <None Remove="Content\sweetalert2.min.css" />
     <None Remove="Content\sweetalert2.min.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\css\styles.css" />
+    <None Include="Dashboard\Heartbeat\Dashboard\html\OverviewPage.html" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\knockout-3.4.2.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\knockout.bindings.orderable.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\numeral.min.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\OverviewPage.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +32,12 @@
     <EmbeddedResource Include="Content\jsoneditor.js" />
     <EmbeddedResource Include="Content\sweetalert2.min.css" />
     <EmbeddedResource Include="Content\sweetalert2.min.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\css\styles.css" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\html\OverviewPage.html" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\knockout-3.4.2.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\knockout.bindings.orderable.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\numeral.min.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\OverviewPage.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,6 +77,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>CronJobsPage.generated.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dashboard\Heartbeat" />
   </ItemGroup>
 
 </Project>

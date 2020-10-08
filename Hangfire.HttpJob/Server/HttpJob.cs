@@ -634,6 +634,12 @@ namespace Hangfire.HttpJob.Server
 
             if (!string.IsNullOrEmpty(item.AgentClass))
             {
+                var currentServerId = context.GetJobParameter<string>("serverInfo");
+                if (!string.IsNullOrEmpty(currentServerId))
+                {
+                    request.Headers.Add("x-job-server", Convert.ToBase64String(Encoding.UTF8.GetBytes(currentServerId)));
+                }
+                
                 request.Headers.Add("x-job-agent-class", item.AgentClass);
                 if (!string.IsNullOrEmpty(headerKeys))
                 {

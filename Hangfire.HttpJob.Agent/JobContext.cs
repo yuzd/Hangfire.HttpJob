@@ -46,6 +46,7 @@ namespace Hangfire.HttpJob.Agent
         
         public string Param { get; set; }
         internal string RunJobId { get; set; }
+        internal string HangfireServerId { get; set; }
         internal string ActionType { get; set; }
 
         public CancellationTokenSource CancelToken { get; }
@@ -114,6 +115,11 @@ namespace Hangfire.HttpJob.Agent
         /// Job运行的Id
         /// </summary>
         public string JobId { get; set; }
+        
+        /// <summary>
+        /// Hangfire调度的serverId
+        /// </summary>
+        public string HangfireServerId { get; set; }
 
         /// <summary>
         /// 指定的队列名称

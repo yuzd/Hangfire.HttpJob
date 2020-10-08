@@ -128,12 +128,12 @@ namespace Hangfire.HttpJob.Support
         public void OnStateElection(ElectStateContext context)
         {
             var jobdta = context.BackgroundJob.Job.Args.FirstOrDefault();
-            if (jobdta == null) return;
-            var httpjob = jobdta as HttpJobItem;
-            if (httpjob != null && !httpjob.EnableRetry)
+            if (!(jobdta is HttpJobItem httpjob) )
             {
                 return;
             }
+
+            if (!httpjob.EnableRetry) return;
 
             //如果先执行失败的话 就直接失败
             var failedState = context.CandidateState as FailedState;
@@ -145,7 +145,7 @@ namespace Hangfire.HttpJob.Support
 
             var retryTimesLimit = Attempts;
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
-            if (httpjob != null && httpjob.RetryTimes > 0)
+            if (httpjob.RetryTimes > 0)
             {
                 //自定义设置了超时配置
                 retryTimesLimit = httpjob.RetryTimes;
@@ -158,8 +158,11 @@ namespace Hangfire.HttpJob.Support
 
             try
             {
+                var isCronJob = !string.IsNullOrEmpty(httpjob.Cron);
+                var jobKey = isCronJob ? ((!string.IsNullOrEmpty(httpjob.RecurringJobIdentifier)?httpjob.RecurringJobIdentifier:httpjob.JobName)) : context.BackgroundJob.Id;
+
                 //删除Runtime数据 代表的是需要重试 但是已经重试到最大次数了
-                var hashKey = CodingUtil.MD5(context.BackgroundJob.Id + ".runtime");
+                var hashKey = CodingUtil.MD5(jobKey + ".runtime");
                 context.Transaction.RemoveHash(hashKey);
             }
             catch (Exception)

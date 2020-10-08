@@ -12,6 +12,8 @@ using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
 using Hangfire.MySql;
 using Hangfire.Tags;
 using Hangfire.Tags.MySql;
@@ -89,7 +91,8 @@ namespace TestHangfire
                     //    return false;
                     //}
                 })
-                .UseTagsWithMySql(sqlOptions:mysqlOption);
+                .UseTagsWithMySql(sqlOptions:mysqlOption)
+              .UseHeartbeatPage();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -122,7 +125,7 @@ namespace TestHangfire
                 ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
                 Queues = queues, //队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40) //工作线程数，当前允许的最大线程，默认20
-            });
+            },additionalProcesses: new[] { new ProcessMonitor() });
 
             var hangfireStartUpPath = JsonConfig.GetSection("HangfireStartUpPath").Get<string>();
             if (string.IsNullOrWhiteSpace(hangfireStartUpPath)) hangfireStartUpPath = "/job";

@@ -12,7 +12,7 @@ namespace Hangfire.HttpJob.Server
     /// <summary>
     /// 处理jobagent通过storage上报的消息
     /// </summary>
-    public class JobAgentServer
+    public sealed class JobAgentServer
     {
         /// <summary>
         /// 每隔2s获取一次

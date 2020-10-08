@@ -150,6 +150,7 @@ namespace Hangfire.HttpJob.Agent
                     Headers = headers,
                     HangfireStorage = storage,
                     RunJobId = jobItem.JobId,
+                    HangfireServerId = jobItem.HangfireServerId,
                     ActionType = "run"
                 };
                 
@@ -192,6 +193,7 @@ namespace Hangfire.HttpJob.Agent
                     Headers = headers,
                     HangfireStorage = storage,
                     RunJobId = this.RunActionJobId,
+                    HangfireServerId = jobItem.HangfireServerId,
                     ActionType = "stop"
                 };
                 jobContext.StartWatch();

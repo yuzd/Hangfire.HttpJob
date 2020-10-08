@@ -538,7 +538,7 @@ namespace Hangfire.HttpJob.Server
 
                 using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
+                    var hashKey = CodingUtil.MD5((!string.IsNullOrEmpty(jobItem.RecurringJobIdentifier)?jobItem.RecurringJobIdentifier:jobItem.JobName) + ".runtime");
                     using (var tran = connection.CreateWriteTransaction())
                     {
                         tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>>
