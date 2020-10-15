@@ -27,6 +27,7 @@ namespace TestHangfireRedisAgent.Jobs
                 jobContext.Console.WriteLine("dddd");
                 await Task.Delay(1000 * 10);
             }
+            throw new Exception("dddddd");
             jobContext.Console.WriteLine("game over");
         }
 

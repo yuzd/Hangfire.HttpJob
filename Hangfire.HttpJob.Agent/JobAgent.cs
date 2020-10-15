@@ -113,7 +113,7 @@ namespace Hangfire.HttpJob.Agent
             try
             {
                 var excuteTime = jobContext.GetElapsedMilliseconds();
-                if (excuteTime < 1) return;
+                if (excuteTime < 0) return;
                 var key = "_agent_result_";
                 var value = Newtonsoft.Json.JsonConvert.SerializeObject(new {Id = jobContext.JobItem.JobId,Action=jobContext.ActionType,RunId=jobContext.RunJobId,R = ex!=null?"err":"ok",E =ex==null?"": ex.ToString()});
                 
@@ -135,25 +135,36 @@ namespace Hangfire.HttpJob.Agent
 
         internal void Run(JobItem jobItem, IHangfireConsole console, IHangfireStorage storage,ConcurrentDictionary<string, string> headers)
         {
-            if (JobStatus == JobStatus.Running) return;
+            var jobContext = new JobContext()
+            {
+                Param = jobItem.JobParam,
+                JobItem = jobItem,
+                Console = console,
+                Headers = headers,
+                HangfireStorage = storage,
+                RunJobId = jobItem.JobId,
+                HangfireServerId = jobItem.HangfireServerId,
+                ActionType = "run"
+            };
+
+            if (JobStatus == JobStatus.Running)
+            {
+                ReportToHangfireServer(jobContext, null);
+                return;
+            }
+            
             lock (this)
             {
-                if (JobStatus == JobStatus.Running) return;
-                _mainThread = new ManualResetEvent(false);
-                _cancelToken = new CancellationTokenSource();
-                Param = jobItem.JobParam;
-                var jobContext = new JobContext(_cancelToken)
+                if (JobStatus == JobStatus.Running)  
                 {
-                    Param = Param,
-                    JobItem = jobItem,
-                    Console = console,
-                    Headers = headers,
-                    HangfireStorage = storage,
-                    RunJobId = jobItem.JobId,
-                    HangfireServerId = jobItem.HangfireServerId,
-                    ActionType = "run"
-                };
+                    ReportToHangfireServer(jobContext, null);
+                    return;
+                }
                 
+                this. _mainThread = new ManualResetEvent(false);
+                this._cancelToken = new CancellationTokenSource();
+                jobContext.CancelToken = this._cancelToken;
+                this.Param = jobItem.JobParam;
                 this.RunActionJobId = jobItem.JobId;
                 
                 if (this.Hang)
@@ -177,27 +188,32 @@ namespace Hangfire.HttpJob.Agent
 
         internal void Stop(JobItem jobItem, IHangfireConsole console,IHangfireStorage storage, ConcurrentDictionary<string, string> headers)
         {
+            JobContext jobContext = new JobContext(_cancelToken)
+            {
+                Param = Param,
+                JobItem = jobItem,
+                Console = console,
+                Headers = headers,
+                HangfireStorage = storage,
+                RunJobId = this.RunActionJobId,
+                HangfireServerId = jobItem.HangfireServerId,
+                ActionType = "stop"
+            };
+            
             if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
+            {
+                ReportToHangfireServer(jobContext, null);
                 return;
+            }
 
             lock (this)
             {
                 if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
-                    return;
-                
-                JobContext jobContext = new JobContext(_cancelToken)
                 {
-                    Param = Param,
-                    JobItem = jobItem,
-                    Console = console,
-                    Headers = headers,
-                    HangfireStorage = storage,
-                    RunJobId = this.RunActionJobId,
-                    HangfireServerId = jobItem.HangfireServerId,
-                    ActionType = "stop"
-                };
-                jobContext.StartWatch();
-                
+                    ReportToHangfireServer(jobContext, null);
+                    return;
+                }
+                JobStatus = JobStatus.Stopping;
                 if (Hang)
                 {
                     _mainThread?.Set();
@@ -205,7 +221,14 @@ namespace Hangfire.HttpJob.Agent
                 
                 Task.Factory.StartNew(async () => {
                     await stop(jobContext);
-                }).Unwrap();
+                })
+                    .Unwrap()
+                    .ContinueWith(
+                    _ =>
+                    {
+                        ReportToHangfireServer(jobContext,new TaskSchedulerException("runTask fail:"+_?.Exception?.Message));
+                    }, 
+                    TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -222,8 +245,6 @@ namespace Hangfire.HttpJob.Agent
                     WriteToDashBordConsole(jobContext.Console,
                         $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop】{AgentClass}");
                 }
-
-                JobStatus = JobStatus.Stopping;
                 await OnStop(jobContext);
             }
             catch (Exception e)
@@ -237,7 +258,7 @@ namespace Hangfire.HttpJob.Agent
                 e.Data.Add("AgentClass", AgentClass);
                 try
                 {
-                    OnException(jobContext,e);
+                    OnException(jobContext, e);
                 }
                 catch (Exception ex2)
                 {
@@ -245,10 +266,12 @@ namespace Hangfire.HttpJob.Agent
                     ReportToHangfireServer(jobContext, ex2);
                 }
             }
-
-            JobStatus = JobStatus.Stoped;
-            ReportToHangfireServer(jobContext, null);
-            DisposeJob(jobContext);
+            finally
+            {
+                JobStatus = JobStatus.Stoped;
+                ReportToHangfireServer(jobContext, null);
+                DisposeJob(jobContext);
+            }
         }
 
         /// <summary>
@@ -258,13 +281,11 @@ namespace Hangfire.HttpJob.Agent
         {
             try
             {
-                if (JobStatus == JobStatus.Running) return;
                 StartTime = DateTime.Now;
                 JobStatus = JobStatus.Running;
                 WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob OnStart】{AgentClass}"
                     : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStart】{AgentClass}");
-                jobContext.StartWatch();   
                 await OnStart(jobContext);
                 if (Hang)
                 {
@@ -272,6 +293,7 @@ namespace Hangfire.HttpJob.Agent
                     _mainThread.WaitOne();
                     _mainThread = null;
                 }
+                JobStatus = JobStatus.Stoped;
             }
             catch (Exception e)
             {
@@ -284,7 +306,7 @@ namespace Hangfire.HttpJob.Agent
                 e.Data.Add("AgentClass", AgentClass);
                 try
                 {
-                    OnException(jobContext,e);
+                    OnException(jobContext, e);
                 }
                 catch (Exception ex2)
                 {
@@ -292,9 +314,11 @@ namespace Hangfire.HttpJob.Agent
                     ReportToHangfireServer(jobContext, ex2);
                 }
             }
-            JobStatus = JobStatus.Stoped;
-            ReportToHangfireServer(jobContext, null);
-            DisposeJob(jobContext);
+            finally
+            {
+                ReportToHangfireServer(jobContext, null);
+                DisposeJob(jobContext);
+            }
         }
 
         private void WriteToDashBordConsole(IHangfireConsole console, string message)

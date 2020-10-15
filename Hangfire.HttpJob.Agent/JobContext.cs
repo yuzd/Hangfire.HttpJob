@@ -13,27 +13,29 @@ namespace Hangfire.HttpJob.Agent
 
         public JobContext()
         {
-            CancelToken = new CancellationTokenSource();
+            StartWatch();
         }
         public JobContext(CancellationTokenSource cancelToken)
         {
             CancelToken = cancelToken;
+            StartWatch();
         }
         
         #region Stopwatch
 
        
         
-        internal void StartWatch()
+        private void StartWatch()
         {
             _stopwatch = Stopwatch.StartNew();
         }
 
         internal long GetElapsedMilliseconds()
         {
-            if (_stopwatch == null) return 0;
+            if (_stopwatch == null) return -1;
             lock (_stopwatch)
-            {
+            { 
+                if (_stopwatch == null) return -1;
                 _stopwatch.Stop();
                 var result = (long)_stopwatch.ElapsedMilliseconds;
                 _stopwatch = null;
@@ -49,7 +51,7 @@ namespace Hangfire.HttpJob.Agent
         internal string HangfireServerId { get; set; }
         internal string ActionType { get; set; }
 
-        public CancellationTokenSource CancelToken { get; }
+        public CancellationTokenSource CancelToken { get; internal set; }
 
         public IHangfireConsole Console { get; set; }
 
