@@ -15,6 +15,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         {
             return new RedisStorage(new RedisStorageOptions
             {
+                ExpireAt = config.ExpireAt,
                 ExpireAtDays = config.ExpireAtDays ?? 7,
                 HangfireDb = config.HangfireDb,
                 DataBase = config.Db??0,
@@ -59,8 +60,12 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         {
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
-
-            _redis.HashSet(this._options.TablePrefix + key, ToHashEntries(keyValuePairs));
+            var redisKey = this._options.TablePrefix + key;
+            _redis.HashSet(redisKey, ToHashEntries(keyValuePairs));
+            _redis.KeyExpire(redisKey,
+                _options.ExpireAt != null
+                    ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
+                    : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
         }
         public HashEntry[] ToHashEntries(IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
@@ -76,11 +81,18 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         public void AddToSet(string key, string value)
         {
             AddToSet(key, value, 0.0);
+
         }
 
         public void AddToSet(string key, string value, double score)
         {
-            _redis.SortedSetAddAsync(this._options.TablePrefix + key, value, score);
+            var redisKey = this._options.TablePrefix + key;
+            _redis.SortedSetAddAsync(redisKey, value, score);
+
+            _redis.KeyExpire(redisKey,
+                _options.ExpireAt != null
+                    ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
+                    : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
         }
         public void Dispose()
         {

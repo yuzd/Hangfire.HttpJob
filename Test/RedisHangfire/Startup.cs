@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
+using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob;
 using Hangfire.Redis;
 using Hangfire.Tags.Redis;
@@ -82,7 +84,7 @@ namespace RedisHangfire
 
                     //    return false;
                     //}
-                }).UseTagsWithRedis(redis, redisOptions: options);
+                }).UseTagsWithRedis(redis, redisOptions: options).UseHeartbeatPage();
 
         }
 
@@ -111,7 +113,7 @@ namespace RedisHangfire
                 ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
                 Queues = queues, //队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40) //工作线程数，当前允许的最大线程，默认20
-            });
+            }, additionalProcesses: new[] { new ProcessMonitor() });
 
             var hangfireStartUpPath = JsonConfig.GetSection("HangfireStartUpPath").Get<string>();
             if (string.IsNullOrWhiteSpace(hangfireStartUpPath)) hangfireStartUpPath = "/job";

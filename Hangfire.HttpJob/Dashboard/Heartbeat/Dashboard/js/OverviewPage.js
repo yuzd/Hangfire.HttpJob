@@ -140,6 +140,7 @@ function SeriesGraph(element, tickFormat, colorGenerator, pollInterval) {
                 backgroundColor: Chart.helpers.color(seriesColor).alpha(0.3).rgbString(),
                 fill: "origin",
                 hidden: false,
+                error:false,
                 data: []
             };
             self._chart.data.datasets.push(server);
@@ -194,19 +195,21 @@ var UtilizationViewModel = function (cpuGraph, memGraph, colorGenerator) {
 
         var cpuUsage = formatPercentage(data.cpuUsagePercentage);
         var ramUsage = formatBytes(data.workingMemorySet);
-
+        var diskUsage = formatBytes(data.diskUsage);
         if (server == null) {
             server = {
                 displayName: ko.observable(data.displayName),
                 displayColor: ko.observable(self._colorGenerator.getColor(name)),
                 hidden: ko.observable(false),
+                error: ko.observable(data.error),
                 name: name,
                 processId: ko.observable(data.processId),
                 processName: ko.observable(data.processName),
                 cpuUsage: ko.observable(cpuUsage),
                 cpuUsageRawValue: ko.observable(data.cpuUsagePercentage),
                 ramUsage: ko.observable(ramUsage),
-                ramUsageRawValue: ko.observable(data.workingMemorySet)
+                ramUsageRawValue: ko.observable(data.workingMemorySet),
+                diskUsage: ko.observable(diskUsage)
             };
             self.serverList.push(server);
         } else {
@@ -216,6 +219,8 @@ var UtilizationViewModel = function (cpuGraph, memGraph, colorGenerator) {
             server.cpuUsageRawValue(data.cpuUsagePercentage);
             server.ramUsage(ramUsage);
             server.ramUsageRawValue(data.workingMemorySet);
+            server.diskUsage(diskUsage);
+            server.error(data.error);
         }
 
         return server;

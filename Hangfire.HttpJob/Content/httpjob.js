@@ -64,6 +64,7 @@
             var GlobalSetButton = '';
             var josnDiv = '';
             var PauseButton = '';
+            var DeleteButton = '';
             var EditRecurringJobutton = '';
             var ExportJobsButton = "";
             var ImportJobsButton = "";
@@ -277,10 +278,10 @@
             }
 
             //暂停和启用任务
-            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
+            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-success" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
                 '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
-
+            
             // 获取AgentJob 详情
             var getAgentJobDeatilButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="JobDetail">' +
                 '<span class="glyphicon glyphicon-record"> ' + (config.AgentJobDeatilButton) + '</span>' +
@@ -335,7 +336,18 @@
             $(document.body).append(jobDetailModel);
             $(document.body).append(importDivModel);
             $(document.body).append(josnDiv);
+            var removeUrl = '';
             if (config.NeedEditRecurringJobButton) {
+
+                //对删除按钮进行改造
+                //var removeButtonName = $($('.js-jobs-list-command')[1]).text().trim();
+                //removeUrl = $($('.js-jobs-list-command')[1]).data('url');
+                //$($('.js-jobs-list-command')[1]).remove();
+                //DeleteButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-danger" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="DelJob">' +
+                //    '<span class="glyphicon glyphicon-play"> ' + removeButtonName + '</span>' +
+                //    '</button>';
+
+                //$('.btn-toolbar-top').append(DeleteButton);
 
                 //启动或暂停
                 $('.btn-toolbar-top').append(PauseButton);
@@ -349,7 +361,7 @@
 
 
                 //停止
-                var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="stop agent job..." disabled id="StopJob">' +
+                var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-danger" style="float:inherit;margin-left:10px" data-loading-text="stop agent job..." disabled id="StopJob">' +
                     '<span class="glyphicon glyphicon-stop"> ' + config.StopBackgroudJobButtonName + '</span>' +
                     '</button>';
                 $('.btn-toolbar-top').append(StopButton);
@@ -596,6 +608,51 @@
                 e.preventDefault();
             });
 
+            //删除job
+            $('#DelJob').click(function (e) {
+              
+                var jobId = [];
+                $.each($(".js-jobs-list-checkbox:checked"), function (index, d) { jobId.push($(d).val()) });
+                if (jobId.length<1) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+                swal({
+                    title: "Remove Job",
+                    text: "Are you sure want to remove?",
+                    type: "warning",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    inputPlaceholder: "start param",
+                    showLoaderOnConfirm: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Submit",
+                    cancelButtonText: "Cancel"
+                }, function () {
+                    $.ajax({
+                        type: "post",
+                        url: agentJobDeatilButtonUrl,
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json", "Cron": (config.NeedEditRecurringJobButton ? "1" : "") }),
+                        async: true,
+                        success: function (returndata) {
+                            $.post(removeUrl, { 'jobs[]': jobId}, function () {
+                                window.location.reload();
+                            });
+                        }
+                    });
+                });
+
+                e.stopPropagation();
+                e.preventDefault();
+            });
             //暂停任务
             $("#PauseJob").click(function (e) {
 

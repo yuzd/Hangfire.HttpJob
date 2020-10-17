@@ -34,6 +34,7 @@
                         <th>Exec name</th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'cpuUsageRawValue'}">CPU</a></th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'ramUsageRawValue'}">RAM</a></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'diskUsage'}">Disk</a></th>
                     </tr>
                 </thead>
 
@@ -44,10 +45,11 @@
                                 <span class="text-center pid-label" data-bind="text: processId, style: { 'text-decoration': hidden() ? 'line-through' : 'none' }"></span>
                             </span>
                         </td>
-                        <td data-bind="text: displayName"></td>
+                        <td data-bind="text: displayName, style: { 'color': error() ? 'red' : 'black'}"></td>
                         <td data-bind="text: processName"></td>
                         <td data-bind="text: cpuUsage"></td>
                         <td data-bind="text: ramUsage"></td>
+                        <td data-bind="text: diskUsage"></td>
                     </tr>
                 </tbody>
             </table>

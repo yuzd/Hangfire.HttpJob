@@ -699,7 +699,7 @@ namespace Hangfire.HttpJob.Server
 
         #region 利用反射获取当前的Storage的配置参数 只支持mysql sqlserver redis
 
-        private static Lazy<string> GetJobStorage()
+        internal static Lazy<string> GetJobStorage()
         {
             return new Lazy<string>(GetCurrentJobStorage);
         }

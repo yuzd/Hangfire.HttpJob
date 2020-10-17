@@ -61,12 +61,6 @@ namespace Hangfire.HttpJob.Agent
                     serverInfo = Encoding.UTF8.GetString(Convert.FromBase64String(serverInfo));
                 }
                 
-                if (string.IsNullOrEmpty(agentClass))
-                {
-                    message = "err:x-job-agent-class in headers can not be empty!";
-                    _logger.LogError(message);
-                    return;
-                }
 
                 if (string.IsNullOrEmpty(agentAction))
                 {
@@ -75,7 +69,12 @@ namespace Hangfire.HttpJob.Agent
                     return;
                 }
 
-                
+                if (!agentAction.Equals("heartbeat") && string.IsNullOrEmpty(agentClass))
+                {
+                    message = "err:x-job-agent-class in headers can not be empty!";
+                    _logger.LogError(message);
+                    return;
+                }
 
                 JobItem jobItem = null;
                 if (!string.IsNullOrEmpty(jobBody))
@@ -118,6 +117,15 @@ namespace Hangfire.HttpJob.Agent
                 if(!string.IsNullOrEmpty(serverInfo))jobItem.HangfireServerId = serverInfo.Split(new string[] {"@_@"}, StringSplitOptions.None)[0];
 
                 agentAction = agentAction.ToLower();
+                if (agentAction == "heartbeat" && !string.IsNullOrEmpty(jobItem.HangfireServerId))
+                {
+                    jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
+                    var currentServerUrl = httpContext.Request.Headers["x-job-agent-server"].ToString();
+                    var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                    HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, jobStorage);
+                    return;
+                }
+
                 var requestBody = await GetJobItem(httpContext);
                 var agentClassType = GetAgentType(agentClass);
                 var jobHeaders = GetJobHeaders(httpContext);

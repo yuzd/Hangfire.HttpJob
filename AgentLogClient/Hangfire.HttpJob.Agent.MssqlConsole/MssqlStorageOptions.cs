@@ -8,5 +8,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
         public string TablePrefix { get; set; } = "HangFire";
 
         public int ExpireAtDays { get; set; } = 7;
+
+        public TimeSpan? ExpireAt { get; set; }
     }
 }

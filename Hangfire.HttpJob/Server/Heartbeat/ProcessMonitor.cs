@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -20,6 +22,7 @@ namespace Hangfire.Heartbeat.Server
         private readonly TimeSpan _expireIn;
         private (TimeSpan? current, TimeSpan? next) _processorTimeUsage;
 
+        internal static string CurrentServerId = "";
         public ProcessMonitor()
             : this(TimeSpan.FromSeconds(1), Process.GetCurrentProcess())
         {
@@ -59,24 +62,33 @@ namespace Hangfire.Heartbeat.Server
         /// <inheritdoc/>
         public void Execute(BackgroundProcessContext context)
         {
-            if (context.IsStopping)
+            try
             {
-                CleanupState(context);
-                return;
-            }
+                CurrentServerId = context.ServerId;
+                if (context.IsStopping)
+                {
+                    CleanupState(context);
+                    return;
+                }
 
-            if (_processorTimeUsage.current.HasValue && _processorTimeUsage.next.HasValue)
+                if (_processorTimeUsage.current.HasValue && _processorTimeUsage.next.HasValue)
+                {
+                    var cpuPercentUsage = ComputeCpuUsage(_processorTimeUsage.current.Value, _processorTimeUsage.next.Value);
+
+                    WriteState(context, cpuPercentUsage);
+                }
+
+                context.Wait(_checkInterval);
+                _process.Refresh();
+
+                var next = _process.TotalProcessorTime;
+                _processorTimeUsage = (_processorTimeUsage.next, next);
+            }
+            catch (Exception ex)
             {
-                var cpuPercentUsage = ComputeCpuUsage(_processorTimeUsage.current.Value, _processorTimeUsage.next.Value);
-
-                WriteState(context, cpuPercentUsage);
+                //ignore
             }
-
-            context.Wait(_checkInterval);
-            _process.Refresh();
-
-            var next = _process.TotalProcessorTime;
-            _processorTimeUsage = (_processorTimeUsage.next, next);
+          
         }
 
         private void WriteState(BackgroundProcessContext context, double cpuPercentUsage)
@@ -93,6 +105,13 @@ namespace Hangfire.Heartbeat.Server
                     WorkingSet = _process.WorkingSet64,
                     Timestamp = DateTimeOffset.UtcNow
                 };
+                string fullPath = _process.MainModule?.FileName;
+                if (!string.IsNullOrEmpty(fullPath)) 
+                {
+                    string rootDir = Directory.GetDirectoryRoot(fullPath);
+                    DriveInfo driveInfo = new DriveInfo(rootDir);
+                    data.DiskUsage = driveInfo.AvailableFreeSpace;
+                }
 
                 var values = new Dictionary<string, string>
                 {

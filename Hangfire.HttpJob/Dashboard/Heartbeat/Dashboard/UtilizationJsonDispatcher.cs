@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Hangfire.Common;
@@ -43,10 +44,39 @@ namespace Hangfire.Heartbeat.Dashboard
                             Timestamp = processInfo.Timestamp.ToUnixTimeMilliseconds(),
                             ProcessId = processInfo.Id.ToString(CultureInfo.InvariantCulture),
                             CpuUsagePercentage = processInfo.CpuUsage,
-                            WorkingMemorySet = processInfo.WorkingSet
+                            WorkingMemorySet = processInfo.WorkingSet,
+                            DiskUsage = processInfo.DiskUsage,
+                            Error = false,
                         });
                     }
                 }
+
+                if (!string.IsNullOrEmpty(ProcessMonitor.CurrentServerId))
+                {
+                    //获取jobagent的心跳包
+                    var agentList = connection.GetAllEntriesFromHash("AgentHeart:"+ProcessMonitor.CurrentServerId);
+                    if (agentList != null)
+                    {
+                        foreach (var agent in agentList)
+                        {
+                            var processInfo = SerializationHelper.Deserialize<ProcessInfo>(agent.Value);
+                            serverUtilizationViews.Add(new ServerView
+                            {
+                                Name = agent.Key,
+                                DisplayName = "Agent:" + processInfo.Server,
+                                Error = ((DateTimeOffset.UtcNow - processInfo.Timestamp).TotalSeconds > 10),
+                                ProcessName = processInfo.ProcessName,
+                                Timestamp = processInfo.Timestamp.ToUnixTimeMilliseconds(),
+                                ProcessId = processInfo.Id.ToString(CultureInfo.InvariantCulture),
+                                CpuUsagePercentage = processInfo.CpuUsage,
+                                WorkingMemorySet = processInfo.WorkingSet,
+                                DiskUsage = processInfo.DiskUsage
+                            });
+                        }
+                    }
+                }
+               
+
             }
 
             context.Response.ContentType = "application/json";

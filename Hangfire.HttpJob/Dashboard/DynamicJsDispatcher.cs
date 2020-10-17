@@ -64,6 +64,7 @@ namespace Hangfire.HttpJob.Dashboard
                    .AppendFormat("hangFire.httpjobConfig.GetGlobalSettingUrl = '{0}/httpjob?op=GetGlobalSetting';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.PostGlobalSettingUrl = '{0}/httpjob?op=SaveGlobalSetting';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.PauseJobUrl = '{0}/httpjob?op=PauseJob';", context.Request.PathBase)
+                   .AppendFormat("hangFire.httpjobConfig.DeleteJobUrl = '{0}/httpjob?op=deljob';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.AgentJobDeatilButtonUrl = '{0}/httpjob?op=getbackgroundjobdetail';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.StartBackgroudJobUrl = '{0}/httpjob?op=StartBackgroundJob';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.StopBackgroudJobUrl = '{0}/httpjob?op=StopBackgroundJob';", context.Request.PathBase)

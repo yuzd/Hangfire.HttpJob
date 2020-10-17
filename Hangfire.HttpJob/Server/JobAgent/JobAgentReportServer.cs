@@ -12,7 +12,7 @@ namespace Hangfire.HttpJob.Server
     /// <summary>
     /// 处理jobagent通过storage上报的消息
     /// </summary>
-    public sealed class JobAgentServer
+    public sealed class JobAgentReportServer
     {
         /// <summary>
         /// 每隔2s获取一次
@@ -32,6 +32,7 @@ namespace Hangfire.HttpJob.Server
             try
             {
                 using (var connection = JobStorage.Current.GetConnection())
+                using (var lockStorage = connection.AcquireDistributedLock("JobAgentServer",TimeSpan.FromSeconds(30)))//防止多个server端竞争
                 {
                     //拿到有上报的jobId集合
                     var jobIdList = connection.GetAllItemsFromSet(keyPrefix);

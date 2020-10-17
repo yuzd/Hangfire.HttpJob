@@ -223,6 +223,27 @@ namespace Hangfire.HttpJob.Agent
         public string TablePrefix { get; set; } 
         public string HangfireDb { get; set; }
         public int? ExpireAtDays { get; set; }
-        public int? Db { get; set; } 
+        public TimeSpan? ExpireAt { get; set; }
+        public int? Db { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            var item = obj as JobStorageConfig;
+
+            if (item == null)
+            {
+                return false;
+            }
+
+            return this.Type.Equals(item.Type) && this.TablePrefix.Equals(item.TablePrefix)&&this.HangfireDb.Equals(item.HangfireDb)&&this.Db.Equals(item.Db);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((this.HangfireDb != null ? this.HangfireDb.GetHashCode() : 0) ) ^ (this.TablePrefix != null ? this.TablePrefix.GetHashCode() : 0);
+            }
+        }
     }
 }

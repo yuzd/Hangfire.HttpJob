@@ -233,6 +233,7 @@ namespace Hangfire.HttpJob.Server
             var result = AddHttprecurringjob(jobItemRt.Item1);
             if (string.IsNullOrEmpty(result))
             {
+                JobAgentHeartBeatServer.Start(false);
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                 return;

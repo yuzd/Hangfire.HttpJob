@@ -16,6 +16,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
         {
             return new MySqlStorage(new MySqlStorageOptions
             {
+                ExpireAt = config.ExpireAt,
                 ExpireAtDays = config.ExpireAtDays ?? 7,
                 HangfireDb = config.HangfireDb,
                 TablePrefix = config.TablePrefix
@@ -146,8 +147,8 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                     connection.Execute(
                         $"insert into {_options.TablePrefix}Hash (`Key`, Field, Value,ExpireAt) " +
                         "value (@key, @field, @value,@ExpireAt) " +
-                        "on duplicate key update Value = @value",
-                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = DateTime.Now.AddDays(_options.ExpireAtDays) });
+                        "on duplicate key update Value = @value,ExpireAt=@ExpireAt",
+                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = _options.ExpireAt!=null? DateTime.UtcNow.Add(_options.ExpireAt.Value) : DateTime.UtcNow.AddDays(_options.ExpireAtDays) });
                 }
             });
         }
@@ -166,7 +167,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                     $"INSERT INTO `{_options.TablePrefix}Set` (`Key`, `Value`, `Score`,`ExpireAt`) " +
                     "VALUES (@Key, @Value, @Score,@ExpireAt) " +
                     "ON DUPLICATE KEY UPDATE `Score` = @Score",
-                    new { Key = key, Value =value, Score=score, ExpireAt=DateTime.Now.AddDays(_options.ExpireAtDays) });
+                    new { Key = key, Value =value, Score=score, ExpireAt = _options.ExpireAt != null ? DateTime.UtcNow.Add(_options.ExpireAt.Value) : DateTime.UtcNow.AddDays(_options.ExpireAtDays) });
             });
         }
         public void Dispose()
