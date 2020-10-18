@@ -62,7 +62,7 @@ namespace Hangfire.Heartbeat.Dashboard
                             var processInfo = SerializationHelper.Deserialize<ProcessInfo>(agent.Value);
                             serverUtilizationViews.Add(new ServerView
                             {
-                                Name = agent.Key,
+                                Name = agent.Key,//这个是唯一key
                                 DisplayName = "Agent:" + processInfo.Server,
                                 Error = ((DateTimeOffset.UtcNow - processInfo.Timestamp).TotalSeconds > 10),
                                 ProcessName = processInfo.ProcessName,

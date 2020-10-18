@@ -123,6 +123,11 @@ namespace Hangfire.HttpJob.Server
                     await SaveGlobalSetting(context);
                     return;
                 }
+                else if (op == "getagentserver")
+                {
+                    await GetAgentServer(context);
+                    return;
+                }
                 else if (CheckOperateType(op, OperateType.ExportJobs))
                 {
                     await ExportJobsAsync(context);
@@ -143,6 +148,24 @@ namespace Hangfire.HttpJob.Server
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 return;
+            }
+        }
+
+        /// <summary>
+        /// 获取agent服务器
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task GetAgentServer(DashboardContext context)
+        {
+            try
+            {
+                var html = JobAgentHeartBeatServer.GetAgentServerListHtml();
+                await context.Response.WriteAsync(html);
+            }
+            catch (Exception e)
+            {
+                await context.Response.WriteAsync("err:" + e.Message);
             }
         }
 

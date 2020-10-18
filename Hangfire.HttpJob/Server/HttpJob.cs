@@ -773,6 +773,8 @@ namespace Hangfire.HttpJob.Server
 
         #endregion
 
+        private static FieldInfo _consoleIdFieldInfo = null;
+        private static PropertyInfo _consoleDateValueInfo = null;
         /// <summary>
         /// AgentJob的话 取得Console的参数
         /// </summary>
@@ -797,14 +799,21 @@ namespace Hangfire.HttpJob.Server
                 var consoleContext = context.Items["ConsoleContext"];
 
                 //反射获取私有属性 _consoleId
+                if (_consoleIdFieldInfo == null)
+                {
+                    _consoleIdFieldInfo = consoleContext?.GetType().GetField("_consoleId", BindingFlags.Instance | BindingFlags.NonPublic);
+                }
 
-                var consoleValue = consoleContext?.GetType().GetField("_consoleId", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(consoleContext);
+                var consoleValue = _consoleIdFieldInfo?.GetValue(consoleContext);
 
                 if (consoleValue == null) return null;
 
                 //反射获取ConsoleId的私有属性 DateValue 值
-
-                var dateValue = consoleValue.GetType().GetProperty("DateValue", BindingFlags.Instance | BindingFlags.Public)?.GetValue(consoleValue);
+                if (_consoleDateValueInfo == null)
+                {
+                    _consoleDateValueInfo = consoleValue.GetType().GetProperty("DateValue", BindingFlags.Instance | BindingFlags.Public);
+                }
+                var dateValue = _consoleDateValueInfo?.GetValue(consoleValue);
 
                 var startAt = DateTime.UtcNow;
                 var consoleId = new ConsoleId(context.BackgroundJob.Id, startAt);
@@ -815,7 +824,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     HashKey = $"console:refs:{consoleId}",
                     SetKey = $"console:{consoleId}",
-                    StartTime = (DateTime?)dateValue ?? DateTime.Now
+                    StartTime = (DateTime?)dateValue ?? startAt
                 };
             }
             catch (Exception)

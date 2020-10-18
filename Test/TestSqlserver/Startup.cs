@@ -92,6 +92,7 @@ namespace TestSqlserver
             var queues = JsonConfig.GetSection("HangfireQueues").Get<List<string>>().ToArray();
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
+                ServerName = "HangfireServer",
                 ServerTimeout = TimeSpan.FromMinutes(4),
                 SchedulePollingInterval = TimeSpan.FromSeconds(15), //秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间

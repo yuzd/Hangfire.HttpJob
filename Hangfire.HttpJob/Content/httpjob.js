@@ -1088,44 +1088,44 @@
 
 
 
-    //if (/\/jobs\/details\/([^/]+)$/.test(path)) {
-    //    var console = $(".console").first();
-    //    if (console.length != 1) return;
-    //    var consoleId = $(console[0]).data('id');
-    //    if (!consoleId) return;
-    //    var url = window.Hangfire.config.consolePollUrl + consoleId;
-    //    var currentLine = $('.line-buffer,.line').length;
 
 
+    if (!window.location.pathname.endsWith('/job/servers') || !window.Hangfire.httpjobConfig.GetAgentServerListUrl) {
+        return;
+    }
 
 
-    //    function poolGetProgress(start) {
-    //        $.get(url,
-    //            { start: start },
-    //            function (data) {
-    //                //解析
-    //                var ele = $(data);
-    //                var lines = ele.find('.line');
-    //                var lastLine = ele[lines - 1];
-    //                var endLine = $(lastLine).html();
-    //                //判断是否结束了
-    //                if (endLine.indexOf('【JobAgent】【') > 0) {
-    //                    var target = endLine.split('【JobAgent】【')[1].split('】')[0];
-    //                    if (target.indexOf('OnStop') > -1) {
-    //                        return;
-    //                    }
-    //                }
+    $.ajax({
+        type: "post",
+        url: window.Hangfire.httpjobConfig.GetAgentServerListUrl,
+        contentType: "html",
+        async: true,
+        success: function (returndata) {
+            if (!returndata || returndata.length < 1) {
+                return;
+            }
+            if (returndata.substr(0, 4) == 'err:') {
+                swal({
+                    title: "",
+                    text: returndata,
+                    type: "error"
+                });
+                return;
+            }
 
-    //                //找到新增的
+            $($('.row')[0]).append($(returndata));
+            Hangfire.page._initialize();
+        },
+        fail: function (errText) {
+            swal({
+                title: "",
+                text: errText.responseText || "get json fail！",
+                type: "error"
+            });
+        }
+    });
+  
 
-
-
-    //            }, "html");
-    //    }
-
-
-    //    poolGetProgress(currentLine);
-    //}
 })(window.Hangfire = window.Hangfire || {});
 
 //找出已经暂停的job
@@ -1453,27 +1453,6 @@ if (window.attachEvent) {
     })();
 
 
+
 })(jQuery, window.Hangfire = window.Hangfire || {});
 
-$(function () {
-    var path = window.location.pathname;
-
-    if (/\/jobs\/details\/([^/]+)$/.test(path)) {
-        // execute scripts for /jobs/details/<jobId>
-        if ($('.page-header').html().indexOf('JobAgent ') < 0) {
-            return;
-        }
-        $('.console.collapsed').click();
-        //$(".console").each(function (index) {
-        //    var $this = $(this),
-        //        c = new Hangfire.Console2($this);
-
-
-        //    if (index === 0) {
-        //        debugger;
-        //        // poll on the first console
-        //        c.poll();
-        //    }
-        //});
-    }
-});

@@ -18,7 +18,7 @@ namespace Hangfire.HttpJob.Agent
         private IHangfireStorage _hangfireStorage;
         private static readonly ConcurrentDictionary<string, HeartBeatReport> _cache = new ConcurrentDictionary<string, HeartBeatReport>();
         private static System.Threading.Timer mDetectionTimer;
-        private volatile int times = 30 * 60;
+        private volatile int times = 5 * 60;
 
         private readonly Process _process;
         private readonly int _processorCount;
@@ -62,6 +62,7 @@ namespace Hangfire.HttpJob.Agent
                         var data = new ProcessInfo
                         {
                             Id = _process.Id,
+                            Idx = this.times,
                             Server = _currenturl,
                             ProcessName = _process.ProcessName,
                             CpuUsage = cpuPercentUsage,
@@ -126,7 +127,7 @@ namespace Hangfire.HttpJob.Agent
                 _currenturl = currenturl;
                 _hangfireStorage = hangfireStorage;
                 var isStoped = this.times < 1;
-                this.times = 30 * 60;//重置
+                this.times = 5 * 60;//重置
                 if (isStoped) mDetectionTimer.Change(1000 * 1, 1000 * 1);
             }
         }
@@ -136,6 +137,7 @@ namespace Hangfire.HttpJob.Agent
     internal class ProcessInfo
     {
         public int Id { get; set; }
+        public int Idx { get; set; }
         public string ProcessName { get; set; }
         public string Server { get; set; }
         public double CpuUsage { get; set; }
