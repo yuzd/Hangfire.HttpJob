@@ -59,7 +59,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
             var sql = $@"
 set xact_abort off;
 begin try
-  insert into [{_options.TablePrefix}].Hash ([Key], Field, Value) values (@key, @field, @value,@ExpireAt);
+  insert into [{_options.TablePrefix}].Hash ([Key], Field, Value,ExpireAt) values (@key, @field, @value,@ExpireAt);
   if @@ROWCOUNT = 0 update [{_options.TablePrefix}].Hash set Value = @value,ExpireAt =@ExpireAt where [Key] = @key and Field = @field;
 end try
 begin catch
