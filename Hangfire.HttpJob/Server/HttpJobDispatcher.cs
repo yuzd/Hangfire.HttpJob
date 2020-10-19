@@ -123,6 +123,11 @@ namespace Hangfire.HttpJob.Server
                     await SaveGlobalSetting(context);
                     return;
                 }
+                else if (op == "getagentserver")
+                {
+                    await GetAgentServer(context);
+                    return;
+                }
                 else if (CheckOperateType(op, OperateType.ExportJobs))
                 {
                     await ExportJobsAsync(context);
@@ -143,6 +148,24 @@ namespace Hangfire.HttpJob.Server
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 return;
+            }
+        }
+
+        /// <summary>
+        /// 获取agent服务器
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task GetAgentServer(DashboardContext context)
+        {
+            try
+            {
+                var html = JobAgentHeartBeatServer.GetAgentServerListHtml();
+                await context.Response.WriteAsync(html);
+            }
+            catch (Exception e)
+            {
+                await context.Response.WriteAsync("err:" + e.Message);
             }
         }
 
@@ -231,16 +254,17 @@ namespace Hangfire.HttpJob.Server
                 }
             }
             var result = AddHttprecurringjob(jobItemRt.Item1);
-            if (result)
+            if (string.IsNullOrEmpty(result))
             {
+                JobAgentHeartBeatServer.Start(false);
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                 return;
             }
             else
             {
-                context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(result);
                 return;
             }
         }
@@ -488,6 +512,15 @@ namespace Hangfire.HttpJob.Server
                     queueName = EnqueuedState.DefaultQueue;
                 }
 
+                if (!string.IsNullOrEmpty(jobItem.RunAt))
+                {
+                    //如果设置了 指定的运行时间 先parse一下
+                    if (DateTimeOffset.TryParse(jobItem.RunAt, out var runAtTime))
+                    {
+                        return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), runAtTime);
+                    }
+                }
+
                 if (jobItem.DelayFromMinutes <= 0)
                 {
                     return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
@@ -529,7 +562,7 @@ namespace Hangfire.HttpJob.Server
 
                 using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var hashKey = CodingUtil.MD5(jobItem.JobName + ".runtime");
+                    var hashKey = CodingUtil.MD5((!string.IsNullOrEmpty(jobItem.RecurringJobIdentifier)?jobItem.RecurringJobIdentifier:jobItem.JobName) + ".runtime");
                     using (var tran = connection.CreateWriteTransaction())
                     {
                         tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>>
@@ -743,7 +776,7 @@ namespace Hangfire.HttpJob.Server
         /// <param name="jobItem"></param>
         /// <param name="timeZone">job 时区信息</param>
         /// <returns></returns>
-        public bool AddHttprecurringjob(HttpJobItem jobItem)
+        public string AddHttprecurringjob(HttpJobItem jobItem)
         {
             if (string.IsNullOrEmpty(jobItem.QueueName))
             {
@@ -755,6 +788,10 @@ namespace Hangfire.HttpJob.Server
                 // ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
                 var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0).FirstOrDefault();
                 // ReSharper disable once PossibleNullReferenceException
+                if (server == null)
+                {
+                    return "active server not exist!";
+                }
                 var queues = server.Queues.ToList();
                 if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
                 {
@@ -778,24 +815,27 @@ namespace Hangfire.HttpJob.Server
                 { 
                     timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
                 }
-                
-                if(timeZone == null) timeZone = CodingUtil.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
+
+                //https://github.com/yuzd/Hangfire.HttpJob/issues/78
+                var jobidentifier = string.IsNullOrEmpty(jobItem.RecurringJobIdentifier) ? jobItem.JobName : jobItem.RecurringJobIdentifier;
+
+                if (timeZone == null) timeZone = CodingUtil.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的
-                    RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
+                    RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
                         timeZone, jobItem.QueueName.ToLower());
-                    return true;
+                    return string.Empty;
                 }
 
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
+                RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
                     timeZone, jobItem.QueueName.ToLower());
-                return true;
+                return string.Empty;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.AddHttprecurringjob", ex);
-                return false;
+                return ex.Message;
             }
         }
 

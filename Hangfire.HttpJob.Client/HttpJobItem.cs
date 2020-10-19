@@ -38,6 +38,7 @@ namespace Hangfire.HttpJob.Client
         public int DelayFromMinutes { get; set; }
         public string Cron { get; set; }
         public string JobName { get; set; }
+        public string RecurringJobIdentifier { get; set; }
         public string QueueName { get; set; }
 
         /// <summary>

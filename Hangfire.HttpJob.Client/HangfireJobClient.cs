@@ -192,6 +192,7 @@ namespace Hangfire.HttpJob.Client
                 : hangfireServerUrl + "/httpjob?op=recurringjob";
             HttpJobItem jobItem = new HttpJobItem(url, option)
             {
+                RecurringJobIdentifier = recurringJob.RecurringJobIdentifier,
                 Url = recurringJob.Url,
                 Method = recurringJob.Method,
                 Data = _data,

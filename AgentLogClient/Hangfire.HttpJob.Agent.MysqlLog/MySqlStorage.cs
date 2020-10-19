@@ -9,16 +9,37 @@ using MySql.Data.MySqlClient;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {
-    internal class MySqlStorage : IConsoleStorage, IDisposable
+
+    internal class IMysqlStorageFactory : IStorageFactory
+    {
+        public IHangfireStorage CreateHangfireStorage(JobStorageConfig config)
+        {
+            return new MySqlStorage(new MySqlStorageOptions
+            {
+                ExpireAt = config.ExpireAt,
+                ExpireAtDays = config.ExpireAtDays ?? 7,
+                HangfireDb = config.HangfireDb,
+                TablePrefix = config.TablePrefix
+            });
+        }
+
+        public IHangfireConsole CreateHangforeConsole(IHangfireStorage storage)
+        {
+            return new MysqlConsole(storage);
+        }
+    }
+
+
+    internal class MySqlStorage : IHangfireStorage, IDisposable
     {
         private readonly string _connectionString;
         private readonly MySqlStorageOptions _options;
 
-        public MySqlStorage(IOptions<MySqlStorageOptions> options)
+        public MySqlStorage(MySqlStorageOptions options)
         {
-            if (options == null || options.Value == null) throw new ArgumentNullException(nameof(MySqlStorageOptions));
-            _connectionString = options.Value.HangfireDb;
-            _options = options.Value;
+            if (options == null) throw new ArgumentNullException(nameof(MySqlStorageOptions));
+            _connectionString = options.HangfireDb;
+            _options = options;
             if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (_connectionString == null) throw new ArgumentNullException("connectionString");
 
@@ -43,6 +64,10 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                         "Could not find connection string with name '{0}' in application config file",
                         _connectionString));
             }
+        }
+
+        public MySqlStorage(IOptions<MySqlStorageOptions> options):this(options.Value)
+        {
         }
 
 
@@ -122,8 +147,8 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                     connection.Execute(
                         $"insert into {_options.TablePrefix}Hash (`Key`, Field, Value,ExpireAt) " +
                         "value (@key, @field, @value,@ExpireAt) " +
-                        "on duplicate key update Value = @value",
-                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = DateTime.Now.AddDays(_options.ExpireAtDays) });
+                        "on duplicate key update Value = @value,ExpireAt=@ExpireAt",
+                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = _options.ExpireAt!=null? DateTime.UtcNow.Add(_options.ExpireAt.Value) : DateTime.UtcNow.AddDays(_options.ExpireAtDays) });
                 }
             });
         }
@@ -142,7 +167,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                     $"INSERT INTO `{_options.TablePrefix}Set` (`Key`, `Value`, `Score`,`ExpireAt`) " +
                     "VALUES (@Key, @Value, @Score,@ExpireAt) " +
                     "ON DUPLICATE KEY UPDATE `Score` = @Score",
-                    new { Key = key, Value =value, Score=score, ExpireAt=DateTime.Now.AddDays(_options.ExpireAtDays) });
+                    new { Key = key, Value =value, Score=score, ExpireAt = _options.ExpireAt != null ? DateTime.UtcNow.Add(_options.ExpireAt.Value) : DateTime.UtcNow.AddDays(_options.ExpireAtDays) });
             });
         }
         public void Dispose()

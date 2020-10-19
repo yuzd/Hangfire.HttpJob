@@ -108,6 +108,11 @@ namespace Hangfire.HttpJob.Server
     public class BaseJobItems
     {
         /// <summary>
+        /// 周期性job唯一的id(如果不填就用JobName)
+        /// </summary>
+        public string RecurringJobIdentifier { get; set; }
+
+        /// <summary>
         /// 请求Url
         /// </summary>
         public string Url { get; set; }
@@ -136,6 +141,12 @@ namespace Hangfire.HttpJob.Server
         /// -1 代表手动 0代表 立即执行 >0 代表延迟分钟数
         /// </summary>
         public int DelayFromMinutes { get; set; }
+
+        /// <summary>
+        /// 延迟任务指定 如果指定了RunAt就会忽略 DelayFromMinutes
+        /// </summary>
+        public string RunAt { get; set; }
+
         /// <summary>
         /// 周期性job的Cron表达式
         /// </summary>

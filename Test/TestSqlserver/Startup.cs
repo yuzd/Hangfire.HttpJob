@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
+using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob;
 using Hangfire.SqlServer;
 using Hangfire.Tags;
@@ -68,7 +70,7 @@ namespace TestSqlserver
                     RecurringJobTimeZone = TZConvert.GetTimeZoneInfo("Asia/Shanghai"), //这里指定了添加周期性job时的时区
                     // RecurringJobTimeZone = TimeZoneInfo.Local
                     // CheckHttpResponseStatusCode = code => (int)code < 400   //===》(default)
-                });
+                }).UseHeartbeatPage(); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,12 +92,13 @@ namespace TestSqlserver
             var queues = JsonConfig.GetSection("HangfireQueues").Get<List<string>>().ToArray();
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
+                ServerName = "HangfireServer",
                 ServerTimeout = TimeSpan.FromMinutes(4),
                 SchedulePollingInterval = TimeSpan.FromSeconds(15), //秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
                 Queues = queues, //队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40) //工作线程数，当前允许的最大线程，默认20
-            });
+            }, additionalProcesses: new[] { new ProcessMonitor() });
 
             var hangfireStartUpPath = JsonConfig.GetSection("HangfireStartUpPath").Get<string>();
             if (string.IsNullOrWhiteSpace(hangfireStartUpPath)) hangfireStartUpPath = "/job";

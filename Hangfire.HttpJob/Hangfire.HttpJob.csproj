@@ -5,9 +5,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>httpjob for Hangfire(基于hangfire的webjob调度服务)</Description>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>3.3.1</Version>
+    <Version>3.4.4</Version>
     <Authors>yuzd</Authors>
-    <AssemblyVersion>3.3.1.0</AssemblyVersion>
+    <AssemblyVersion>3.4.4.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +17,12 @@
     <None Remove="Content\jsoneditor.js" />
     <None Remove="Content\sweetalert2.min.css" />
     <None Remove="Content\sweetalert2.min.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\css\styles.css" />
+    <None Include="Dashboard\Heartbeat\Dashboard\html\OverviewPage.html" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\knockout-3.4.2.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\knockout.bindings.orderable.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\numeral.min.js" />
+    <None Include="Dashboard\Heartbeat\Dashboard\js\OverviewPage.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,12 +32,18 @@
     <EmbeddedResource Include="Content\jsoneditor.js" />
     <EmbeddedResource Include="Content\sweetalert2.min.css" />
     <EmbeddedResource Include="Content\sweetalert2.min.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\css\styles.css" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\html\OverviewPage.html" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\knockout-3.4.2.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\knockout.bindings.orderable.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\numeral.min.js" />
+    <EmbeddedResource Include="Dashboard\Heartbeat\Dashboard\js\OverviewPage.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.11" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.14" />
     <PackageReference Include="Hangfire.Console" Version="1.4.2" />
-    <PackageReference Include="Hangfire.Tags" Version="1.6.3" />
+    <PackageReference Include="Hangfire.Tags" Version="1.6.4" />
     <PackageReference Include="HttpClientFactory" Version="1.0.3" />
     <PackageReference Include="MailKit" Version="2.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
@@ -65,6 +77,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>CronJobsPage.generated.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dashboard\Heartbeat" />
   </ItemGroup>
 
 </Project>

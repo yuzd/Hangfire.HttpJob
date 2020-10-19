@@ -54,6 +54,11 @@ namespace Hangfire.HttpJob.Client
         public string JobName { get; set; }
 
         /// <summary>
+        /// job的唯一标识 如果没有设置值的话就等同于JobName
+        /// </summary>
+        public string RecurringJobIdentifier { get; set; }
+
+        /// <summary>
         /// QueueName的名称 如果不配置就用默认的 DEFAULT
         /// </summary>
         public string QueueName { get; set; }

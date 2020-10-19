@@ -20,20 +20,16 @@ namespace TestHangfireRedisAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            await Task.Delay(1000 * 10);
-           
-            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
+            jobContext.Console.WriteLine(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
+            while (!jobContext.CancelToken.IsCancellationRequested)
+            {
+                jobContext.Console.WriteLine("dddd");
+                await Task.Delay(1000 * 10);
+            }
+            throw new Exception("dddddd");
+            jobContext.Console.WriteLine("game over");
         }
 
-        public override void OnStop(JobContext jobContext)
-        {
-            _logger.LogInformation("OnStop");
-        }
-
-        public override void OnException(JobContext jobContext,Exception ex)
-        {
-            _logger.LogError(ex, nameof(OnException) + (ex.Data["Method"] ?? string.Empty));
-        }
     }
 }

@@ -1,0 +1,58 @@
+﻿<link rel="stylesheet" type="text/css" href="heartbeat/cssstyles" />
+<script defer type="text/javascript" src="heartbeat/jsknockout"></script>
+<script defer type="text/javascript" src="heartbeat/jsknockoutorderable"></script>
+<script defer type="text/javascript" src="heartbeat/jsnumeral"></script>
+<script defer type="text/javascript" src="heartbeat/jspage"></script>
+
+<div class="row">
+    <div class="col-md-6">
+        <h3>CPU</h3>
+        <canvas id="cpu-chart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <h3>RAM</h3>
+        <canvas id="mem-chart"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12" style="margin-top: 30px">
+        <div class="table-responsive">
+            <table class="table table-text">
+                <colgroup>
+                    <col width="24px" />
+                    <col width="45%" />
+                    <col width="auto" />
+                    <col width="12%" />
+                    <col width="12%" />
+                </colgroup>
+
+                <thead>
+                    <tr>
+                        <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="Click to toggle data series">PID</span></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'displayName', defaultField: true, defaultDirection: 'asc'}">Server</a></th>
+                        <th>Exec name</th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'cpuUsageRawValue'}">CPU</a></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'ramUsageRawValue'}">RAM</a></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'diskUsage'}">Disk</a></th>
+                    </tr>
+                </thead>
+
+                <tbody data-bind="foreach: serverList">
+                    <tr>
+                        <td>
+                            <span class="badge" data-bind="style: { 'background-color': displayColor }, click: $parent.hideSeries">
+                                <span class="text-center pid-label" data-bind="text: processId, style: { 'text-decoration': hidden() ? 'line-through' : 'none' }"></span>
+                            </span>
+                        </td>
+                        <td data-bind="text: displayName, style: { 'color': error() ? 'red' : 'black'}"></td>
+                        <td data-bind="text: processName"></td>
+                        <td data-bind="text: cpuUsage"></td>
+                        <td data-bind="text: ramUsage"></td>
+                        <td data-bind="text: diskUsage"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

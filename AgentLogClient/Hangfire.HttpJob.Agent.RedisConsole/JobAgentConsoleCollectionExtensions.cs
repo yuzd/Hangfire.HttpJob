@@ -4,18 +4,38 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using Hangfire.HttpJob.Agent.Config;
 using Hangfire.HttpJob.Agent.RedisConsole.Config;
 
 namespace Hangfire.HttpJob.Agent.RedisConsole
 {
     public static class JobAgentConsoleCollectionExtensions
     {
+
+        public static IServiceCollection AddHangfireJobAgent(this IServiceCollection services, Action<JobAgentServiceConfigurer> configure = null)
+        {
+            services.AddHangfireHttpJobAgent(configure);
+            services.AddJobAgentConsoleToRedis();
+            return services;
+        }
+
+
+
+        public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<RedisConsoleOptionsConfigurer> configureStorageOptions = null)
+        {
+            app.UseHangfireHttpJobAgent(configureOptions);
+            app.UseJobAgentConsoleToRedis(configureStorageOptions);
+            return app;
+        }
+
         public static IServiceCollection AddJobAgentConsoleToRedis(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddOptions();
             serviceCollection.TryAddSingleton<IConfigureOptions<RedisStorageOptions>, RedisConsoleOptions>();
-            serviceCollection.TryAddSingleton<IConsoleStorage, RedisStorage>();
+            serviceCollection.TryAddSingleton<IHangfireStorage, RedisStorage>();
             serviceCollection.TryAddTransient<IHangfireConsole, RedisConsole>();
+            serviceCollection.TryAddTransient<IStorageFactory, IRedisStorageFactory>();
             return serviceCollection;
         }
 
@@ -37,16 +57,14 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
                 logger.LogCritical(evt, exception, "【Hangfire.HttpJob.Agent.RedisConsole】 - Failed to configure Hangfire.HttpJob.Agent.RedisConsole middleware");
             }
 
-            if (options.Value == null)
+            JobStorageConfig.LocalJobStorageConfig = new JobStorageConfig
             {
-                logger.LogCritical(evt, "【Hangfire.HttpJob.Agent.RedisConsole】 - RedisStorageOptions can not be null");
-                return app;
-            }
-
-            if (string.IsNullOrEmpty(options.Value.HangfireDb))
-            {
-                throw new ArgumentException(nameof(RedisStorageOptions.HangfireDb));
-            }
+                Type = "redis",
+                HangfireDb = options.Value?.HangfireDb,
+                Db = options.Value?.DataBase,
+                ExpireAtDays = options.Value?.ExpireAtDays,
+                TablePrefix = options.Value?.TablePrefix
+            };
 
             logger.LogInformation(evt, "【Hangfire.HttpJob.Agent.RedisConsole】 - Registered RedisConsole middleware Success!");
 

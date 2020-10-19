@@ -4,8 +4,12 @@ using System.Text;
 
 namespace Hangfire.HttpJob.Agent
 {
-
-    public interface IConsoleStorage
+    public interface IStorageFactory
+    {
+        IHangfireStorage CreateHangfireStorage(JobStorageConfig config);
+        IHangfireConsole CreateHangforeConsole(IHangfireStorage storage);
+    }
+    public interface IHangfireStorage:IDisposable
     {
         void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
 

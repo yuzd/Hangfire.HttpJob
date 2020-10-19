@@ -51,7 +51,32 @@ namespace Hangfire.HttpJob.Support
 
             return _appsettingsJson??new Dictionary<string, object>();
         }
-        
+
+        /// <summary>
+        /// 获取job的执行url页面可以查看日志等
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <returns></returns>
+        public static string GetCurrentJobDetailUrl(string jobId)
+        {
+            //优先使用全局配置里面的参数
+            CodingUtil.GetGlobalAppsettings().TryGetValue("CurrentDomain", out var currentDomain);
+
+            var logDetail = currentDomain != null && !string.IsNullOrEmpty(currentDomain.ToString()) ? $"{currentDomain}/job/jobs/details/{jobId}" : string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{CodingUtil.HangfireHttpJobOptions.CurrentDomain}/job/jobs/details/{jobId}";
+
+            return logDetail;
+        }
+
+        /// <summary>
+        /// JobAgent的单例模式 当没有执行完重复执行是否需要视为错误对待
+        /// </summary>
+        /// <returns></returns>
+        public static bool IgnoreJobAgentSingletonMultExcuteError()
+        {
+            //优先使用全局配置里面的参数
+            return CodingUtil.GetGlobalAppsettings().TryGetValue("IgnoreJobAgentSingletonMultExcuteError", out var value) && value is bool dd && dd ;  
+        }
+
         /// <summary>
         /// 获取动态的全局配置
         /// </summary>

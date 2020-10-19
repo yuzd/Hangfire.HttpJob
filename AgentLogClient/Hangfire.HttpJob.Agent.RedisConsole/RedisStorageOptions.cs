@@ -10,6 +10,6 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         public string HangfireDb { get; set; } 
         public int DataBase { get; set; } 
         public int ExpireAtDays { get; set; } = 7;
-
+        public TimeSpan? ExpireAt { get; set; }
     }
 }

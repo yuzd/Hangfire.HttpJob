@@ -1,0 +1,55 @@
+﻿.server-indicator {
+    display: inline-block;
+    border: 0 solid;
+    border-radius: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: text-top;
+}
+
+.sortable-header {
+    color: #333 !important;
+    text-decoration: none !important;
+}
+
+.pid-label {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    min-width: 3em !important;
+    display: inline-block !important;
+}
+
+.asc:after {
+    content: ' \e155';
+    position: relative;
+    top: 2px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+
+.desc:after {
+    content: ' \e156';
+    position: relative;
+    top: 2px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+
+.min-width {
+    width: 16px;
+}
+
+.table-text {
+    font-size: 12pt;
+}

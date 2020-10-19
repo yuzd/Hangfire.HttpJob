@@ -64,6 +64,7 @@
             var GlobalSetButton = '';
             var josnDiv = '';
             var PauseButton = '';
+            var DeleteButton = '';
             var EditRecurringJobutton = '';
             var ExportJobsButton = "";
             var ImportJobsButton = "";
@@ -88,6 +89,7 @@
                 ContentType: "application/json",
                 Url: "http://",
                 DelayFromMinutes: 1,
+                RunAt: "",
                 Headers: {},
                 Data: {},
                 Timeout: config.GlobalHttpTimeOut,
@@ -276,10 +278,10 @@
             }
 
             //暂停和启用任务
-            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
+            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-success" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
                 '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
-
+            
             // 获取AgentJob 详情
             var getAgentJobDeatilButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="JobDetail">' +
                 '<span class="glyphicon glyphicon-record"> ' + (config.AgentJobDeatilButton) + '</span>' +
@@ -334,7 +336,18 @@
             $(document.body).append(jobDetailModel);
             $(document.body).append(importDivModel);
             $(document.body).append(josnDiv);
+            var removeUrl = '';
             if (config.NeedEditRecurringJobButton) {
+
+                //对删除按钮进行改造
+                //var removeButtonName = $($('.js-jobs-list-command')[1]).text().trim();
+                //removeUrl = $($('.js-jobs-list-command')[1]).data('url');
+                //$($('.js-jobs-list-command')[1]).remove();
+                //DeleteButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-danger" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="DelJob">' +
+                //    '<span class="glyphicon glyphicon-play"> ' + removeButtonName + '</span>' +
+                //    '</button>';
+
+                //$('.btn-toolbar-top').append(DeleteButton);
 
                 //启动或暂停
                 $('.btn-toolbar-top').append(PauseButton);
@@ -348,7 +361,7 @@
 
 
                 //停止
-                var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="stop agent job..." disabled id="StopJob">' +
+                var StopButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-danger" style="float:inherit;margin-left:10px" data-loading-text="stop agent job..." disabled id="StopJob">' +
                     '<span class="glyphicon glyphicon-stop"> ' + config.StopBackgroudJobButtonName + '</span>' +
                     '</button>';
                 $('.btn-toolbar-top').append(StopButton);
@@ -595,6 +608,51 @@
                 e.preventDefault();
             });
 
+            //删除job
+            $('#DelJob').click(function (e) {
+              
+                var jobId = [];
+                $.each($(".js-jobs-list-checkbox:checked"), function (index, d) { jobId.push($(d).val()) });
+                if (jobId.length<1) {
+                    swal({
+                        title: "",
+                        text: "Please Select One Job!",
+                        type: "error"
+                    });
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+                swal({
+                    title: "Remove Job",
+                    text: "Are you sure want to remove?",
+                    type: "warning",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    inputPlaceholder: "start param",
+                    showLoaderOnConfirm: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Submit",
+                    cancelButtonText: "Cancel"
+                }, function () {
+                    $.ajax({
+                        type: "post",
+                        url: agentJobDeatilButtonUrl,
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json", "Cron": (config.NeedEditRecurringJobButton ? "1" : "") }),
+                        async: true,
+                        success: function (returndata) {
+                            $.post(removeUrl, { 'jobs[]': jobId}, function () {
+                                window.location.reload();
+                            });
+                        }
+                    });
+                });
+
+                e.stopPropagation();
+                e.preventDefault();
+            });
             //暂停任务
             $("#PauseJob").click(function (e) {
 
@@ -1030,44 +1088,44 @@
 
 
 
-    //if (/\/jobs\/details\/([^/]+)$/.test(path)) {
-    //    var console = $(".console").first();
-    //    if (console.length != 1) return;
-    //    var consoleId = $(console[0]).data('id');
-    //    if (!consoleId) return;
-    //    var url = window.Hangfire.config.consolePollUrl + consoleId;
-    //    var currentLine = $('.line-buffer,.line').length;
 
 
+    if (!window.location.pathname.endsWith('/job/servers') || !window.Hangfire.httpjobConfig.GetAgentServerListUrl) {
+        return;
+    }
 
 
-    //    function poolGetProgress(start) {
-    //        $.get(url,
-    //            { start: start },
-    //            function (data) {
-    //                //解析
-    //                var ele = $(data);
-    //                var lines = ele.find('.line');
-    //                var lastLine = ele[lines - 1];
-    //                var endLine = $(lastLine).html();
-    //                //判断是否结束了
-    //                if (endLine.indexOf('【JobAgent】【') > 0) {
-    //                    var target = endLine.split('【JobAgent】【')[1].split('】')[0];
-    //                    if (target.indexOf('OnStop') > -1) {
-    //                        return;
-    //                    }
-    //                }
+    $.ajax({
+        type: "post",
+        url: window.Hangfire.httpjobConfig.GetAgentServerListUrl,
+        contentType: "html",
+        async: true,
+        success: function (returndata) {
+            if (!returndata || returndata.length < 1) {
+                return;
+            }
+            if (returndata.substr(0, 4) == 'err:') {
+                swal({
+                    title: "",
+                    text: returndata,
+                    type: "error"
+                });
+                return;
+            }
 
-    //                //找到新增的
+            $($('.row')[0]).append($(returndata));
+            Hangfire.page._initialize();
+        },
+        fail: function (errText) {
+            swal({
+                title: "",
+                text: errText.responseText || "get json fail！",
+                type: "error"
+            });
+        }
+    });
+  
 
-
-
-    //            }, "html");
-    //    }
-
-
-    //    poolGetProgress(currentLine);
-    //}
 })(window.Hangfire = window.Hangfire || {});
 
 //找出已经暂停的job
@@ -1109,9 +1167,22 @@ var jobSearcher = new function () {
             $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
                 function () {
                     var table = $('.table-responsive').find('table');
-                    var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('td[class=min-width]:contains(' + keyword + ')').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
+                        var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) + ')').closest('tr');
+                    } else {
+                        var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    }
                     $(table).find('tbody tr').remove();
-                    $(table).find('tbody').append(filtered);
+                    //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
+                    if (location.href.endsWith('jobs/failed')) {
+                        for (var j = 0; j < filtered.length; j++) {
+                            $(table).find('tbody').append(filtered[j]);
+                            $(table).find('tbody').append('<tr></tr>');
+                        }
+                        $('.js-jobs-list .expander').remove();
+                    } else {
+                        $(table).find('tbody').append(filtered);
+                    }
                     //如果作业已经暂停，则用红色字体标识
                     $(table).find('tbody').find('tr').each(function () {
                         var tdArr = $(this).children();
@@ -1131,9 +1202,23 @@ var jobSearcher = new function () {
         $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
             function () {
                 var table = $('.table-responsive').find('table');
-                var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
+                    var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) +')').closest('tr');
+                } else {
+                    var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                }
+                 
                 $(table).find('tbody tr').remove();
-                $(table).find('tbody').append(filtered);
+                //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
+                if (location.href.endsWith('jobs/failed')) {
+                    for (var j = 0; j < filtered.length; j++) {
+                        $(table).find('tbody').append(filtered[j]);
+                        $(table).find('tbody').append('<tr></tr>');
+                    }
+                    $('.js-jobs-list .expander').remove();
+                } else {
+                    $(table).find('tbody').append(filtered);
+                }
                 //如果作业已经暂停，则用红色字体标识
                 $(table).find('tbody').find('tr').each(function () {
                     var tdArr = $(this).children();
@@ -1368,27 +1453,6 @@ if (window.attachEvent) {
     })();
 
 
+
 })(jQuery, window.Hangfire = window.Hangfire || {});
 
-$(function () {
-    var path = window.location.pathname;
-
-    if (/\/jobs\/details\/([^/]+)$/.test(path)) {
-        // execute scripts for /jobs/details/<jobId>
-        if ($('.page-header').html().indexOf('JobAgent ') < 0) {
-            return;
-        }
-
-        $(".console").each(function (index) {
-            var $this = $(this),
-                c = new Hangfire.Console2($this);
-
-
-            if (index === 0) {
-                debugger;
-                // poll on the first console
-                c.poll();
-            }
-        });
-    }
-});

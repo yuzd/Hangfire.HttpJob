@@ -47,20 +47,31 @@ namespace Hangfire.HttpJob.Agent
                 var agentClass = httpContext.Request.Headers["x-job-agent-class"].ToString();
                 var agentAction = httpContext.Request.Headers["x-job-agent-action"].ToString();
                 var jobBody = httpContext.Request.Headers["x-job-body"].ToString();
+                var jobUrl = httpContext.Request.Headers["x-job-url"].ToString();
+                var runJobId = httpContext.Request.Headers["x-job-id"].ToString();
+                var storage = httpContext.Request.Headers["x-job-storage"].ToString();
+                var serverInfo = httpContext.Request.Headers["x-job-server"].ToString();
                 if (!string.IsNullOrEmpty(jobBody))//是base64的
                 {
                     jobBody = Encoding.UTF8.GetString(Convert.FromBase64String(jobBody));
                 }
-                if (string.IsNullOrEmpty(agentClass))
+            
+                if (!string.IsNullOrEmpty(serverInfo))
                 {
-                    message = "err:x-job-agent-class in headers can not be empty!";
-                    _logger.LogError(message);
-                    return;
+                    serverInfo = Encoding.UTF8.GetString(Convert.FromBase64String(serverInfo));
                 }
+                
 
                 if (string.IsNullOrEmpty(agentAction))
                 {
                     message = $"err:x-job-agent-action in headers can not be empty!";
+                    _logger.LogError(message);
+                    return;
+                }
+
+                if (!agentAction.Equals("heartbeat") && string.IsNullOrEmpty(agentClass))
+                {
+                    message = "err:x-job-agent-class in headers can not be empty!";
                     _logger.LogError(message);
                     return;
                 }
@@ -73,7 +84,48 @@ namespace Hangfire.HttpJob.Agent
 
                 if(jobItem== null)jobItem = new JobItem();
 
+                if (!string.IsNullOrEmpty(jobUrl))//是base64的
+                {
+                    jobUrl = Encoding.UTF8.GetString(Convert.FromBase64String(jobUrl));
+                    jobItem.JobDetailUrl = jobUrl;
+                }
+
+                //本地没有配置过 从服务端里面拿
+                if (JobStorageConfig.LocalJobStorageConfig != null && string.IsNullOrEmpty(JobStorageConfig.LocalJobStorageConfig.HangfireDb) && !string.IsNullOrEmpty(storage))
+                {
+                    var storageStr = Encoding.UTF8.GetString(Convert.FromBase64String(storage));
+                    jobItem.Storage = Newtonsoft.Json.JsonConvert.DeserializeObject<JobStorageConfig>(storageStr);
+                    if(jobItem.Storage.Type != JobStorageConfig.LocalJobStorageConfig.Type)
+                    {
+                        message = $"err:x-job-agent-type use storage： {JobStorageConfig.LocalJobStorageConfig.Type} ，but hangfire server storage is {jobItem.Storage.Type}，please check!";
+                        _logger.LogError(message);
+                        return;
+                    }
+
+                    if (string.IsNullOrEmpty(jobItem.Storage.HangfireDb))
+                    {
+                        message = $"err:x-job-agent-type use invaild storage config，please check!";
+                        _logger.LogError(message);
+                        return;
+                    }
+
+                    if (jobItem.Storage.ExpireAtDays == null || jobItem.Storage.ExpireAtDays.Value < 1)
+                        jobItem.Storage.ExpireAtDays = 7;
+                }
+
+                jobItem.JobId = runJobId;
+                if(!string.IsNullOrEmpty(serverInfo))jobItem.HangfireServerId = serverInfo.Split(new string[] {"@_@"}, StringSplitOptions.None)[0];
+
                 agentAction = agentAction.ToLower();
+                if (agentAction == "heartbeat" && !string.IsNullOrEmpty(jobItem.HangfireServerId))
+                {
+                    jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
+                    var currentServerUrl = httpContext.Request.Headers["x-job-agent-server"].ToString();
+                    var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                    HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, jobStorage);
+                    return;
+                }
+
                 var requestBody = await GetJobItem(httpContext);
                 var agentClassType = GetAgentType(agentClass);
                 var jobHeaders = GetJobHeaders(httpContext);
@@ -111,9 +163,11 @@ namespace Hangfire.HttpJob.Agent
                             job.AgentClass = agentClass;
                         }
 
-                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
+                        var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                        
                         jobItem.JobParam = requestBody;
-                        job.Run(jobItem, console, jobHeaders);
+                        job.Run(jobItem, console, jobStorage,jobHeaders);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
                         
@@ -134,8 +188,11 @@ namespace Hangfire.HttpJob.Agent
                             _logger.LogWarning(message);
                             return;
                         }
-                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        job.Stop(jobItem,console,jobHeaders);
+
+                        var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                        
+                        job.Stop(jobItem,console, jobStorage,jobHeaders);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
                         return;
@@ -164,9 +221,12 @@ namespace Hangfire.HttpJob.Agent
                     job.TransitentJobDisposeEvent +=  transitentJob.JobRemove;
                     var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string,JobAgent>());
                     jobAgentList.TryAdd(job.Guid,job);
-                    var console = GetHangfireConsole(httpContext, agentClassType.Item1);
+
+                    var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                    var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
                     jobItem.JobParam = requestBody;
-                    job.Run(jobItem, console, jobHeaders);
+                  
+                    job.Run(jobItem, console, jobStorage, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
 
@@ -193,8 +253,11 @@ namespace Hangfire.HttpJob.Agent
                             stopedJobList.Add(runingJob.Value);
                             continue;
                         }
-                        var console = GetHangfireConsole(httpContext, agentClassType.Item1);
-                        runingJob.Value.Stop(jobItem,console, jobHeaders);
+
+                        var jobStorage = GetHangfireStorage(httpContext, jobItem);
+                        var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
+                      
+                        runingJob.Value.Stop(jobItem,console, jobStorage, jobHeaders);
                         instanceCount++;
                     }
 
@@ -256,10 +319,33 @@ namespace Hangfire.HttpJob.Agent
             {
                 if (!string.IsNullOrEmpty(message))
                 {
-                    if(message.StartsWith("err:")) httpContext.Response.StatusCode = 500;
+                    if (message.StartsWith("err:"))
+                    {
+                        if (message.Contains("already Running") || message.Contains("already Stoped"))
+                        {
+                            httpContext.Response.StatusCode = 501;
+                        }
+                        else 
+                        {
+                            httpContext.Response.StatusCode = 500;
+                        }
+                       
+                    }
                     await httpContext.Response.WriteAsync(message);
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取Storage 通过这个媒介来处理jobagent的job的统一状态
+        /// </summary>
+        /// <returns></returns>
+        private IHangfireStorage GetHangfireStorage(HttpContext httpContext, JobItem jobItem)
+        {
+            if (jobItem.Storage == null) return httpContext.RequestServices.GetService<IHangfireStorage>();
+            var storageFactory = httpContext.RequestServices.GetService<IStorageFactory>();
+            if (storageFactory == null) return null;
+            return storageFactory.CreateHangfireStorage(jobItem.Storage);
         }
 
         /// <summary>
@@ -374,13 +460,14 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType)
+        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType,IHangfireStorage storage)
         {
             IHangfireConsole console = null;
             try
             {
                 //默认每次都是有一个新的实例
-                console = httpContext.RequestServices.GetService<IHangfireConsole>();
+                var consoleFactory = httpContext.RequestServices.GetService<IStorageFactory>();
+                console = consoleFactory.CreateHangforeConsole(storage);
 
                 ConsoleInfo consoleInfo = null;
                 var agentConsole = httpContext.Request.Headers["x-job-agent-console"].ToString();

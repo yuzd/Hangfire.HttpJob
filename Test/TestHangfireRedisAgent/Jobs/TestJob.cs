@@ -19,29 +19,19 @@ namespace TestHangfireRedisAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            jobContext.Console.WriteLine("开始等待10秒");
-            jobContext.Console.WriteLine("结束等待10秒");
-            jobContext.Console.WriteLine("哈哈哈哈",ConsoleFontColor.Cyan);
+            jobContext.Console.WriteLine("开始等待1秒");
+            await Task.Delay(1000 * 1);
+            jobContext.Console.WriteLine("结束等待1秒");
             jobContext.Console.WriteLine("开始测试Progressbar", ConsoleFontColor.Cyan);
-            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
             var bar = jobContext.Console.WriteProgressBar("testbar");
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
-                bar.SetValue(i);
+                bar.SetValue(i * 10);
                 await Task.Delay(1000);
             }
-            _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
         }
 
-        public override void OnStop(JobContext jobContext)
-        {
-            _logger.LogInformation(nameof(OnStop));
-        }
 
-        public override void OnException(JobContext jobContext, Exception ex)
-        {
-            _logger.LogError(ex, nameof(OnException) + (ex.Data["Method"] ?? string.Empty));
-        }
     }
 }
