@@ -122,6 +122,7 @@ namespace RedisHangfire
             var dashbordConfig = new DashboardOptions
             {
                 AppPath = "#",
+                IgnoreAntiforgeryToken = true,
                 DisplayStorageConnectionString = false,
                 IsReadOnlyFunc = Context => false
             };

@@ -6,7 +6,11 @@ using Microsoft.Extensions.Options;
 using System;
 using Hangfire.HttpJob.Agent.Config;
 using Hangfire.HttpJob.Agent.RedisConsole.Config;
+#if !NETCORE
+using Microsoft.Extensions.Configuration;
+using Owin;
 
+#endif
 namespace Hangfire.HttpJob.Agent.RedisConsole
 {
     public static class JobAgentConsoleCollectionExtensions
@@ -20,7 +24,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         }
 
 
-
+#if NETCORE
         public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
             Action<JobAgentOptionsConfigurer> configureOptions = null, Action<RedisConsoleOptionsConfigurer> configureStorageOptions = null)
         {
@@ -28,7 +32,15 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             app.UseJobAgentConsoleToRedis(configureStorageOptions);
             return app;
         }
-
+#else
+  public static IAppBuilder UseHangfireJobAgent(this IAppBuilder app,IServiceCollection services,
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<RedisConsoleOptionsConfigurer> configureStorageOptions = null)
+         {
+            app.UseHangfireHttpJobAgent(services,configureOptions);
+            app.UseJobAgentConsoleToRedis(services,configureStorageOptions);
+            return app;
+        }
+#endif
         public static IServiceCollection AddJobAgentConsoleToRedis(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddOptions();
@@ -40,13 +52,24 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         }
 
 
-
+#if NETCORE
         public static IApplicationBuilder UseJobAgentConsoleToRedis(this IApplicationBuilder app, Action<RedisConsoleOptionsConfigurer> configureOptions = null)
+#else
+        public static IAppBuilder UseJobAgentConsoleToRedis(this IAppBuilder app, IServiceCollection services,Action<RedisConsoleOptionsConfigurer> configureOptions = null)
+#endif
         {
+#if NETCORE
+            var sp = app.ApplicationServices;
+#else
+            var sp = services.BuildServiceProvider();//OWIN
+            var configRoot = sp.GetRequiredService<IConfiguration>();
+            services.Configure<RedisStorageOptions>(configRoot.GetSection("JobAgent:HangfireConsole"));
+            sp = services.BuildServiceProvider();//OWIN
+#endif
             var evt = new EventId(1, "Hangfire.HttpJob.Agent.MysqlConsole");
-            var options = app.ApplicationServices.GetService<IOptions<RedisStorageOptions>>();
+            var options = sp.GetService<IOptions<RedisStorageOptions>>();
             var configurer = new RedisConsoleOptionsConfigurer(options.Value);
-            var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
+            var loggerFactory = sp.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<RedisConsoleOptionsConfigurer>();
             try
             {

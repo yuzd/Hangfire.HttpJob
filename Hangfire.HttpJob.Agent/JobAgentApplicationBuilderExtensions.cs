@@ -3,21 +3,42 @@ using System.Collections.Generic;
 using System.Text;
 using Hangfire.HttpJob.Agent.Config;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+#if !NETCORE
+using Owin;
+
+#endif
 
 namespace Hangfire.HttpJob.Agent
 {
     public static class JobAgentApplicationBuilderExtensions
     {
+#if NETCORE
         public static IApplicationBuilder UseHangfireHttpJobAgent(this IApplicationBuilder app,
+           Action<JobAgentOptionsConfigurer> configureOptions = null)
+#else
+        public static IAppBuilder UseHangfireHttpJobAgent(this IAppBuilder app,IServiceCollection services,
             Action<JobAgentOptionsConfigurer> configureOptions = null)
+#endif
+
         {
+
+#if NETCORE
+            var sp = app.ApplicationServices;
+#else
+            var sp = services.BuildServiceProvider();//OWIN
+            var configRoot = sp.GetRequiredService<IConfiguration>();
+            services.Configure<JobAgentOptions>(configRoot.GetSection("JobAgent"));
+            sp = services.BuildServiceProvider();//OWIN
+#endif
             var evt = new EventId(1, "Hangfire.HttpJob.Agent");
-            var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
+            var loggerFactory = sp.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<JobAgentMiddleware>();
-            var options = app.ApplicationServices.GetService<IOptions<JobAgentOptions>>();
+            var options = sp.GetService<IOptions<JobAgentOptions>>();
             var configurer = new JobAgentOptionsConfigurer(options.Value);
             try
             {
@@ -32,10 +53,18 @@ namespace Hangfire.HttpJob.Agent
             {
                 if (string.IsNullOrEmpty(options.Value.SitemapUrl)) options.Value.SitemapUrl = "/jobagent";
                 logger.LogInformation(evt, "【HttpJobAgent】 - Registered HttpJobAgent middleware to respond to {path}", new { path = options.Value.SitemapUrl });
+#if NETCORE
                 app.Map(options.Value.SitemapUrl, robotsApp =>
                 {
                     robotsApp.UseMiddleware<JobAgentMiddleware>();
                 });
+#else
+                app.Map(options.Value.SitemapUrl, robotsApp =>
+                {
+                    robotsApp.Use<JobAgentMiddleware>(logger, options, loggerFactory, sp);
+                });
+#endif
+
 
                 foreach (KeyValuePair<Type,JobMetaData > jobAgent in JobAgentServiceConfigurer.JobAgentDic)
                 {

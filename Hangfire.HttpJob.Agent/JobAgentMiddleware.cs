@@ -15,12 +15,20 @@ using Microsoft.Extensions.Options;
 
 namespace Hangfire.HttpJob.Agent
 {
+
+#if NETCORE
     internal class JobAgentMiddleware : IMiddleware
+#else
+using Microsoft.Owin;
+public class JobAgentMiddleware : OwinMiddleware
+#endif
+
     {
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
         private readonly ILoggerFactory _loggerFactory;
         private readonly LazyConcurrentDictionary transitentJob;
+#if NETCORE
         public JobAgentMiddleware(ILogger<JobAgentMiddleware> logger, IOptions<JobAgentOptions> options, ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
@@ -29,10 +37,33 @@ namespace Hangfire.HttpJob.Agent
             transitentJob = new LazyConcurrentDictionary();
         }
 
-       
-       
+#else
+        private readonly IServiceProvider serviceProvider;
+        public JobAgentMiddleware(OwinMiddleware next,
+            ILogger<JobAgentMiddleware> logger,
+            IOptions<JobAgentOptions> options,
+            ILoggerFactory loggerFactory,
+            IServiceProvider serviceProvider)
+            : base(next)
+        {
+            this._loggerFactory = loggerFactory;
+            this._logger = logger;
+            this._options = options;
+            transitentJob = new LazyConcurrentDictionary();
+            this.serviceProvider = serviceProvider;
+        }
 
+
+#endif
+
+
+
+#if NETCORE
         public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
+#else
+        public override async Task Invoke(IOwinContext httpContext)
+#endif
+
         {
             httpContext.Response.ContentType = "text/plain";
             string message = string.Empty;
@@ -44,23 +75,23 @@ namespace Hangfire.HttpJob.Agent
                     _logger.LogError(message);
                     return;
                 }
-                var agentClass = httpContext.Request.Headers["x-job-agent-class"].ToString();
-                var agentAction = httpContext.Request.Headers["x-job-agent-action"].ToString();
-                var jobBody = httpContext.Request.Headers["x-job-body"].ToString();
-                var jobUrl = httpContext.Request.Headers["x-job-url"].ToString();
-                var runJobId = httpContext.Request.Headers["x-job-id"].ToString();
-                var storage = httpContext.Request.Headers["x-job-storage"].ToString();
-                var serverInfo = httpContext.Request.Headers["x-job-server"].ToString();
+                var agentClass = GetHeader(httpContext, "x-job-agent-class");
+                var agentAction = GetHeader(httpContext, "x-job-agent-action");
+                var jobBody = GetHeader(httpContext, "x-job-body");
+                var jobUrl = GetHeader(httpContext, "x-job-url");
+                var runJobId = GetHeader(httpContext, "x-job-id");
+                var storage = GetHeader(httpContext, "x-job-storage");
+                var serverInfo = GetHeader(httpContext, "x-job-server");
                 if (!string.IsNullOrEmpty(jobBody))//是base64的
                 {
                     jobBody = Encoding.UTF8.GetString(Convert.FromBase64String(jobBody));
                 }
-            
+
                 if (!string.IsNullOrEmpty(serverInfo))
                 {
                     serverInfo = Encoding.UTF8.GetString(Convert.FromBase64String(serverInfo));
                 }
-                
+
 
                 if (string.IsNullOrEmpty(agentAction))
                 {
@@ -82,7 +113,7 @@ namespace Hangfire.HttpJob.Agent
                     jobItem = Newtonsoft.Json.JsonConvert.DeserializeObject<JobItem>(jobBody);
                 }
 
-                if(jobItem== null)jobItem = new JobItem();
+                if (jobItem == null) jobItem = new JobItem();
 
                 if (!string.IsNullOrEmpty(jobUrl))//是base64的
                 {
@@ -95,7 +126,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     var storageStr = Encoding.UTF8.GetString(Convert.FromBase64String(storage));
                     jobItem.Storage = Newtonsoft.Json.JsonConvert.DeserializeObject<JobStorageConfig>(storageStr);
-                    if(jobItem.Storage.Type != JobStorageConfig.LocalJobStorageConfig.Type)
+                    if (jobItem.Storage.Type != JobStorageConfig.LocalJobStorageConfig.Type)
                     {
                         message = $"err:x-job-agent-type use storage： {JobStorageConfig.LocalJobStorageConfig.Type} ，but hangfire server storage is {jobItem.Storage.Type}，please check!";
                         _logger.LogError(message);
@@ -114,13 +145,13 @@ namespace Hangfire.HttpJob.Agent
                 }
 
                 jobItem.JobId = runJobId;
-                if(!string.IsNullOrEmpty(serverInfo))jobItem.HangfireServerId = serverInfo.Split(new string[] {"@_@"}, StringSplitOptions.None)[0];
+                if (!string.IsNullOrEmpty(serverInfo)) jobItem.HangfireServerId = serverInfo.Split(new string[] { "@_@" }, StringSplitOptions.None)[0];
 
                 agentAction = agentAction.ToLower();
                 if (agentAction == "heartbeat" && !string.IsNullOrEmpty(jobItem.HangfireServerId))
                 {
                     jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
-                    var currentServerUrl = httpContext.Request.Headers["x-job-agent-server"].ToString();
+                    var currentServerUrl = GetHeader(httpContext, "x-job-agent-server");
                     var jobStorage = GetHangfireStorage(httpContext, jobItem);
                     HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, jobStorage);
                     return;
@@ -147,7 +178,7 @@ namespace Hangfire.HttpJob.Agent
 
                 if (!metaData.Transien)
                 {
-                    var job = (JobAgent)httpContext.RequestServices.GetRequiredService(agentClassType.Item1);
+                    var job = (JobAgent)GetService(httpContext,agentClassType.Item1);
                     if (agentAction.Equals("run"))
                     {
                         //单例的 一次只能运行一次
@@ -165,12 +196,12 @@ namespace Hangfire.HttpJob.Agent
 
                         var jobStorage = GetHangfireStorage(httpContext, jobItem);
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
-                        
+
                         jobItem.JobParam = requestBody;
-                        job.Run(jobItem, console, jobStorage,jobHeaders);
+                        job.Run(jobItem, console, jobStorage, jobHeaders);
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
-                        
+
                         return;
                     }
                     else if (agentAction.Equals("stop"))
@@ -191,8 +222,8 @@ namespace Hangfire.HttpJob.Agent
 
                         var jobStorage = GetHangfireStorage(httpContext, jobItem);
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
-                        
-                        job.Stop(jobItem,console, jobStorage,jobHeaders);
+
+                        job.Stop(jobItem, console, jobStorage, jobHeaders);
                         message = $"JobClass:{agentClass} stop success!";
                         _logger.LogInformation(message);
                         return;
@@ -213,19 +244,19 @@ namespace Hangfire.HttpJob.Agent
 
                 if (agentAction.Equals("run"))
                 {
-                    var job = (JobAgent)httpContext.RequestServices.GetRequiredService(agentClassType.Item1);
+                    var job = (JobAgent)GetService(httpContext,agentClassType.Item1);
                     job.Singleton = false;
                     job.AgentClass = agentClass;
                     job.Hang = metaData.Hang;
                     job.Guid = Guid.NewGuid().ToString("N");
-                    job.TransitentJobDisposeEvent +=  transitentJob.JobRemove;
-                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string,JobAgent>());
-                    jobAgentList.TryAdd(job.Guid,job);
+                    job.TransitentJobDisposeEvent += transitentJob.JobRemove;
+                    var jobAgentList = transitentJob.GetOrAdd(agentClass, x => new ConcurrentDictionary<string, JobAgent>());
+                    jobAgentList.TryAdd(job.Guid, job);
 
                     var jobStorage = GetHangfireStorage(httpContext, jobItem);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
                     jobItem.JobParam = requestBody;
-                  
+
                     job.Run(jobItem, console, jobStorage, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
@@ -256,14 +287,14 @@ namespace Hangfire.HttpJob.Agent
 
                         var jobStorage = GetHangfireStorage(httpContext, jobItem);
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
-                      
-                        runingJob.Value.Stop(jobItem,console, jobStorage, jobHeaders);
+
+                        runingJob.Value.Stop(jobItem, console, jobStorage, jobHeaders);
                         instanceCount++;
                     }
 
                     foreach (var stopedJob in stopedJobList)
                     {
-                        jobAgentList.TryRemove(stopedJob.Guid,out _);
+                        jobAgentList.TryRemove(stopedJob.Guid, out _);
                     }
 
                     transitentJob.TryRemove(agentClass, out _);
@@ -293,7 +324,7 @@ namespace Hangfire.HttpJob.Agent
                     }
                     foreach (var stopedJob in stopedJobList)
                     {
-                        jobAgentList.TryRemove(stopedJob.Guid,out _);
+                        jobAgentList.TryRemove(stopedJob.Guid, out _);
                     }
                     if (jobInfo.Count < 1)
                     {
@@ -325,28 +356,72 @@ namespace Hangfire.HttpJob.Agent
                         {
                             httpContext.Response.StatusCode = 501;
                         }
-                        else 
+                        else
                         {
                             httpContext.Response.StatusCode = 500;
                         }
-                       
+
                     }
                     await httpContext.Response.WriteAsync(message);
                 }
             }
         }
 
+#if NETCORE
+        /// <summary>
+        /// 从header里面获取
+        /// </summary>
+        /// <returns></returns>
+        private string GetHeader(HttpContext httpContext, string key)
+        {
+            return httpContext.Request.Headers[key].ToString();
+        }
+
+        private T GetService<T>(HttpContext httpContext)
+        {
+            return httpContext.RequestServices.GetService<T>();
+        }
+        private object GetService(HttpContext httpContext,Type type)
+        {
+            return httpContext.RequestServices.GetRequiredService(type);
+        }
+#else
+        private string GetHeader(IOwinContext httpContext, string key)
+        {
+            return httpContext.Request.Headers[key] ?? string.Empty;
+        }
+
+        private object GetService(Type type)
+        {
+            return serviceProvider.GetService(type);
+        }
+
+        private object GetService(IOwinContext httpContext,Type type)
+        {
+            return serviceProvider.GetService(type);
+        }
+
+         private T GetService<T>(IOwinContext httpContext = null)
+        {
+            return serviceProvider.GetService<T>();
+        }
+#endif
         /// <summary>
         /// 获取Storage 通过这个媒介来处理jobagent的job的统一状态
         /// </summary>
         /// <returns></returns>
+#if NETCORE
         private IHangfireStorage GetHangfireStorage(HttpContext httpContext, JobItem jobItem)
+#else
+         private IHangfireStorage GetHangfireStorage(IOwinContext httpContext, JobItem jobItem)
+#endif
         {
-            if (jobItem.Storage == null) return httpContext.RequestServices.GetService<IHangfireStorage>();
-            var storageFactory = httpContext.RequestServices.GetService<IStorageFactory>();
+            if (jobItem.Storage == null) return GetService<IHangfireStorage>(httpContext);
+            var storageFactory = GetService<IStorageFactory>(httpContext);
             if (storageFactory == null) return null;
             return storageFactory.CreateHangfireStorage(jobItem.Storage);
         }
+
 
         /// <summary>
         /// basi Auth检查
@@ -354,13 +429,18 @@ namespace Hangfire.HttpJob.Agent
         /// <param name="httpContext"></param>
         /// <param name="options"></param>
         /// <returns></returns>
+#if NETCORE
         private bool CheckAuth(HttpContext httpContext, IOptions<JobAgentOptions> options)
+#else
+        private bool CheckAuth(IOwinContext httpContext, IOptions<JobAgentOptions> options)
+#endif
+
         {
             var jobAgent = options.Value;
             if (jobAgent.EnabledBasicAuth && !string.IsNullOrEmpty(jobAgent.BasicUserName) && !string.IsNullOrEmpty(jobAgent.BasicUserPwd))
             {
                 var request = httpContext.Request;
-                var authHeader = request.Headers["Authorization"];
+                var authHeader = GetHeader(httpContext, "Authorization");
                 if (string.IsNullOrEmpty(authHeader))
                 {
                     return false;
@@ -389,12 +469,17 @@ namespace Hangfire.HttpJob.Agent
             return credentials;
         }
 
-        private ConcurrentDictionary<string,string> GetJobHeaders(HttpContext context)
+#if NETCORE
+        private ConcurrentDictionary<string, string> GetJobHeaders(HttpContext context)
+#else
+        private ConcurrentDictionary<string, string> GetJobHeaders(IOwinContext context)
+#endif
+
         {
-            var result = new ConcurrentDictionary<string,string>();
+            var result = new ConcurrentDictionary<string, string>();
             try
             {
-                var agentHeader = context.Request.Headers["x-job-agent-header"].ToString();
+                var agentHeader = GetHeader(context, "x-job-agent-header");
                 if (string.IsNullOrEmpty(agentHeader))
                 {
                     return result;
@@ -403,8 +488,8 @@ namespace Hangfire.HttpJob.Agent
                 var arr = agentHeader.Split(new string[] { "_@_" }, StringSplitOptions.None);
                 foreach (var header in arr)
                 {
-                    var value =  context.Request.Headers[header].ToString();
-                    result.TryAdd(header,Encoding.UTF8.GetString(Convert.FromBase64String(value)));
+                    var value = GetHeader(context, header);
+                    result.TryAdd(header, Encoding.UTF8.GetString(Convert.FromBase64String(value)));
                 }
             }
             catch (Exception)
@@ -419,20 +504,25 @@ namespace Hangfire.HttpJob.Agent
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
+#if NETCORE
         private async Task<string> GetJobItem(HttpContext context)
+#else
+        private async Task<string> GetJobItem(IOwinContext context)
+#endif
+
         {
             try
             {
                 using (var reader = new StreamReader(context.Request.Body))
                 {
-                    var requestBody =await reader.ReadToEndAsync();
+                    var requestBody = await reader.ReadToEndAsync();
                     return requestBody;
                     // Do something
                 }
             }
             catch (Exception e)
             {
-                _logger.LogWarning("ready body content from Request.Body err:"+e.Message);
+                _logger.LogWarning("ready body content from Request.Body err:" + e.Message);
                 throw new Exception("ready body content from Request.Body err:" + e.Message);
             }
         }
@@ -460,17 +550,22 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType,IHangfireStorage storage)
+#if NETCORE
+        private IHangfireConsole GetHangfireConsole(HttpContext httpContext, Type jobType, IHangfireStorage storage)
+#else
+        private IHangfireConsole GetHangfireConsole(IOwinContext httpContext, Type jobType, IHangfireStorage storage)
+#endif
+
         {
             IHangfireConsole console = null;
             try
             {
                 //默认每次都是有一个新的实例
-                var consoleFactory = httpContext.RequestServices.GetService<IStorageFactory>();
+                var consoleFactory = GetService<IStorageFactory>(httpContext);
                 console = consoleFactory.CreateHangforeConsole(storage);
 
                 ConsoleInfo consoleInfo = null;
-                var agentConsole = httpContext.Request.Headers["x-job-agent-console"].ToString();
+                var agentConsole = GetHeader(httpContext, "x-job-agent-console");
                 if (!string.IsNullOrEmpty(agentConsole))
                 {
                     consoleInfo = agentConsole.ToJson<ConsoleInfo>();

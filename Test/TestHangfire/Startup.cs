@@ -1,27 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
-using Hangfire.Heartbeat;
-using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob;
-using Hangfire.SqlServer;
-using Hangfire.Tags;
-using Hangfire.Tags.SqlServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
-using TimeZoneConverter;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
+using Hangfire.MySql;
+using Hangfire.Tags;
+using Hangfire.Tags.MySql;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
-namespace TestSqlserver
+namespace TestHangfire
 {
     public class Startup
     {
@@ -31,8 +32,8 @@ namespace TestSqlserver
         }
 
         public IConfiguration JsonConfig { get; }
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHangfire(Configuration); //Configuration是下面的方法
@@ -40,17 +41,22 @@ namespace TestSqlserver
 
         private void Configuration(IGlobalConfiguration globalConfiguration)
         {
-            globalConfiguration
-                .UseSqlServerStorage(JsonConfig.GetSection("HangfireSqlserverConnectionString").Get<string>(), new SqlServerStorageOptions
-                {
-                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                    QueuePollInterval = TimeSpan.Zero,
-                    UseRecommendedIsolationLevel = true,
-                    UsePageLocksOnDequeue = true,
-                    DisableGlobalLocks = true
-                })
-                .UseTagsWithSql()
+            var mysqlOption = new MySqlStorageOptions
+            {
+                TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                QueuePollInterval = TimeSpan.FromSeconds(15),
+                JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                PrepareSchemaIfNecessary = true,
+                DashboardJobListLimit = 50000,
+                TransactionTimeout = TimeSpan.FromMinutes(1),
+                TablesPrefix = "hangfire"
+            };
+            globalConfiguration.UseStorage(
+                    new MySqlStorage(
+                        JsonConfig.GetSection("HangfireMysqlConnectionString").Get<string>()
+                        , mysqlOption
+                    ))
                 .UseConsole(new ConsoleOptions()
                 {
                     BackgroundColor = "#000079"
@@ -67,15 +73,32 @@ namespace TestSqlserver
                     },
                     DefaultRecurringQueueName = JsonConfig.GetSection("DefaultRecurringQueueName").Get<string>(),
                     DefaultBackGroundJobQueueName = "DEFAULT",
-                    RecurringJobTimeZone = TZConvert.GetTimeZoneInfo("Asia/Shanghai"), //这里指定了添加周期性job时的时区
-                    // RecurringJobTimeZone = TimeZoneInfo.Local
+                    DefaultTimeZone = "Asia/Shanghai",
+                    //EnableDingTalk = true,
+                    //CurrentDomain = "http://localhost:5000"
+                    //RecurringJobTimeZone = TimeZoneInfo.Local,
                     // CheckHttpResponseStatusCode = code => (int)code < 400   //===》(default)
-                }).UseHeartbeatPage(); 
+                    //AddHttpJobFilter = (jobContent) =>
+                    //{
+                    //    //添加httpjob的拦截器 如果返回false就代表不添加 返回true则真正的添加
+
+                    //    if (jobContent.Url.StartsWith("http://localhost") ||
+                    //        jobContent.Url.StartsWith("http://127.0.0.1"))
+                    //    {
+                    //        return true;
+                    //    }
+
+                    //    return false;
+                    //}
+                })
+                .UseTagsWithMySql(sqlOptions:mysqlOption)
+              .UseHeartbeatPage();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory logging)
         {
+
             #region 强制显示中文
             var options = new RequestLocalizationOptions
             {
@@ -89,6 +112,11 @@ namespace TestSqlserver
 
             #endregion
 
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
             var queues = JsonConfig.GetSection("HangfireQueues").Get<List<string>>().ToArray();
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
@@ -98,11 +126,10 @@ namespace TestSqlserver
                 ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
                 Queues = queues, //队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40) //工作线程数，当前允许的最大线程，默认20
-            }, additionalProcesses: new[] { new ProcessMonitor() });
+            },additionalProcesses: new[] { new ProcessMonitor() });
 
             var hangfireStartUpPath = JsonConfig.GetSection("HangfireStartUpPath").Get<string>();
             if (string.IsNullOrWhiteSpace(hangfireStartUpPath)) hangfireStartUpPath = "/job";
-
 
             var dashbordConfig = new DashboardOptions
             {
@@ -147,13 +174,9 @@ namespace TestSqlserver
                     IsReadOnlyFunc = Context => true
                 });
             }
+           
 
-
-            app.Run(async (context) =>
-            {
-                //context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("ok.");
-            });
+            app.Run(async (context) => { await context.Response.WriteAsync(JsonConvert.SerializeObject(new { Success = false, Info = "ok",token_type="Bearer",token="dddd" })); });
         }
     }
 }
