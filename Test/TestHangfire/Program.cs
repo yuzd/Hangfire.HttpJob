@@ -46,7 +46,7 @@ namespace TestHangfire
                             logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
 
 #else
-                            logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                            logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
 #endif
                         }).UseNLog();
                 });

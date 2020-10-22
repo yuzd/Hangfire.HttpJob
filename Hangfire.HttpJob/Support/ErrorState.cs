@@ -25,8 +25,6 @@ namespace Hangfire.HttpJob.Support
         [JsonIgnore]
         public string Name => StateName;
 
-
-
         public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>

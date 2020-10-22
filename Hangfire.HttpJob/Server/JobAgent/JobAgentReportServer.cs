@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Hangfire.Common;
 using Hangfire.HttpJob.Support;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -93,7 +94,16 @@ namespace Hangfire.HttpJob.Server
                             // realTotalMilliseconds 代表的是 jobagent开始执行 到 实际结束的 总共的时长
                             if (isSuccess)
                             {
-                                new BackgroundJobClient().ChangeState(jobId, new SucceededState(null, latency, realTotalMilliseconds));
+                                var currentState = connection.GetStateData(jobId);
+                                if (currentState != null && !string.IsNullOrEmpty(currentState.Name) &&
+                                    currentState.Name.Equals("Failed"))
+                                {
+                                    tran.AddJobState(jobId, new SucceededState(null, latency, realTotalMilliseconds));
+                                }
+                                else
+                                {
+                                    new BackgroundJobClient().ChangeState(jobId, new SucceededState(null, latency, realTotalMilliseconds));
+                                }
                             }
                             else
                             {

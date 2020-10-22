@@ -23,7 +23,16 @@ namespace Hangfire.HttpJob.Support
     public class JobFilter : JobFilterAttribute, IClientFilter, IServerFilter, IElectStateFilter, IApplyStateFilter
     {
         private readonly ILog logger = LogProvider.For<JobFilter>();
-        
+
+        #region Reflection
+
+        protected static readonly ConstructorInfo ProcessingStateCtor = typeof(ProcessingState).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).First();
+
+        protected static readonly FieldInfo ProcessingStateCtorStartAtField = typeof(ProcessingState).GetField("<StartedAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        #endregion
+
+
         /// <summary>
         /// 分布式锁过期时间
         /// </summary>
@@ -182,7 +191,6 @@ namespace Hangfire.HttpJob.Support
                 var jobResult = context.GetJobParameter<string>("jobErr");//不跑出异常也能将job置成Fail
                 if (!string.IsNullOrEmpty(jobResult))
                 {
-                    context.SetJobParameter("serverInfo", string.Empty);
                     context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
                     if (httpJobItem.DelayFromMinutes.Equals(-1))
                     {
@@ -191,6 +199,22 @@ namespace Hangfire.HttpJob.Support
                     else
                     {
                         context.CandidateState = new ErrorState(jobResult);
+                    }
+
+                    var serverInfo = context.GetJobParameter<string>("serverInfo");
+                    var startAt = context.GetJobParameter<string>("jobAgentStartAt");
+                    if (!string.IsNullOrEmpty(serverInfo) && !string.IsNullOrEmpty(startAt))
+                    {
+                        var serverInfoArr = serverInfo.Split(new string[] { "@_@" }, StringSplitOptions.None);
+                        if (serverInfoArr.Length == 2)
+                        {
+                            var startedAt = JobHelper.DeserializeDateTime(startAt);
+                            using (var tran = context.Connection.CreateWriteTransaction())
+                            {
+                                tran.AddJobState(context.BackgroundJob.Id, new ProcessState(serverInfoArr[0], serverInfoArr[1], startedAt));
+                                tran.Commit();
+                            }
+                        }
                     }
                     return;
                 }
@@ -222,12 +246,10 @@ namespace Hangfire.HttpJob.Support
                     {
                         //拿到JobAgent的consoleId
                         var serverInfoArr = serverInfo.Split(new string[] { "@_@" }, StringSplitOptions.None);
-                        var ctor = typeof(ProcessingState).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic);
-                        var instance = (ProcessingState)ctor[0].Invoke(new object[] { serverInfoArr[0], "JobAgent" });
-                        var field = typeof(ProcessingState).GetField("<StartedAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
+                        var instance = (ProcessingState)ProcessingStateCtor.Invoke(new object[] { serverInfoArr[0], "JobAgent" });
                         var startAt = context.GetJobParameter<string>("jobAgentStartAt");
                         var startedAt = JobHelper.DeserializeDateTime(startAt);
-                        field.SetValue(instance, startedAt);
+                        ProcessingStateCtorStartAtField.SetValue(instance, startedAt);
                         context.CandidateState = instance;
                         return;
                     }
