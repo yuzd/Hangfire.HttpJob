@@ -10,7 +10,7 @@ namespace Hangfire.HttpJob.Agent
     public abstract class JobAgent
     {
         private ManualResetEvent _mainThread;
-
+        private volatile int locked;
         /// <summary>
         ///     默认是非Hang
         /// </summary>
@@ -152,9 +152,14 @@ namespace Hangfire.HttpJob.Agent
                 ReportToHangfireServer(jobContext, null);
                 return;
             }
-            
-            lock (this)
+
+            try
             {
+                while (Interlocked.CompareExchange(ref locked, 1, 0) != 0)
+                {
+                    continue; // spin
+                }
+                
                 if (JobStatus == JobStatus.Running)  
                 {
                     ReportToHangfireServer(jobContext, null);
@@ -184,6 +189,10 @@ namespace Hangfire.HttpJob.Agent
                     _ => { ReportToHangfireServer(jobContext,new TaskSchedulerException("runTask fail:"+_?.Exception?.Message)); }, 
                     TaskContinuationOptions.OnlyOnFaulted);
             }
+            finally
+            {
+                locked = 0;
+            }
         }
 
         internal void Stop(JobItem jobItem, IHangfireConsole console,IHangfireStorage storage, ConcurrentDictionary<string, string> headers)
@@ -206,8 +215,13 @@ namespace Hangfire.HttpJob.Agent
                 return;
             }
 
-            lock (this)
+            try
             {
+                while (Interlocked.CompareExchange(ref locked, 1, 0) != 0)
+                {
+                    continue; // spin
+                }
+                
                 if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
                 {
                     ReportToHangfireServer(jobContext, null);
@@ -220,15 +234,19 @@ namespace Hangfire.HttpJob.Agent
                 }
                 
                 Task.Factory.StartNew(async () => {
-                    await stop(jobContext);
-                })
+                        await stop(jobContext);
+                    })
                     .Unwrap()
                     .ContinueWith(
-                    _ =>
-                    {
-                        ReportToHangfireServer(jobContext,new TaskSchedulerException("runTask fail:"+_?.Exception?.Message));
-                    }, 
-                    TaskContinuationOptions.OnlyOnFaulted);
+                        _ =>
+                        {
+                            ReportToHangfireServer(jobContext,new TaskSchedulerException("runTask fail:"+_?.Exception?.Message));
+                        }, 
+                        TaskContinuationOptions.OnlyOnFaulted);
+            }
+            finally
+            {
+                locked = 0;
             }
         }
 
@@ -236,6 +254,7 @@ namespace Hangfire.HttpJob.Agent
         {
             try
             {
+                JobStatus = JobStatus.Stopping;
                 if (Hang)
                 {
                     WriteToDashBordConsole(jobContext.Console, $"【Job Hang OnStop】{AgentClass}");
@@ -293,7 +312,6 @@ namespace Hangfire.HttpJob.Agent
                     _mainThread.WaitOne();
                     _mainThread = null;
                 }
-                JobStatus = JobStatus.Stoped;
             }
             catch (Exception e)
             {
@@ -316,6 +334,7 @@ namespace Hangfire.HttpJob.Agent
             }
             finally
             {
+                JobStatus = JobStatus.Stoped;
                 ReportToHangfireServer(jobContext, null);
                 DisposeJob(jobContext);
             }

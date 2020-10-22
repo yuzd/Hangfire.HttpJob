@@ -182,6 +182,7 @@ namespace Hangfire.HttpJob.Support
                 var jobResult = context.GetJobParameter<string>("jobErr");//不跑出异常也能将job置成Fail
                 if (!string.IsNullOrEmpty(jobResult))
                 {
+                    context.SetJobParameter("serverInfo", string.Empty);
                     context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
                     if (httpJobItem.DelayFromMinutes.Equals(-1))
                     {

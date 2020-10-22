@@ -33,8 +33,8 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
     internal class RedisStorage : IHangfireStorage, IDisposable
     {
         private readonly RedisStorageOptions _options;
-        private readonly IDatabase _redis;
-        private static readonly ConcurrentDictionary<string, IDatabase> _redisConnectionCache = new ConcurrentDictionary<string, IDatabase>();
+        private readonly Lazy<IDatabase> _redis;
+        private static readonly ConcurrentDictionary<string, Lazy<IDatabase>> _redisConnectionCache = new ConcurrentDictionary<string, Lazy<IDatabase>>();
         public RedisStorage(RedisStorageOptions options)
         {
             if (options == null ) throw new ArgumentNullException(nameof(RedisStorageOptions));
@@ -45,8 +45,12 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             var cachekey = connectionString + options.DataBase;
             if (!_redisConnectionCache.TryGetValue(cachekey, out var redis))
             {
-                var connection = ConnectionMultiplexer.Connect(connectionString);
-                redis = connection.GetDatabase(options.DataBase);
+                redis = new Lazy<IDatabase>(() =>
+                {
+                    var connection = ConnectionMultiplexer.Connect(connectionString);
+                    return connection.GetDatabase(options.DataBase);
+                });
+                
                 _redisConnectionCache.TryAdd(cachekey, redis);
             }
 
@@ -61,8 +65,8 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
             var redisKey = this._options.TablePrefix + key;
-            _redis.HashSet(redisKey, ToHashEntries(keyValuePairs));
-            _redis.KeyExpire(redisKey,
+            _redis.Value.HashSet(redisKey, ToHashEntries(keyValuePairs));
+            _redis.Value.KeyExpire(redisKey,
                 _options.ExpireAt != null
                     ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
                     : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
@@ -87,9 +91,9 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         public void AddToSet(string key, string value, double score)
         {
             var redisKey = this._options.TablePrefix + key;
-            _redis.SortedSetAddAsync(redisKey, value, score);
+            _redis.Value.SortedSetAddAsync(redisKey, value, score);
 
-            _redis.KeyExpire(redisKey,
+            _redis.Value.KeyExpire(redisKey,
                 _options.ExpireAt != null
                     ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
                     : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
