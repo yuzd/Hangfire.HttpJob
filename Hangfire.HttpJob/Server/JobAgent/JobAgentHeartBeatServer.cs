@@ -16,7 +16,7 @@ using Hangfire.HttpJob.Support;
 using Hangfire.States;
 using Hangfire.Storage;
 
-namespace Hangfire.HttpJob.Server
+namespace Hangfire.HttpJob.Server.JobAgent
 {
     /// <summary>
     /// 处理jobagent通过storage上报的消息
@@ -210,7 +210,7 @@ namespace Hangfire.HttpJob.Server
                         }
                         new Task(async () =>
                         {
-                            await SendHeartbeat(jobagent.Value.Item1, jobagent.Value.Item2, jobagent.Value.Item3);
+                            await SendHeartbeat(jobagent.Key,jobagent.Value.Item1, jobagent.Value.Item2, jobagent.Value.Item3);
                         }).Start();
                     }
 
@@ -242,12 +242,10 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 给agent发送命令后 agent自己会上报数据到storage的
         /// </summary>
-        /// <param name="url"></param>
-        /// <param name="basicUserName"></param>
-        /// <param name="basicPassword"></param>
         /// <returns></returns>
-        private static async Task SendHeartbeat(string url, string basicUserName, string basicPassword)
+        private static async Task SendHeartbeat(string agentKey,string url, string basicUserName, string basicPassword)
         {
+            var agentServerId = string.Empty;
             try
             {
                 var stroageString = HttpJob.GetJobStorage().Value;
@@ -272,10 +270,36 @@ namespace Hangfire.HttpJob.Server
                 {
                     request.Headers.Add("x-job-server", Convert.ToBase64String(Encoding.UTF8.GetBytes(ProcessMonitor.CurrentServerId)));
                 }
-                var cancelToken = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                var cancelToken = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-                await client.SendAsync(request, cancelToken.Token);
+                var content = await client.SendAsync(request, cancelToken.Token);
 
+                //jobagent的话 在header里面有一个agentServerId
+                agentServerId = content.Headers.GetValues("agentServerId").FirstOrDefault() ?? "";
+               
+            }
+            catch (Exception)
+            {
+                //ignore agent挂了就到这
+            }
+
+            try
+            {
+                using (var connection = JobStorage.Current.GetConnection())
+                using (var writeTransaction = connection.CreateWriteTransaction())
+                {
+                    var values = new Dictionary<string, string>
+                    {
+                        [agentKey] = SerializationHelper.Serialize(new { id = agentServerId, time = DateTime.UtcNow })
+                    };
+                    var hashKey = "activeAgent:" + agentKey;
+                    writeTransaction.SetRangeInHash(hashKey, values);
+                    if (writeTransaction is JobStorageTransaction jsTransaction)
+                    {
+                        jsTransaction.ExpireHash(hashKey, TimeSpan.FromDays(1));
+                    }
+                    writeTransaction.Commit();
+                }
             }
             catch (Exception)
             {

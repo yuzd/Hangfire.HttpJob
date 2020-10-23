@@ -1090,7 +1090,7 @@
 
 
 
-    if (!window.location.pathname.endsWith('/job/servers') || !window.Hangfire.httpjobConfig.GetAgentServerListUrl) {
+    if (!window.location.pathname.endsWith('/servers') || !window.Hangfire.httpjobConfig.GetAgentServerListUrl) {
         return;
     }
 

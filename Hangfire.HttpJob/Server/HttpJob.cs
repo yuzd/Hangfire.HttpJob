@@ -215,6 +215,9 @@ namespace Hangfire.HttpJob.Server
                     {
                         throw new AgentJobException(item.AgentClass, result);
                     }
+
+                    //jobagent的话 在header里面有一个agentServerId
+                    GetCurrentJobAgentServerId(httpResponse, item, context);
                   
                 }
                 //检查HttpResponse StatusCode
@@ -294,6 +297,21 @@ namespace Hangfire.HttpJob.Server
             }
         }
 
+        private static void GetCurrentJobAgentServerId(HttpResponseMessage httpContent, HttpJobItem item, PerformContext context)
+        {
+            
+            if (httpContent.Headers.TryGetValues("agentServerId", out IEnumerable<string> values) && values!=null)
+            {
+                var agentServerId = values.FirstOrDefault();
+                if (!string.IsNullOrEmpty(agentServerId))
+                {
+                    context.SetJobParameter("agentServerId", agentServerId ?? string.Empty);
+                    return;
+                }
+            }
+
+            
+        }
 
         /// <summary>
         /// 获取AgentJob的运行详情

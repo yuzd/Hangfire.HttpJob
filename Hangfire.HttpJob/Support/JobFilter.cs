@@ -216,6 +216,7 @@ namespace Hangfire.HttpJob.Support
                             }
                         }
                     }
+                    context.SetJobParameter("serverInfo", string.Empty);
                     return;
                 }
 
@@ -223,6 +224,7 @@ namespace Hangfire.HttpJob.Support
                 var processingState = context.CandidateState as ProcessingState;
                 if (processingState != null)
                 {
+                    //只有运行中才有这个
                     context.SetJobParameter("serverInfo", processingState.ServerId + "@_@" + processingState.WorkerId);
                     return;
                 }
@@ -231,6 +233,7 @@ namespace Hangfire.HttpJob.Support
                 var failedState = context.CandidateState as FailedState;
                 if (failedState != null)
                 {
+                    context.SetJobParameter("serverInfo", string.Empty);
                     // This filter accepts only failed job state.
                     return;
                 }

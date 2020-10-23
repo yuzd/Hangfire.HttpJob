@@ -23,7 +23,8 @@ using Microsoft.Owin;
 public class JobAgentMiddleware : OwinMiddleware
 #endif
 
-    {
+{
+        private readonly string agentServerId = Guid.NewGuid().ToString("N");
         private readonly ILogger<JobAgentMiddleware> _logger;
         private readonly IOptions<JobAgentOptions> _options;
         private readonly ILoggerFactory _loggerFactory;
@@ -65,6 +66,9 @@ public class JobAgentMiddleware : OwinMiddleware
 #endif
 
         {
+            //设置当前的jobagentServerId到Header里面去
+            httpContext.Response.Cookies.Append("agentServerId",agentServerId);
+            httpContext.Response.Headers.Append("agentServerId", agentServerId);
             httpContext.Response.ContentType = "text/plain";
             string message = string.Empty;
             try
@@ -348,6 +352,7 @@ public class JobAgentMiddleware : OwinMiddleware
             }
             finally
             {
+             
                 if (!string.IsNullOrEmpty(message))
                 {
                     if (message.StartsWith("err:"))

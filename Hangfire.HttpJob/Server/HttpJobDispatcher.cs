@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Common;
+using Hangfire.HttpJob.Server.JobAgent;
 using Hangfire.HttpJob.Support;
 using Hangfire.States;
 

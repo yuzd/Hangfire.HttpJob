@@ -39,4 +39,28 @@ namespace Hangfire.HttpJob.Support
 
         }
     }
+
+    public class HangfireServerShutDownError : Exception
+    {
+        public HangfireServerShutDownError():this("hangfire server was shut down!")
+        {
+            
+        }
+        public HangfireServerShutDownError(string msg):base(msg)
+        {
+            
+        }
+    }
+
+    public class HangfireAgentShutDownError : Exception
+    {
+        public HangfireAgentShutDownError() : this("hangfire agent was shut down!")
+        {
+
+        }
+        public HangfireAgentShutDownError(string msg) : base(msg)
+        {
+
+        }
+    }
 }

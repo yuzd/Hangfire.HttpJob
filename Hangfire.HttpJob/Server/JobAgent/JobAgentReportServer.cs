@@ -8,7 +8,7 @@ using Hangfire.HttpJob.Support;
 using Hangfire.States;
 using Hangfire.Storage;
 
-namespace Hangfire.HttpJob.Server
+namespace Hangfire.HttpJob.Server.JobAgent
 {
     /// <summary>
     /// 处理jobagent通过storage上报的消息
@@ -42,6 +42,7 @@ namespace Hangfire.HttpJob.Server
 
                     foreach (var jobId in jobIdList)
                     {
+                        
                         JobData jobData = connection.GetJobData(jobId);
 
                         //拿到真正的运行结果

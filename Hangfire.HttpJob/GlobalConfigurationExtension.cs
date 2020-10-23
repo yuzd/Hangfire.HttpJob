@@ -7,6 +7,7 @@ using Hangfire.HttpJob.Support;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.HttpJob.Dashboard.Pages;
+using Hangfire.HttpJob.Server.JobAgent;
 using Hangfire.Logging;
 
 namespace Hangfire.HttpJob
@@ -67,6 +68,7 @@ namespace Hangfire.HttpJob
             CodingUtil.HangfireHttpJobOptions = options;
             JobAgentReportServer.Start();
             JobAgentHeartBeatServer.Start();
+            LosedJobCheckServer.Start();
             return config;
         }
 
