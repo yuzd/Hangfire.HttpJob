@@ -518,16 +518,16 @@ namespace Hangfire.HttpJob.Server
                     //如果设置了 指定的运行时间 先parse一下
                     if (DateTimeOffset.TryParse(jobItem.RunAt, out var runAtTime))
                     {
-                        return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), runAtTime);
+                        return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, null, null, false, null), runAtTime);
                     }
                 }
 
                 if (jobItem.DelayFromMinutes <= 0)
                 {
-                    return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null));
+                    return BackgroundJob.Enqueue(() => HttpJob.Excute(jobItem, null, null, false, null));
                 }
 
-                return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null),
+                return BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, null, null, false, null),
                     TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
             }
             catch (Exception ex)
@@ -824,12 +824,12 @@ namespace Hangfire.HttpJob.Server
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的
-                    RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), Cron.Never,
+                    RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem,null,null,false,null), Cron.Never,
                         timeZone, jobItem.QueueName.ToLower());
                     return string.Empty;
                 }
 
-                RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, jobItem.JobName, queueName, jobItem.EnableRetry, null), jobItem.Cron,
+                RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, null, null, false, null), jobItem.Cron,
                     timeZone, jobItem.QueueName.ToLower());
                 return string.Empty;
             }

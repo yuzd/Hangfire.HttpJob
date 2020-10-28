@@ -96,6 +96,7 @@ namespace Hangfire.Heartbeat.Server
             using (var connection = context.Storage.GetConnection())
             using (var writeTransaction = connection.CreateWriteTransaction())
             {
+                
                 var key = Utils.FormatKey(context.ServerId);
                 var data = new ProcessInfo
                 {

@@ -24,6 +24,17 @@ namespace Hangfire.HttpJob.Dashboard
                 .Append("    color: ").Append("red").AppendLine(";")
                 .AppendLine("}");
 
+            if (context.Request != null)
+            {
+                if (context is AspNetCoreDashboardContext abc)
+                {
+                    if (abc.HttpContext.Request.Headers.TryGetValue("Referer", out var refer) && refer.ToString().EndsWith("/recurring"))
+                    {
+                        builder.AppendLine(".table tbody { display:none; }");
+                    }
+                }
+            }
+
             return context.Response.WriteAsync(builder.ToString());
         }
     }

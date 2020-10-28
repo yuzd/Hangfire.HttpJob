@@ -6,25 +6,8 @@
         }
 
         HttpJob.prototype._initialize = function () {
+            changeTable();
             var config = window.Hangfire.httpjobConfig;
-            $(".table tbody").find('tr').each(function () {
-                var tdArr = $(this).children();
-                var ss = tdArr.eq(2).text();
-                if (ss.indexOf('| JobAgent |') >= 0) {
-                    tdArr.eq(2).append('<span class="label label-warning text-uppercase" title="" data-original-title="JobAgent">JobAgent</span>');
-                }
-
-                var ss2 = tdArr.eq(4).text();
-                if (ss2.indexOf('| JobAgent |') >= 0) {
-                    tdArr.eq(4).append('<span class="label label-success text-uppercase" title="" data-original-title="JobAgent">JobAgent</span>');
-                }
-
-                if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
-                    tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="JobAgent" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
-                }
-            });
-
-
             if (!config) return;
 
             if (config.DashboardName) {
@@ -1128,6 +1111,37 @@
 
 })(window.Hangfire = window.Hangfire || {});
 
+
+function changeTable() {
+    var config = window.Hangfire.httpjobConfig;
+    $(".table tbody").find('tr').each(function () {
+        var tdArr = $(this).children();
+        var ss = tdArr.eq(2).text();
+
+
+        if (ss.indexOf('|') >= 0) {
+            var ss1 = ss.split('|');
+            tdArr.eq(2).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+        }
+
+        var ss2 = tdArr.eq(4).text();
+        if (ss2.indexOf('|') >= 0) {
+            var ss1 = ss2.split('|');
+            tdArr.eq(4).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+        }
+
+        if (tdArr.eq(3).text().indexOf('China') > 0) {
+            tdArr.eq(3).html(tdArr.eq(3).html().replace(' Standard Time',''));
+        }
+
+        if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
+            tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="JobAgent" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
+        }
+    });
+    $(".table tbody").show();
+    Hangfire.page._initialize();
+}
+
 //找出已经暂停的job
 var pausedjob = [];
 function GetPausedJobs() {
@@ -1195,6 +1209,7 @@ var jobSearcher = new function () {
                     });
                     $('#loaddata').css('visibility', 'hidden');
                     $('#total-items').text("Check Result: " + filtered.length);
+                    changeTable();
                 });
             return;
         }
@@ -1231,6 +1246,7 @@ var jobSearcher = new function () {
                 });
                 $('#loaddata').css('visibility', 'hidden');
                 $('#total-items').text("Check Result: " + filtered.length);
+                changeTable();
             });
     }
 };
