@@ -14,7 +14,8 @@ namespace Hangfire.HttpJob.Support
         
         public override string Format(DashboardContext context, Job job)
         {
-            var data = job.Args.First() as HttpJobItem;
+            var data = job.Args.FirstOrDefault() as HttpJobItem;
+            if (data == null) return job.Method.Name;
             try
             {
 
