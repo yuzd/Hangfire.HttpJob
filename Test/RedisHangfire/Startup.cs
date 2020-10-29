@@ -11,6 +11,7 @@ using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob;
 using Hangfire.Redis;
 using Hangfire.Tags.Redis;
+using Hangfire.Tags.Redis.StackExchange;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -84,7 +85,7 @@ namespace RedisHangfire
 
                     //    return false;
                     //}
-                }).UseTagsWithRedis(redis, redisOptions: options).UseHeartbeatPage();
+                }).UseTagsWithRedis(redisOptions: options).UseHeartbeatPage();
 
         }
 

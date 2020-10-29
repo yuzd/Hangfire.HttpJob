@@ -221,7 +221,7 @@ namespace Hangfire.HttpJob.Server
                   
                 }
                 //检查HttpResponse StatusCode
-                else if (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode(httpResponse.StatusCode, result))
+                else if ((CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode == null && (int)httpResponse.StatusCode < 400 ) || (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode?.Invoke(httpResponse.StatusCode, result) ?? true))
                 {
                     RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
                     logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");

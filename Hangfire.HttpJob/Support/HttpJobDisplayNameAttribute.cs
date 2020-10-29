@@ -21,10 +21,10 @@ namespace Hangfire.HttpJob.Support
 
                 if (!string.IsNullOrEmpty(data.AgentClass))
                 {
-                    return data.AgentClass + "，Queue:" + data.QueueName + "，Retry:" + (data.EnableRetry) + "|" + data.AgentClass.Split(',')[0].Split('.').Last();
+                    return "Agent:"+data.AgentClass+ ",Queue:" + data.QueueName + ",Retry:" + (data.EnableRetry) + "|" + data.AgentClass.Split(',')[0].Split('.').Last();
                 }
 
-                return data.Url.Replace("|","").Replace("\"","“").Replace("'","’") + "，Queue:" + data.QueueName + "，Retry:" + (data.EnableRetry) + "|" + (data.Url.Split('/').LastOrDefault() ?? data.JobName);
+                return data.Url.Replace("|","").Replace("\"","“").Replace("'","’") + ",Queue:" + data.QueueName + ",Retry:" + (data.EnableRetry) + "|" + (data.Url.Split('/').LastOrDefault() ?? data.JobName);
             }
             catch (Exception)
             {

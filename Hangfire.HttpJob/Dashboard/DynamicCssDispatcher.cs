@@ -20,6 +20,8 @@ namespace Hangfire.HttpJob.Dashboard
         {
             var builder = new StringBuilder();
 
+            builder.AppendLine(".table tbody .tooltip{word-break: break-all;}");
+
             builder.AppendLine(".console, .console .line-buffer {")
                 .Append("    color: ").Append("red").AppendLine(";")
                 .AppendLine("}");
@@ -28,7 +30,7 @@ namespace Hangfire.HttpJob.Dashboard
             {
                 if (context is AspNetCoreDashboardContext abc)
                 {
-                    if (abc.HttpContext.Request.Headers.TryGetValue("Referer", out var refer) && refer.ToString().EndsWith("/recurring"))
+                    if (abc.HttpContext.Request.Headers.TryGetValue("Referer", out var refer) && (refer.ToString().EndsWith("/processing") ||refer.ToString().EndsWith("/recurring")|| refer.ToString().EndsWith("/succeeded") || refer.ToString().EndsWith("/deleted")))
                     {
                         builder.AppendLine(".table tbody { display:none; }");
                     }

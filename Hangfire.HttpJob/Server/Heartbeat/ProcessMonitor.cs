@@ -84,7 +84,7 @@ namespace Hangfire.Heartbeat.Server
                 var next = _process.TotalProcessorTime;
                 _processorTimeUsage = (_processorTimeUsage.next, next);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //ignore
             }
