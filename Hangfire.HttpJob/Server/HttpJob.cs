@@ -299,18 +299,23 @@ namespace Hangfire.HttpJob.Server
 
         private static void GetCurrentJobAgentServerId(HttpResponseMessage httpContent, HttpJobItem item, PerformContext context)
         {
-            
-            if (httpContent.Headers.TryGetValues("agentServerId", out IEnumerable<string> values) && values!=null)
+            try
             {
-                var agentServerId = values.FirstOrDefault();
-                if (!string.IsNullOrEmpty(agentServerId))
+                if (httpContent.Headers.TryGetValues("agentServerId", out IEnumerable<string> values) && values != null)
                 {
-                    context.SetJobParameter("agentServerId", agentServerId ?? string.Empty);
-                    return;
+                    var agentServerId = values.FirstOrDefault();
+                    if (!string.IsNullOrEmpty(agentServerId))
+                    {
+                        context.SetJobParameter("agentServerId", agentServerId ?? string.Empty);
+                        return;
+                    }
                 }
-            }
 
-            
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("HttpJob.GetCurrentJobAgentServerId=>" + item, e);
+            }
         }
 
         /// <summary>
