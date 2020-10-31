@@ -820,7 +820,7 @@ namespace Hangfire.HttpJob.Server
                 //https://github.com/yuzd/Hangfire.HttpJob/issues/78
                 var jobidentifier = string.IsNullOrEmpty(jobItem.RecurringJobIdentifier) ? jobItem.JobName : jobItem.RecurringJobIdentifier;
 
-                if (timeZone == null) timeZone = CodingUtil.HangfireHttpJobOptions.RecurringJobTimeZone ?? TimeZoneInfo.Local;
+                if (timeZone == null) timeZone = TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的

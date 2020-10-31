@@ -4,16 +4,18 @@
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>yuz</Authors>
+    <Authors>yuzd</Authors>
     <Company>yuzd</Company>
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Description>agent job console to hangfire redis</Description>
+    <Description>agent job console to hangfire mysql</Description>
     <Version>1.2.9</Version>
   </PropertyGroup>
+
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.60.6" />
+    <PackageReference Include="MySqlConnector" Version="0.56.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="StackExchange.Redis" Version="2.1.30" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>TRACE;NETCORE</DefineConstants>
@@ -22,6 +24,7 @@
     <DefineConstants>TRACE;OWIN</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
+    <ProjectReference Include="..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
   </ItemGroup>
+
 </Project>

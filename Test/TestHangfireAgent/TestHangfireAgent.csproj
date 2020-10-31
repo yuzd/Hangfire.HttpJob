@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AgentLogClient\Hangfire.HttpJob.Agent.MysqlLog\Hangfire.HttpJob.Agent.MysqlConsole.csproj" />
-    <ProjectReference Include="..\..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
+    <ProjectReference Include="..\..\Agent\Hangfire.HttpJob.Agent.MysqlLog\Hangfire.HttpJob.Agent.MysqlConsole.csproj" />
   </ItemGroup>
 
   <ItemGroup>

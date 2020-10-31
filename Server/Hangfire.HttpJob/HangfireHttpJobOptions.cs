@@ -40,11 +40,6 @@ namespace Hangfire.HttpJob
         public string DefaultBackGroundJobQueueName { get; set; } = EnqueuedState.DefaultQueue;
 
         /// <summary>
-        /// 时区设置
-        /// </summary>
-        public TimeZoneInfo RecurringJobTimeZone { get; set; }
-
-        /// <summary>
         /// 代理设置
         /// </summary>
         public string Proxy { get; set; }

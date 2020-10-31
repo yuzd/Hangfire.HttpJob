@@ -87,11 +87,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\AgentLogClient\Hangfire.HttpJob.Agent.RedisConsole\Hangfire.HttpJob.Agent.RedisConsole.csproj">
+    <ProjectReference Include="..\..\..\Agent\Hangfire.HttpJob.Agent.RedisConsole\Hangfire.HttpJob.Agent.RedisConsole.csproj">
       <Project>{acb85454-6b5b-47ad-87ce-55501b19f0f5}</Project>
       <Name>Hangfire.HttpJob.Agent.RedisConsole</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj">
+    <ProjectReference Include="..\..\..\Agent\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj">
       <Project>{85c1b85a-8b4d-4b23-ba34-f6530d23bbf2}</Project>
       <Name>Hangfire.HttpJob.Agent</Name>
     </ProjectReference>

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hangfire.HttpJob.Client\Hangfire.HttpJob.Client.csproj" />
+    <ProjectReference Include="..\..\Client\Hangfire.HttpJob.Client\Hangfire.HttpJob.Client.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,29 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29326.143
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.960
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{DE788EAF-44CC-48CB-860E-80EE3554FE67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Server\Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{DE788EAF-44CC-48CB-860E-80EE3554FE67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfire", "Test\TestHangfire\TestHangfire.csproj", "{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MysqlHangfire", "Test\TestHangfire\MysqlHangfire.csproj", "{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Client", "Hangfire.HttpJob.Client\Hangfire.HttpJob.Client.csproj", "{535C99D1-1D5B-4E42-8C5F-927691C61B37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Client", "Client\Hangfire.HttpJob.Client\Hangfire.HttpJob.Client.csproj", "{535C99D1-1D5B-4E42-8C5F-927691C61B37}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{6C712EFD-9B0C-431B-8B79-06177DF325BA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Client.Test", "Test\Hangfire.HttpJob.Client.Test\Hangfire.HttpJob.Client.Test.csproj", "{EBC3A8E7-117B-451F-B3A9-ADF3AC8B591A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent", "Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj", "{85C1B85A-8B4D-4B23-BA34-F6530D23BBF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent", "Agent\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj", "{85C1B85A-8B4D-4B23-BA34-F6530D23BBF2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfireAgent", "Test\TestHangfireAgent\TestHangfireAgent.csproj", "{67740B21-2AC0-44F4-84B3-969AF7EEC87B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.MysqlConsole", "AgentLogClient\Hangfire.HttpJob.Agent.MysqlLog\Hangfire.HttpJob.Agent.MysqlConsole.csproj", "{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.MysqlConsole", "Agent\Hangfire.HttpJob.Agent.MysqlLog\Hangfire.HttpJob.Agent.MysqlConsole.csproj", "{C8D009F7-18C4-4AED-AE73-2F82FE2A79B4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestMysql", "TestMysql", "{F695ABD0-FE6D-4F25-852D-91DCCB410E82}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mysql", "Mysql", "{F695ABD0-FE6D-4F25-852D-91DCCB410E82}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSqlServer", "TestSqlServer", "{655E1B5A-EDAE-4C85-9553-55229B6254CE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{655E1B5A-EDAE-4C85-9553-55229B6254CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSqlserver", "Test\TestSqlserver\TestSqlserver.csproj", "{BF2A3C67-04C2-48E6-946E-BC49C5E0CF6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlserverHangfire", "Test\TestSqlserver\SqlserverHangfire.csproj", "{BF2A3C67-04C2-48E6-946E-BC49C5E0CF6E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mysql", "Mysql", "{A9CDE611-13AA-45F7-8B8D-ED9AE92EFFD6}"
 EndProject
@@ -31,17 +31,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{5CF4C3B9-FED
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{E807D605-E7EA-4680-9269-879F2596A2D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.MssqlConsole", "AgentLogClient\Hangfire.HttpJob.Agent.MssqlConsole\Hangfire.HttpJob.Agent.MssqlConsole.csproj", "{BE7205C6-52AF-47DD-9175-6C798E2FD56F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.MssqlConsole", "Agent\Hangfire.HttpJob.Agent.MssqlConsole\Hangfire.HttpJob.Agent.MssqlConsole.csproj", "{BE7205C6-52AF-47DD-9175-6C798E2FD56F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSqlserverHangfireAgent", "Test\TestSqlserverHangfireAgent\TestSqlserverHangfireAgent.csproj", "{D400915A-2630-4B50-9815-23EE49633BFD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestRedis", "TestRedis", "{1B9027FD-6546-4A3D-9C7F-ADDE858E170F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redis", "Redis", "{1B9027FD-6546-4A3D-9C7F-ADDE858E170F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedisHangfire", "Test\RedisHangfire\RedisHangfire.csproj", "{5C6A9726-56F3-475D-9F2C-3F50F97AA692}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redis", "Redis", "{6387D13B-20FC-41C7-BE18-0EB20E863D0F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.RedisConsole", "AgentLogClient\Hangfire.HttpJob.Agent.RedisConsole\Hangfire.HttpJob.Agent.RedisConsole.csproj", "{ACB85454-6B5B-47AD-87CE-55501B19F0F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.RedisConsole", "Agent\Hangfire.HttpJob.Agent.RedisConsole\Hangfire.HttpJob.Agent.RedisConsole.csproj", "{ACB85454-6B5B-47AD-87CE-55501B19F0F5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfireRedisAgent", "Test\TestHangfireRedisAgent\TestHangfireRedisAgent.csproj", "{8BA5974D-CCE8-429D-8CB1-DDA9B9AFFD86}"
 EndProject

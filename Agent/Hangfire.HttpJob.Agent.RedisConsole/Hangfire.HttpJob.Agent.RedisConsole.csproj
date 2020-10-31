@@ -8,13 +8,12 @@
     <Company>yuzd</Company>
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Description>agent job console to hangfire sqlserver</Description>
+    <Description>agent job console to hangfire redis</Description>
     <Version>1.2.9</Version>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="1.60.6" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="StackExchange.Redis" Version="2.1.30" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>TRACE;NETCORE</DefineConstants>
@@ -23,6 +22,6 @@
     <DefineConstants>TRACE;OWIN</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
+    <ProjectReference Include="..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
   </ItemGroup>
 </Project>
