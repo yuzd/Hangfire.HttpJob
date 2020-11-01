@@ -88,7 +88,9 @@ namespace Hangfire.HttpJob.Agent
                     var next = _process.TotalProcessorTime;
                     _processorTimeUsage = (_processorTimeUsage.next, next);
                 }
+#pragma warning disable 168
                 catch(Exception exception)
+#pragma warning restore 168
                 {
                     // ignored
                 }

@@ -42,5 +42,29 @@ namespace Hangfire.HttpJob.Agent.Config
             options.BasicUserPwd = basicUserPwd;
             return this;
         }
+        
+        public JobAgentOptionsConfigurer WithEnableAutoRegister(bool enableAutoRegister)
+        {
+            options.EnableAutoRegister = enableAutoRegister;
+            return this;
+        }
+        
+        public JobAgentOptionsConfigurer WithRegisterUrl(string registerUrl)
+        {
+            options.RegisterUrl = registerUrl;
+            return this;
+        }
+        
+        public JobAgentOptionsConfigurer WithRegisterBasicUserName(string registerBasicUserName)
+        {
+            options.RegisterBasicUserName = registerBasicUserName;
+            return this;
+        }
+        
+        public JobAgentOptionsConfigurer WithRegisterBasicUserPwd(string registerBasicUserPwd)
+        {
+            options.RegisterBasicUserPwd = registerBasicUserPwd;
+            return this;
+        }
     }
 }

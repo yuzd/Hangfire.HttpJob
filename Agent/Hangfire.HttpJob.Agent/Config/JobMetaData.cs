@@ -8,5 +8,8 @@ namespace Hangfire.HttpJob.Agent.Config
     {
         public bool Transien { get; set; }
         public bool Hang { get; set; }
+        
+        public string RegisterName { get; set; }
+        public bool? EnableAutoRegister { get; set; }
     }
 }

@@ -5,16 +5,16 @@ using System.Text;
 namespace Hangfire.HttpJob.Agent.Attribute
 {
     /// <summary>
-    /// 支持并发运行
+    /// 单例的 如果没运行玩再次运行会忽略执行
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class TransientJobAttribute : JobAttribute
+    public class SingletonJobAttribute : JobAttribute
     {
-        public TransientJobAttribute()
+        public SingletonJobAttribute()
         {
             
         }
-        public TransientJobAttribute(string registerName)
+        public SingletonJobAttribute(string registerName)
         {
             this.RegisterName = registerName;
         }

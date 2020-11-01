@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TestHangfireAgent.Jobs
 {
-    [HangJobUntilStop(true)]
+    [HangJobUntilStop]
     public class TestHangJob : JobAgent
     {
         private readonly ILogger<TestHangJob> _logger;
