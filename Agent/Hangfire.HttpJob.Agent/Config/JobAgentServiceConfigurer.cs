@@ -43,14 +43,13 @@ namespace Hangfire.HttpJob.Agent.Config
             if (JobAgentDic.ContainsKey(type))
             {
                 throw new InvalidOperationException($"type:{type.Name} is registerd!");
-                return this;
             }
 
             //这三种标签不可以共存
             var scopedJobAttribute = type.GetCustomAttribute<TransientJobAttribute>();
             var singletonJobAttribute = type.GetCustomAttribute<SingletonJobAttribute>();//没有它就是默认的
             var hangJobUntilStopAttribute = type.GetCustomAttribute<HangJobUntilStopAttribute>();
-            if(singletonJobAttribute == null) singletonJobAttribute = new SingletonJobAttribute();
+            if(scopedJobAttribute==null && hangJobUntilStopAttribute == null && singletonJobAttribute == null) singletonJobAttribute = new SingletonJobAttribute();
             var array = new object[] {scopedJobAttribute, singletonJobAttribute, hangJobUntilStopAttribute};
            
             if (array.Count(r => r != null) > 1)

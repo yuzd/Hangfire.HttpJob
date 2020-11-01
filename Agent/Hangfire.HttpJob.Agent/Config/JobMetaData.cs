@@ -11,5 +11,6 @@ namespace Hangfire.HttpJob.Agent.Config
         
         public string RegisterName { get; set; }
         public bool? EnableAutoRegister { get; set; }
+        public bool AutoRegisterResult { get; set; }
     }
 }

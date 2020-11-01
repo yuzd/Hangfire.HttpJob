@@ -49,21 +49,26 @@ namespace Hangfire.HttpJob.Agent.Config
             return this;
         }
         
-        public JobAgentOptionsConfigurer WithRegisterUrl(string registerUrl)
+        public JobAgentOptionsConfigurer WithRegisterHangfireUrl(string registerUrl)
         {
-            options.RegisterUrl = registerUrl;
+            options.RegisterHangfireUrl = registerUrl;
+            return this;
+        }
+        public JobAgentOptionsConfigurer WithRegisterAgentHost(string registerAgentHost)
+        {
+            options.RegisterAgentHost = registerAgentHost;
+            return this;
+        }
+
+        public JobAgentOptionsConfigurer WithRegisterHangfireBasicName(string registerBasicUserName)
+        {
+            options.RegisterHangfireBasicName = registerBasicUserName;
             return this;
         }
         
-        public JobAgentOptionsConfigurer WithRegisterBasicUserName(string registerBasicUserName)
+        public JobAgentOptionsConfigurer WithRegisterHangfireBasicPwdd(string registerBasicUserPwd)
         {
-            options.RegisterBasicUserName = registerBasicUserName;
-            return this;
-        }
-        
-        public JobAgentOptionsConfigurer WithRegisterBasicUserPwd(string registerBasicUserPwd)
-        {
-            options.RegisterBasicUserPwd = registerBasicUserPwd;
+            options.RegisterHangfireBasicPwd = registerBasicUserPwd;
             return this;
         }
     }

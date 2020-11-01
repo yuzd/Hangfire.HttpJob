@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Hangfire.HttpJob.Agent.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -57,12 +59,16 @@ namespace Hangfire.HttpJob.Agent
                 app.Map(options.Value.SitemapUrl, robotsApp =>
                 {
                     robotsApp.UseMiddleware<JobAgentMiddleware>();
+                  
                 });
 #else
                 app.Map(options.Value.SitemapUrl, robotsApp =>
                 {
                     robotsApp.Use<JobAgentMiddleware>(logger, options, loggerFactory, sp);
                 });
+
+                var hostService = sp.GetRequiredService<IHostedService>();
+                hostService.StartAsync(new CancellationToken()).ConfigureAwait(false).GetAwaiter().GetResult();
 #endif
 
 

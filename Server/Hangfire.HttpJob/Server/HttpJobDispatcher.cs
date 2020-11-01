@@ -94,14 +94,19 @@ namespace Hangfire.HttpJob.Server
                     await AddBackgroundjob(context);
                     return;
                 }
-                else if (CheckOperateType(op, OperateType.RecurringJob) || ((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
+                else if (((op == "addrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
                 {
                     await AddRecurringJob(context);
                     return;
                 }
+                else if (CheckOperateType(op, OperateType.RecurringJob) || ((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
+                {
+                    await AddOrUpdateRecurringJob(context);
+                    return;
+                }
                 else if (CheckOperateType(op, OperateType.EditRecurringJob)||((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
                 {
-                    await AddRecurringJob(context);
+                    await AddOrUpdateRecurringJob(context);
                     return;
                 }
                 else if (CheckOperateType(op, OperateType.StartBackgroundJob)|| (op == "startbackgroudjob")) //if (op == "startbackgroudjob")
@@ -231,12 +236,51 @@ namespace Hangfire.HttpJob.Server
         }
 
         /// <summary>
-        /// 新增周期性job
+        /// 新增周期job 只是新增 如果已存在了就不新增了
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task AddRecurringJob(DashboardContext context)
+        {
+            var jobItemRt = await GetCheckedJobItem(context);
+            if (!string.IsNullOrEmpty(jobItemRt.Item2))
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                await context.Response.WriteAsync(jobItemRt.Item2);
+                return;
+            }
+            if (CodingUtil.HangfireHttpJobOptions.AddHttpJobFilter != null)
+            {
+                if (!CodingUtil.HangfireHttpJobOptions.AddHttpJobFilter(jobItemRt.Item1))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsync("HttpJobFilter return false");
+                    return;
+                }
+            }
+            var result = AddHttprecurringjob(jobItemRt.Item1,true);
+            if (string.IsNullOrEmpty(result))
+            {
+                JobAgentHeartBeatServer.Start(false);
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                return;
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsync(result);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// 新增周期性job 如果已存在就更新
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private async Task AddRecurringJob(DashboardContext context)
+        private async Task AddOrUpdateRecurringJob(DashboardContext context)
         {
             var jobItemRt = await GetCheckedJobItem(context);
             if (!string.IsNullOrEmpty(jobItemRt.Item2))
@@ -774,10 +818,8 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 添加周期性作业
         /// </summary>
-        /// <param name="jobItem"></param>
-        /// <param name="timeZone">job 时区信息</param>
         /// <returns></returns>
-        public string AddHttprecurringjob(HttpJobItem jobItem)
+        public string AddHttprecurringjob(HttpJobItem jobItem, bool addOnly = false)
         {
             if (string.IsNullOrEmpty(jobItem.QueueName))
             {
@@ -819,6 +861,17 @@ namespace Hangfire.HttpJob.Server
 
                 //https://github.com/yuzd/Hangfire.HttpJob/issues/78
                 var jobidentifier = string.IsNullOrEmpty(jobItem.RecurringJobIdentifier) ? jobItem.JobName : jobItem.RecurringJobIdentifier;
+                if (addOnly)
+                {
+                    using (var connection = JobStorage.Current.GetConnection())
+                    {
+                        var existItem = connection.GetAllEntriesFromHash("recurring-job:" + jobidentifier);
+                        if (existItem != null && existItem.Count > 0)
+                        {
+                            return jobidentifier + "is registerd!";
+                        }
+                    }
+                }
 
                 if (timeZone == null) timeZone = TimeZoneInfo.Local;
                 if (string.IsNullOrEmpty(jobItem.Cron))

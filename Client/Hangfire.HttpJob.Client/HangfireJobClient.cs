@@ -129,9 +129,9 @@ namespace Hangfire.HttpJob.Client
         /// <param name="recurringJob">job参数</param>
         /// <param name="option">提交httprequest的其他配置</param>
         /// <returns></returns>
-        public static Task<HangfirJobResult> AddRecurringJobAsync(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
+        public static Task<HangfirJobResult> AddOrUpdateRecurringJobAsync(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
         {
-            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob, option).PostAsync<HangfirJobResult>();
+            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,false, option).PostAsync<HangfirJobResult>();
         }
         /// <summary>
         /// AddRecurringJob
@@ -140,13 +140,39 @@ namespace Hangfire.HttpJob.Client
         /// <param name="recurringJob">job参数</param>
         /// <param name="option">提交httprequest的其他配置</param>
         /// <returns></returns>
-        public static HangfirJobResult AddRecurringJob(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
+        public static HangfirJobResult AddOrUpdateRecurringJob(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
         {
            
-            return PrepareAddRecurringHttpJobItem(hangfireServerUrl,recurringJob,option).Post<HangfirJobResult>();
+            return PrepareAddRecurringHttpJobItem(hangfireServerUrl,recurringJob,false,option).Post<HangfirJobResult>();
         }
 
-        private static HttpJobItem PrepareAddRecurringHttpJobItem(string hangfireServerUrl, RecurringJob recurringJob,
+        /// <summary>
+        /// 如果已经存在不就不在添加会返回错误
+        /// </summary>
+        /// <param name="hangfireServerUrl"></param>
+        /// <param name="recurringJob"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public static HangfirJobResult AddRecurringJob(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
+        {
+
+            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,true, option).Post<HangfirJobResult>();
+        }
+
+        /// <summary>
+        /// 如果已经存在不就不在添加会返回错误
+        /// </summary>
+        /// <param name="hangfireServerUrl"></param>
+        /// <param name="recurringJob"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public static HangfirJobResult AddRecurringJobAsync(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
+        {
+
+            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,true, option).Post<HangfirJobResult>();
+        }
+
+        private static HttpJobItem PrepareAddRecurringHttpJobItem(string hangfireServerUrl, RecurringJob recurringJob,bool isAddOnly = false,
             HangfireServerPostOption option = null)
         {
             if (string.IsNullOrEmpty(hangfireServerUrl))
@@ -187,9 +213,20 @@ namespace Hangfire.HttpJob.Client
                     _data = JsonConvert.SerializeObject(recurringJob.Data);
                 }
             }
-            var url = hangfireServerUrl.EndsWith("/httpjob?op=recurringjob")
-                ? hangfireServerUrl
-                : hangfireServerUrl + "/httpjob?op=recurringjob";
+
+            var url = string.Empty;
+            if (isAddOnly)
+            {
+                url = hangfireServerUrl.EndsWith("/httpjob?op=addrecurringjob")
+                    ? hangfireServerUrl
+                    : hangfireServerUrl + "/httpjob?op=addrecurringjob";
+            }
+            else
+            {
+                url = hangfireServerUrl.EndsWith("/httpjob?op=recurringjob")
+                    ? hangfireServerUrl
+                    : hangfireServerUrl + "/httpjob?op=recurringjob";
+            }
             HttpJobItem jobItem = new HttpJobItem(url, option)
             {
                 RecurringJobIdentifier = recurringJob.RecurringJobIdentifier,

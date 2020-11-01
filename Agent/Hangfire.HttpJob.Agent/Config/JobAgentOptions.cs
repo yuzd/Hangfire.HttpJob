@@ -42,16 +42,20 @@ namespace Hangfire.HttpJob.Agent.Config
         /// <summary>
         /// 注册job的地址 也就是hangfire调度server的地址
         /// </summary>
-        public string RegisterUrl { get; set; }
+        public string RegisterHangfireUrl { get; set; }
+        /// <summary>
+        /// 当前启动agent的Host
+        /// </summary>
+        public string RegisterAgentHost { get; set; }
         
         /// <summary>
         /// basicauth验证用户名
         /// </summary>
-        public string RegisterBasicUserName { get; set; } 
+        public string RegisterHangfireBasicName { get; set; } 
         
         /// <summary>
         /// basicauth验证密码
         /// </summary>
-        public string RegisterBasicUserPwd { get; set; } 
+        public string RegisterHangfireBasicPwd { get; set; } 
     }
 }
