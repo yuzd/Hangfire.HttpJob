@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Agent
 {
     public class JobContext
-    { 
+    {
         private Stopwatch _stopwatch;
 
         public JobContext()
@@ -20,11 +21,11 @@ namespace Hangfire.HttpJob.Agent
             CancelToken = cancelToken;
             StartWatch();
         }
-        
+
         #region Stopwatch
 
-       
-        
+
+
         private void StartWatch()
         {
             _stopwatch = Stopwatch.StartNew();
@@ -34,7 +35,7 @@ namespace Hangfire.HttpJob.Agent
         {
             if (_stopwatch == null) return -1;
             lock (_stopwatch)
-            { 
+            {
                 if (_stopwatch == null) return -1;
                 _stopwatch.Stop();
                 var result = (long)_stopwatch.ElapsedMilliseconds;
@@ -44,8 +45,8 @@ namespace Hangfire.HttpJob.Agent
         }
 
         #endregion
-        
-        
+
+
         public string Param { get; set; }
         internal string RunJobId { get; set; }
         internal string HangfireServerId { get; set; }
@@ -56,9 +57,58 @@ namespace Hangfire.HttpJob.Agent
         public IHangfireConsole Console { get; set; }
 
         public JobItem JobItem { get; internal set; }
-        public ConcurrentDictionary<string,string> Headers { get; set; }
+        public ConcurrentDictionary<string, string> Headers { get; set; }
 
         internal IHangfireStorage HangfireStorage { get; set; }
+
+        /// <summary>
+        /// 解析Param获取参数了
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public T GetParameter<T>(string key, T defaultValue)
+        {
+            if (string.IsNullOrEmpty(this.Param)) return defaultValue;
+            try
+            {
+                Dictionary<string, string> datas = JsonConvert.DeserializeObject<Dictionary<string, string>>(this.Param);
+
+                if (datas != null)
+                {
+                    if (!datas.TryGetValue(key, out var stringValue))
+                    {
+                        return defaultValue;
+                    }
+
+                    return (T)Convert.ChangeType(stringValue, typeof(T));
+                }
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+
+            return defaultValue;
+        }
+
+        public T GetParameter<T>(string key)
+        {
+            return GetParameter<T>(key, default);
+        }
+
+        /// <summary>
+        /// 从传过来的Headers里面执行
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public string GetHeader(string key)
+        {
+            if (this.Headers == null) return null;
+            this.Headers.TryGetValue(key, out var value);
+            return value;
+        }
     }
 
     public class JobItem
@@ -106,7 +156,7 @@ namespace Hangfire.HttpJob.Agent
         /// <summary>
         /// job里面的url
         /// </summary>
-        public string JobDetailUrl  { get; set; }
+        public string JobDetailUrl { get; set; }
 
         /// <summary>
         /// 周期性job的唯一标识
@@ -117,7 +167,7 @@ namespace Hangfire.HttpJob.Agent
         /// Job运行的Id
         /// </summary>
         public string JobId { get; set; }
-        
+
         /// <summary>
         /// Hangfire调度的serverId
         /// </summary>
@@ -219,8 +269,8 @@ namespace Hangfire.HttpJob.Agent
     {
         public static JobStorageConfig LocalJobStorageConfig;
 
-        public string Type { get; set; } 
-        public string TablePrefix { get; set; } 
+        public string Type { get; set; }
+        public string TablePrefix { get; set; }
         public string HangfireDb { get; set; }
         public int? ExpireAtDays { get; set; }
         public TimeSpan? ExpireAt { get; set; }
@@ -235,14 +285,14 @@ namespace Hangfire.HttpJob.Agent
                 return false;
             }
 
-            return this.Type.Equals(item.Type) && this.TablePrefix.Equals(item.TablePrefix)&&this.HangfireDb.Equals(item.HangfireDb)&&this.Db.Equals(item.Db);
+            return this.Type.Equals(item.Type) && this.TablePrefix.Equals(item.TablePrefix) && this.HangfireDb.Equals(item.HangfireDb) && this.Db.Equals(item.Db);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return ((this.HangfireDb != null ? this.HangfireDb.GetHashCode() : 0) ) ^ (this.TablePrefix != null ? this.TablePrefix.GetHashCode() : 0);
+                return ((this.HangfireDb != null ? this.HangfireDb.GetHashCode() : 0)) ^ (this.TablePrefix != null ? this.TablePrefix.GetHashCode() : 0);
             }
         }
     }

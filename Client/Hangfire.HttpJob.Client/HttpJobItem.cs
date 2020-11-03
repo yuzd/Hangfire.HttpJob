@@ -163,6 +163,14 @@ namespace Hangfire.HttpJob.Client
                     return result;
                 }
 
+                if (httpResponse.StatusCode == HttpStatusCode.InternalServerError)
+                {
+                    var err = await httpResponse.Content.ReadAsStringAsync();
+                    result.IsSuccess = false;
+                    result.ErrMessage = string.IsNullOrEmpty(err) ? httpResponse.StatusCode.ToString() : err;
+                    return result;
+                }
+
                 if (httpResponse.StatusCode != HttpStatusCode.NoContent)
                 {
                     result.IsSuccess = false;

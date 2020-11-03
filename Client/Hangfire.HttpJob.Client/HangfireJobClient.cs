@@ -189,11 +189,6 @@ namespace Hangfire.HttpJob.Client
             {
                 throw new ArgumentNullException(nameof(recurringJob.JobName));
             }
-
-            if (string.IsNullOrEmpty(recurringJob.Cron))
-            {
-                throw new ArgumentNullException(nameof(recurringJob.Cron));
-            }
             
             CheckChildJob(recurringJob.Success, recurringJob.Fail);
 
