@@ -41,7 +41,7 @@ namespace Hangfire.HttpJob.Support
         /// <summary>
         /// 当前process的id用于创建分布式锁
         /// </summary>
-        private readonly int CurrentProcessId = Process.GetCurrentProcess().Id;
+        private static readonly int CurrentProcessId = Process.GetCurrentProcess().Id;
         
         public JobFilter(int timeoutInSeconds)
         {
@@ -54,30 +54,36 @@ namespace Hangfire.HttpJob.Support
      
         public void OnCreated(CreatedContext filterContext)
         {
+#if DEBUG
             logger.DebugFormat("[OnCreated] Job.Method.Name: `{0}` BackgroundJob.Id: `{1}`", filterContext.Job.Method.Name,
-            filterContext.BackgroundJob?.Id);
+                filterContext.BackgroundJob?.Id);
+#endif
+
         }
 
         public void OnCreating(CreatingContext filterContext)
         {
+#if DEBUG
             logger.DebugFormat("[OnCreated] Job.Method.Name: `{0}`", filterContext.Job.Method.Name);
+#endif
+
         }
 
         public void OnPerforming(PerformingContext filterContext)
         {
+            var jobItem = filterContext.BackgroundJob.Job.Args.FirstOrDefault();
+            var job = jobItem as HttpJobItem;
+            if (job == null)
+            {
+                return;
+            }
+            var jobKey = ((!string.IsNullOrEmpty(job.RecurringJobIdentifier) ? job.RecurringJobIdentifier : job.JobName));
             //设置新的分布式锁,分布式锁会阻止两个相同的任务并发执行，用方法名称和JobName
-            var jobresource = $"{CurrentProcessId}.{filterContext.BackgroundJob.Job.Method.Name}.{filterContext.BackgroundJob.Job.Args[1]}";
+            var jobresource = $"{CurrentProcessId}.http.{jobKey}";
             var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
             try
             {
-                var jobItem = filterContext.BackgroundJob.Job.Args.FirstOrDefault();
-                var job = jobItem as HttpJobItem;
-                if (job == null)
-                {
-                    return;
-                }
-                
-                var jobKey =  ((!string.IsNullOrEmpty(job.RecurringJobIdentifier)?job.RecurringJobIdentifier:job.JobName)) ;
+               
                 if (!string.IsNullOrEmpty(job.JobName) && (TagsServiceStorage.Current != null) ) filterContext.BackgroundJob.Id.AddTags(job.JobName);
 
                 //设置运行时被设置的参数
@@ -108,7 +114,7 @@ namespace Hangfire.HttpJob.Support
             catch (Exception ec)
             {
                 filterContext.Canceled = true;
-                logger.Info($"[OnPerforming] BackgroundJob.Job.JObName:{filterContext.BackgroundJob.Job.Args[1]} AcquireDistributedLock Timeout,BackgroundJob.Id:{filterContext.BackgroundJob.Id},Exception:{ec}");
+                logger.Warn($"[OnPerforming] BackgroundJob.Job.JObName:{filterContext.BackgroundJob.Job.Args[1]} AcquireDistributedLock Timeout,BackgroundJob.Id:{filterContext.BackgroundJob.Id},Exception:{ec}");
             }
         }
 
