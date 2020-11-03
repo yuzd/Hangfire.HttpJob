@@ -19,34 +19,10 @@ namespace Hangfire.HttpJob.Server
 {
     public class HttpJobDispatcher : IDashboardDispatcher
     {
-        enum OperateType
-        {
-            Unknown = 0,
-            GetJobList = 10,
-            ExportJobs = 11,
-            ImportJobs = 12,
 
-            GetRecurringJob = 20,
-            GetBackgroundJobDetail = 21,
-
-            BackgroundJob = 30,
-            RecurringJob = 31,
-            EditRecurringJob = 32,
-            PauseJob = 33,
-            StartBackgroundJob = 34,
-            StopBackgroundJob = 35,
-            DelJob = 36,
-
-            GetGlobalSetting = 40,
-            SaveGlobalSetting = 41,
-
-        }
         private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
 
-        bool CheckOperateType(string op, OperateType opType)
-        {
-            return string.Equals(op, opType.ToString(), StringComparison.CurrentCultureIgnoreCase);
-        }
+
         public async Task Dispatch(DashboardContext context)
         {
             if (context == null)
@@ -69,84 +45,69 @@ namespace Hangfire.HttpJob.Server
 
                 op = op.ToLower();
 
-                if (CheckOperateType(op, OperateType.GetRecurringJob) || op == "getrecurringjob") // dashbord 上获取周期性job详情
+                switch (op)
                 {
-                    await GetRecurringJobDetail(context);
-                    return;
+                    // dashbord 上获取周期性job详情
+                    case "getrecurringjob":
+                        await GetRecurringJobDetail(context);
+                        return;
+                    // dashbord 上获取Agent job详情
+                    case "getbackgroundjobdetail":
+                        await DoGetBackGroundJobDetail(context);
+                        return;
+                    // 删除job
+                    case "deljob":
+                        await DelJob(context);
+                        return;
+                    // 暂停或开始job
+                    case "pausejob":
+                        await DoPauseOrRestartJob(context);
+                        return;
+                    //新增后台任务job
+                    case "backgroundjob":
+                        await AddBackgroundjob(context);
+                        return;
+                    //新增周期性任务job 只新增有重复的话报错
+                    case "addrecurringjob":
+                        await AddRecurringJob(context);
+                        return;
+                    case "recurringjob":
+                    //新增或修改周期性任务job
+                    case "editrecurringjob":
+                        await AddOrUpdateRecurringJob(context);
+                        return;
+                    //启动job
+                    case "startbackgroudjob":
+                        await StartBackgroudJob(context);
+                        return;
+                    //暂停job
+                    case "stopbackgroudjob":
+                        await StopBackgroudJob(context);
+                        return;
+                    //获取全局配置
+                    case "getglobalsetting":
+                        await GetGlobalSetting(context);
+                        return;
+                    //保存全局配置
+                    case "saveglobalsetting":
+                        await SaveGlobalSetting(context);
+                        return;
+                    //获取agentserver列表
+                    case "getagentserver":
+                        await GetAgentServer(context);
+                        return;
+                    //导出
+                    case "exportjobs":
+                        await ExportJobsAsync(context);
+                        return;
+                    //导入
+                    case "importjobs":
+                        await ImportJobsAsync(context);
+                        return;
+                    default:
+                        context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                        break;
                 }
-                else if (CheckOperateType(op, OperateType.GetBackgroundJobDetail) || op == "getbackgroundjobdetail")// if (op == "getbackgroundjobdetail") // dashbord 上获取Agent job详情
-                {
-                    await DoGetBackGroundJobDetail(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.DelJob) || op == "deljob")//(op == "deljob") // 删除job
-                {
-                    await DelJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.PauseJob)|| op == "pausejob") //if (op == "pausejob") // 暂停或开始job
-                {
-                    await DoPauseOrRestartJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.BackgroundJob)|| op == "backgroundjob") //if (op == "backgroundjob") //新增后台任务job
-                {
-                    await AddBackgroundjob(context);
-                    return;
-                }
-                else if (((op == "addrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
-                {
-                    await AddRecurringJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.RecurringJob) || ((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
-                {
-                    await AddOrUpdateRecurringJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.EditRecurringJob)||((op == "recurringjob" || op == "editrecurringjob"))) //if (op == "recurringjob" || op == "editrecurringjob") //新增周期性任务job
-                {
-                    await AddOrUpdateRecurringJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.StartBackgroundJob)|| (op == "startbackgroudjob")) //if (op == "startbackgroudjob")
-                {
-                    await StartBackgroudJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.StopBackgroundJob)|| (op == "stopbackgroudjob")) //if (op == "stopbackgroudjob")
-                {
-                    await StopBackgroudJob(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.GetGlobalSetting)|| (op == "getglobalsetting")) // if (op == "getglobalsetting")
-                {
-                    await GetGlobalSetting(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.SaveGlobalSetting)|| (op == "saveglobalsetting")) //if (op == "saveglobalsetting")
-                {
-                    await SaveGlobalSetting(context);
-                    return;
-                }
-                else if (op == "getagentserver")
-                {
-                    await GetAgentServer(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.ExportJobs))
-                {
-                    await ExportJobsAsync(context);
-                    return;
-                }
-                else if (CheckOperateType(op, OperateType.ImportJobs))
-                {
-                    await ImportJobsAsync(context);
-                    return;
-
-                }
-
-                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
             }
             catch (Exception ex)
             {
@@ -185,7 +146,7 @@ namespace Hangfire.HttpJob.Server
             try
             {
                 var contentBody = await GetRequestBody<string>(context);
-                
+
                 if (string.IsNullOrEmpty(contentBody.Item1))
                 {
                     await context.Response.WriteAsync($"err: json invaild:{contentBody.Item2}");
@@ -258,7 +219,7 @@ namespace Hangfire.HttpJob.Server
                     return;
                 }
             }
-            var result = AddHttprecurringjob(jobItemRt.Item1,true);
+            var result = AddHttprecurringjob(jobItemRt.Item1, true);
             if (string.IsNullOrEmpty(result))
             {
                 JobAgentHeartBeatServer.Start(false);
@@ -475,7 +436,7 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         /// <param name="_context"></param>
         /// <returns></returns>
-        public async Task<Tuple<T,string>> GetRequestBody<T>(DashboardContext _context)
+        public async Task<Tuple<T, string>> GetRequestBody<T>(DashboardContext _context)
         {
             try
             {
@@ -497,7 +458,7 @@ namespace Hangfire.HttpJob.Server
                     if (owinContext == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
-                        return new Tuple<T, string>(default(T),$"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
+                        return new Tuple<T, string>(default(T), $"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,DashboardContext:{contextType.FullName}");
                     }
 
                     var request = owinContext.GetType().GetProperty("Request")?.GetValue(owinContext);
@@ -505,20 +466,20 @@ namespace Hangfire.HttpJob.Server
                     if (request == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
-                        return new Tuple<T, string>(default(T),$"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
+                        return new Tuple<T, string>(default(T), $"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,OwinContext:{owinContext.GetType().FullName}");
                     }
 
                     body = request.GetType().GetProperty("Body")?.GetValue(request) as Stream;
                     if (body == null)
                     {
                         Logger.Warn($"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
-                        return new Tuple<T, string>(default(T),$"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
+                        return new Tuple<T, string>(default(T), $"HttpJobDispatcher.GetJobItem:: get data from DashbordContext err,Request:{request.GetType().FullName}");
                     }
                 }
 
                 if (body == null)
                 {
-                    return new Tuple<T, string>(default(T),$"get body stream from request fail");
+                    return new Tuple<T, string>(default(T), $"get body stream from request fail");
                 }
 
                 using (MemoryStream ms = new MemoryStream())
@@ -530,14 +491,14 @@ namespace Hangfire.HttpJob.Server
                     var requestBody = await sr.ReadToEndAsync();
                     if (typeof(T) == typeof(String))
                     {
-                        return new Tuple<T, string>((T)(object)requestBody,null);
+                        return new Tuple<T, string>((T)(object)requestBody, null);
                     }
-                    return new Tuple<T, string>(Newtonsoft.Json.JsonConvert.DeserializeObject<T>(requestBody),null);
+                    return new Tuple<T, string>(Newtonsoft.Json.JsonConvert.DeserializeObject<T>(requestBody), null);
                 }
             }
             catch (Exception ex)
             {
-                return new Tuple<T, string>(default(T),ex.Message);
+                return new Tuple<T, string>(default(T), ex.Message);
             }
         }
 
@@ -551,10 +512,26 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var queueName = !string.IsNullOrEmpty(jobItem.AgentClass) ? "JobAgent" : jobItem.QueueName;
-                if (string.IsNullOrEmpty(queueName))
+                if (string.IsNullOrEmpty(jobItem.QueueName))
                 {
-                    queueName = EnqueuedState.DefaultQueue;
+                    jobItem.QueueName = EnqueuedState.DefaultQueue;
+                }
+                else
+                {
+                    //get queues from server
+                    // ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
+                    var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0).FirstOrDefault();
+                    // ReSharper disable once PossibleNullReferenceException
+                    if (server == null)
+                    {
+                        return "active server not exist!";
+                    }
+                    var queues = server.Queues.Select(m => m.ToLower()).ToList();
+                    if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
+                    {
+                        Logger.Warn($"HttpJobDispatcher.AddHttpbackgroundjob Error => HttpJobItem.QueueName：`{jobItem.QueueName}` not exist, Use DEFAULT extend!");
+                        jobItem.QueueName = EnqueuedState.DefaultQueue;
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(jobItem.RunAt))
@@ -607,7 +584,7 @@ namespace Hangfire.HttpJob.Server
 
                 using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var hashKey = CodingUtil.MD5((!string.IsNullOrEmpty(jobItem.RecurringJobIdentifier)?jobItem.RecurringJobIdentifier:jobItem.JobName) + ".runtime");
+                    var hashKey = CodingUtil.MD5((!string.IsNullOrEmpty(jobItem.RecurringJobIdentifier) ? jobItem.RecurringJobIdentifier : jobItem.JobName) + ".runtime");
                     using (var tran = connection.CreateWriteTransaction())
                     {
                         tran.SetRangeInHash(hashKey, new List<KeyValuePair<string, string>>
@@ -638,7 +615,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                
+
                 var jobItemBody = await GetRequestBody<HttpJobItem>(context);
                 var jobItem = jobItemBody.Item1;
                 if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
@@ -835,19 +812,13 @@ namespace Hangfire.HttpJob.Server
                 {
                     return "active server not exist!";
                 }
-                var queues = server.Queues.ToList();
+                var queues = server.Queues.Select(m => m.ToLower()).ToList();
                 if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
                 {
                     Logger.Warn($"HttpJobDispatcher.AddHttprecurringjob Error => HttpJobItem.QueueName：`{jobItem.QueueName}` not exist, Use DEFAULT extend!");
+                    jobItem.QueueName = EnqueuedState.DefaultQueue;
                 }
             }
-
-            var queueName = !string.IsNullOrEmpty(jobItem.AgentClass) ? "JobAgent" : jobItem.QueueName;
-            if (string.IsNullOrEmpty(queueName))
-            {
-                queueName = EnqueuedState.DefaultQueue;
-            }
-
 
             try
             {
@@ -855,7 +826,7 @@ namespace Hangfire.HttpJob.Server
                 // 先用每个job配置的 如果没有就用系统配置的 在没有就用Local
                 TimeZoneInfo timeZone = null;
                 if (!string.IsNullOrEmpty(jobItem.TimeZone))
-                { 
+                {
                     timeZone = TimeZoneInfoHelper.OlsonTimeZoneToTimeZoneInfo(jobItem.TimeZone);
                 }
 
@@ -877,7 +848,7 @@ namespace Hangfire.HttpJob.Server
                 if (string.IsNullOrEmpty(jobItem.Cron))
                 {
                     //支持添加一个 只能手动出发的
-                    RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem,null,null,false,null), Cron.Never,
+                    RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, null, null, false, null), Cron.Never,
                         timeZone, jobItem.QueueName.ToLower());
                     return string.Empty;
                 }
@@ -950,7 +921,7 @@ namespace Hangfire.HttpJob.Server
         {
             var result = new JobDetailInfo();
             var jobName = string.Empty;
-            
+
             var jobItemBody = await GetRequestBody<HttpJobItem>(context);
             var jobItem = jobItemBody.Item1;
             if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
@@ -958,7 +929,7 @@ namespace Hangfire.HttpJob.Server
                 result.Info = "GetJobDetail Error：can not found job by id:" + jobItemBody.Item2;
                 return result;
             }
-         
+
             try
             {
                 using (var connection = JobStorage.Current.GetConnection())
@@ -1119,7 +1090,7 @@ namespace Hangfire.HttpJob.Server
         }
 
 
-        List<RecurringJobDto> GetAllRecurringJobs()
+        private List<RecurringJobDto> GetAllRecurringJobs()
         {
             var jobList = new List<RecurringJobDto>();
             try
