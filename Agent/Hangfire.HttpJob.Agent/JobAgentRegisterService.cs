@@ -126,11 +126,11 @@ namespace Hangfire.HttpJob.Agent
                     {
                         //继续下次重试
                         _logger.LogError(new EventId(1, "Hangfire.HttpJob.AutoRegister"),
-                            $"Failed to register job:{jobName} to hangfire httpjob server:{_options.RegisterHangfireUrl},err:{result.ErrMessage??string.Empty},retrytimes:{retryTimes}");
+                            $"Failed to register job:{(jobMetaData.Key.Name.Equals(jobName) ? jobName : jobMetaData.Key.Name + "-" + jobName)} to hangfire httpjob server:{_options.RegisterHangfireUrl},err:{result.ErrMessage??string.Empty},retrytimes:{retryTimes}");
                         continue;
                     }
 
-                    _logger.LogInformation(new EventId(1, "Hangfire.HttpJob.AutoRegister"), $"【{jobName}】 {(isAlreadyRegisterd ? "already registerd" : "registered")} to HangfireServer:{_options.RegisterHangfireUrl}");
+                    _logger.LogInformation(new EventId(1, "Hangfire.HttpJob.AutoRegister"), $"【{(jobMetaData.Key.Name.Equals(jobName)? jobName: jobMetaData.Key.Name+"-"+jobName)}】 {(isAlreadyRegisterd ? "already registerd" : "registered")} to HangfireServer:{_options.RegisterHangfireUrl}");
                     jobMetaData.Value.AutoRegisterResult = true;
                 }
 

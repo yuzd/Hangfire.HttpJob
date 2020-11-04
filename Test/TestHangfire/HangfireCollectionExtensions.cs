@@ -99,8 +99,7 @@ namespace MysqlHangfire
             var services = app.ApplicationServices;
             var hangfireSettings = services.GetService<IOptions<HangfireSettings>>().Value;
 
-            var queues = hangfireSettings.JobQueues.Select(m => m.ToUpper()).Distinct().ToList();
-            if (!queues.Contains("DEFAULT")) queues.Add("DEFAULT");
+            var queues = hangfireSettings.JobQueues.Select(m => m.ToLower()).Distinct().ToList();
 
             var workerCount = Math.Max(Environment.ProcessorCount, hangfireSettings.WorkerCount); //工作线程数，当前允许的最大线程，默认20
 

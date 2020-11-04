@@ -219,6 +219,11 @@ namespace Hangfire.HttpJob.Server
                     return;
                 }
             }
+
+            if (string.IsNullOrEmpty(jobItemRt.Item1.QueueName))
+            {
+                jobItemRt.Item1.QueueName = CodingUtil.HangfireHttpJobOptions.DefaultRecurringQueueName;
+            }
             var result = AddHttprecurringjob(jobItemRt.Item1, true);
             if (string.IsNullOrEmpty(result))
             {
