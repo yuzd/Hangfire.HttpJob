@@ -18,6 +18,7 @@ namespace Hangfire.HttpJob.Support
             if (data == null) return job.Method.Name;
             try
             {
+                if (string.IsNullOrEmpty(data.RecurringJobIdentifier)) data.RecurringJobIdentifier = "";
                 //增加别名
                 if (!string.IsNullOrEmpty(data.AgentClass))
                 {

@@ -4,7 +4,9 @@
     margin: 5px;
     visibility: hidden;
 }
-
+.left5 {
+    margin-left: 5px;
+}
 #search-box {
     padding: 5px;
     margin-bottom: 5px;

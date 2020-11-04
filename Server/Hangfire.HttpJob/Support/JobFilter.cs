@@ -20,7 +20,7 @@ namespace Hangfire.HttpJob.Support
     /// <summary>
     /// 任务过滤
     /// </summary>
-    public class JobFilter : JobFilterAttribute, IClientFilter, IServerFilter, IElectStateFilter, IApplyStateFilter
+    public class JobFilter : JobFilterAttribute, IServerFilter, IElectStateFilter, IApplyStateFilter
     {
         private readonly ILog logger = LogProvider.For<JobFilter>();
 
@@ -41,7 +41,7 @@ namespace Hangfire.HttpJob.Support
         /// <summary>
         /// 当前process的id用于创建分布式锁
         /// </summary>
-        private static readonly int CurrentProcessId = Process.GetCurrentProcess().Id;
+        private readonly int CurrentProcessId = Process.GetCurrentProcess().Id;
         
         public JobFilter(int timeoutInSeconds)
         {
@@ -52,22 +52,7 @@ namespace Hangfire.HttpJob.Support
             _timeoutInSeconds = timeoutInSeconds;
         }
      
-        public void OnCreated(CreatedContext filterContext)
-        {
-#if DEBUG
-            logger.DebugFormat("[OnCreated] Job.Method.Name: `{0}` BackgroundJob.Id: `{1}`", filterContext.Job.Method.Name,
-                filterContext.BackgroundJob?.Id);
-#endif
-
-        }
-
-        public void OnCreating(CreatingContext filterContext)
-        {
-#if DEBUG
-            logger.DebugFormat("[OnCreated] Job.Method.Name: `{0}`", filterContext.Job.Method.Name);
-#endif
-
-        }
+        
 
         public void OnPerforming(PerformingContext filterContext)
         {
@@ -79,7 +64,7 @@ namespace Hangfire.HttpJob.Support
             }
             var jobKey = ((!string.IsNullOrEmpty(job.RecurringJobIdentifier) ? job.RecurringJobIdentifier : job.JobName));
             //设置新的分布式锁,分布式锁会阻止两个相同的任务并发执行，用方法名称和JobName
-            var jobresource = $"{CurrentProcessId}.http.{jobKey}";
+            var jobresource = $"{CurrentProcessId}.{jobKey}";
             var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
             try
             {

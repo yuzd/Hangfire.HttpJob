@@ -91,6 +91,7 @@
             };
          
             var recurringObj = {
+                RecurringJobIdentifier: "",
                 JobName: "",
                 Method: "GET",
                 ContentType: "application/json",
@@ -1127,9 +1128,9 @@ function changeTable() {
         if (ss.indexOf('|') >= 0) {
             var ss1 = ss.split('|');
             if (ss.indexOf('Agent:') > 0) {
-                tdArr.eq(2).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+                tdArr.eq(2).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-primary left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
             } else {
-                tdArr.eq(2).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+                tdArr.eq(2).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-success left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
             }
            
         }
@@ -1138,9 +1139,9 @@ function changeTable() {
         if (ss2.indexOf('|') >= 0) {
             var ss1 = ss2.split('|');
             if (ss2.indexOf('Agent:') > 0) {
-                tdArr.eq(4).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+                tdArr.eq(4).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-primary left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
             } else {
-                tdArr.eq(4).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+                tdArr.eq(4).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-success left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
             }
            
         }
@@ -1152,9 +1153,9 @@ function changeTable() {
             if (ss3.indexOf('|') >= 0) {
                 var ss1 = ss3.split('|');
                 if (ss3.indexOf('Agent:') > 0) {
-                    tdArr.eq(3).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+                    tdArr.eq(3).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-primary left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
                 } else {
-                    tdArr.eq(3).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>');
+                    tdArr.eq(3).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-success left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
                 }
                 
             }
