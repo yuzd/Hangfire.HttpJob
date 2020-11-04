@@ -15,18 +15,18 @@ namespace Hangfire.HttpJob.Agent.Attribute
         public HangJobUntilStopAttribute()
         {
         }
-        public HangJobUntilStopAttribute(string registerName)
+        public HangJobUntilStopAttribute(string registerId)
         {
-            this.RegisterName = registerName;
+            this.RegisterId = registerId;
         }
         public HangJobUntilStopAttribute(bool on)
         {
             On = on;
         }
         
-        public HangJobUntilStopAttribute(string registerName,bool on)
+        public HangJobUntilStopAttribute(string registerId,bool on)
         {
-            this.RegisterName = registerName;
+            this.RegisterId = registerId;
             On = on;
         }
     }

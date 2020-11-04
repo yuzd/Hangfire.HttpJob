@@ -14,9 +14,9 @@ namespace Hangfire.HttpJob.Agent.Attribute
         {
             
         }
-        public SingletonJobAttribute(string registerName)
+        public SingletonJobAttribute(string registerId)
         {
-            this.RegisterName = registerName;
+            this.RegisterId = registerId;
         }
     }
 }

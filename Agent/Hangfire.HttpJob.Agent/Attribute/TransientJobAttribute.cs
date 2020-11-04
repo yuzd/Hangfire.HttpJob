@@ -14,9 +14,9 @@ namespace Hangfire.HttpJob.Agent.Attribute
         {
             
         }
-        public TransientJobAttribute(string registerName)
+        public TransientJobAttribute(string registerId)
         {
-            this.RegisterName = registerName;
+            this.RegisterId = registerId;
         }
     }
 }

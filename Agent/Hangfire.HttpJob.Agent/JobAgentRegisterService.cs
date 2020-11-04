@@ -87,10 +87,16 @@ namespace Hangfire.HttpJob.Agent
                     //已经注册过了
                     if(jobMetaData.Value.AutoRegisterResult) continue;
 
+                    var jobId = jobMetaData.Value.RegisterId;
+                    if (string.IsNullOrEmpty(jobId))
+                    {
+                        jobId = jobMetaData.Key.Namespace + "." + jobMetaData.Key.Name;
+                    }
+
                     var jobName = jobMetaData.Value.RegisterName;
                     if (string.IsNullOrEmpty(jobName))
                     {
-                        jobName = jobMetaData.Key.Namespace + "." + jobMetaData.Key.Name;
+                        jobName = jobMetaData.Key.Name;
                     }
 
                     //得设置如果存在就不能加了
@@ -105,8 +111,9 @@ namespace Hangfire.HttpJob.Agent
                             BasicUserName = _options.BasicUserName,
                             BasicPassword = _options.BasicUserPwd,
                             Cron = "",//自注册的必须手动在去设置
-                            JobName = jobName,
-                        },
+                            RecurringJobIdentifier = jobId,//唯一id 添加时会check是否已存在
+                            JobName = jobName //如果jobId有值 那么这个就会成为job别名
+                    },
                         new HangfireServerPostOption
                         {
                             BasicUserName = _options.RegisterHangfireBasicName,

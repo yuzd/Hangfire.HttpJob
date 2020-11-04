@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TestHangfireAgent.Jobs
 {
-    [SingletonJob]//不打这个标签也行 默认就是单例的
+    [SingletonJob(RegisterName = "单例job")]//不打这个标签也行 默认就是单例的
     public class TestJob : JobAgent
     {
         public TestJob(ILogger<TestJob> logger)

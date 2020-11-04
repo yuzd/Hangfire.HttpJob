@@ -27,7 +27,12 @@ namespace Hangfire.HttpJob.Agent.Attribute
         /// <summary>
         /// 注册的job名称 为空的话默认是 job的class 和namespace的 md5 16位的
         /// </summary>
+        public string RegisterId { get; set; }
+
+        /// <summary>
+        /// 注册的job别名 默认别名为class的name
+        /// </summary>
         public string RegisterName { get; set; }
-   
+
     }
 }

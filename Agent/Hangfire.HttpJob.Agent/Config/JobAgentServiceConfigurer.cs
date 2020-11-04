@@ -64,6 +64,7 @@ namespace Hangfire.HttpJob.Agent.Config
             
             var meta = new JobMetaData
             {
+                RegisterId = regesterMeta.RegisterId,
                 RegisterName = regesterMeta.RegisterName,
                 EnableAutoRegister = regesterMeta.enableAutoRegister
             };

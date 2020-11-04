@@ -18,13 +18,14 @@ namespace Hangfire.HttpJob.Support
             if (data == null) return job.Method.Name;
             try
             {
-
+                //增加别名
                 if (!string.IsNullOrEmpty(data.AgentClass))
                 {
-                    return "Agent:"+data.AgentClass+ ",Queue:" + data.QueueName + ",Retry:" + (data.EnableRetry) + "|" + data.AgentClass.Split(',')[0].Split('.').Last();
+                    return "Agent:"+data.AgentClass+ ",Queue:" + data.QueueName + ",Retry:" + (data.EnableRetry) + "|" + data.AgentClass.Split(',')[0].Split('.').Last()+(!data.RecurringJobIdentifier.Equals(data.JobName)? "|" + data.JobName:"");
                 }
 
-                return data.Url.Replace("|","").Replace("\"","“").Replace("'","’") + ",Queue:" + data.QueueName + ",Retry:" + (data.EnableRetry) + "|" + (data.Url.Split('/').LastOrDefault() ?? data.JobName);
+                var name = (data.Url.Split('/').LastOrDefault() ?? data.JobName);
+                return data.Url.Replace("|","").Replace("\"","“").Replace("'","’") + ",Queue:" + data.QueueName + ",Retry:" + (data.EnableRetry) + "|" + name + (!data.JobName.Equals(name) ?"|" + data.JobName :"");
             }
             catch (Exception)
             {
