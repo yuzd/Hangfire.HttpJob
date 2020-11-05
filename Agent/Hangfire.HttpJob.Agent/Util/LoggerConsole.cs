@@ -5,50 +5,41 @@ using Microsoft.Extensions.Logging;
 
 namespace Hangfire.HttpJob.Agent.Util
 {
-    internal class LoggerConsole: IHangfireConsole
+    internal class LoggerConsole : HangfireConsole
     {
         private readonly ILogger _logger;
         public LoggerConsole(ILogger logger)
         {
             _logger = logger;
         }
-        
-        public void WriteLine(string message, ConsoleFontColor fontColor = null)
-        {
-            _logger.LogInformation(message);
-        }
 
-        public IProgressBar WriteProgressBar(string name, double value, ConsoleFontColor color = null)
-        {
-            return new NoOpProgressBar(this,name,value);
-        }
+        public override IHangfireStorage Storage => new LocalLoggerConsole(_logger);
     }
 
-    internal class NoOpProgressBar : IProgressBar
+    internal class LocalLoggerConsole : IHangfireStorage
     {
-        private readonly LoggerConsole _console;
-        private readonly string _name;
-        private readonly double _value;
+        private readonly ILogger _logger;
 
-        public NoOpProgressBar(LoggerConsole console,string name, double value)
+        public LocalLoggerConsole(ILogger logger)
         {
-            _console = console;
-            _name = name;
-            _value = value;
+            _logger = logger;
         }
-        public void SetValue(int value)
+        public void Dispose()
         {
-            SetValue((double)value);
         }
 
-        public void SetValue(double value)
+        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            value = Math.Round(value, 1);
+            foreach (var keyvalue in keyValuePairs)
+            {
+                _logger.LogInformation(new EventId(0, key), keyvalue.Key + "->" + keyvalue.Value);
+            }
 
-            if (value < 0 || value > 100)
-                throw new ArgumentOutOfRangeException(nameof(value), "Value should be in range 0..100");
+        }
 
-            _console.WriteLine($"[ProgressBar] {_name} --> {value} Of {_value}");
+        public void AddToSet(string key, string value, double score)
+        {
+            _logger.LogInformation(key + "->" + value);
         }
     }
 }

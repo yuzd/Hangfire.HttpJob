@@ -20,14 +20,14 @@ namespace TestHangfireAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            jobContext.Console.WriteLine(nameof(OnStart) + (jobContext.Param ?? string.Empty));
+            jobContext.Console.Info(nameof(OnStart) + (jobContext.Param ?? string.Empty));
 
             while (!jobContext.CancelToken.IsCancellationRequested)
             {
-                jobContext.Console.WriteLine("dddd");
+                jobContext.Console.Info("dddd");
                 await Task.Delay(1000 * 10);
             }
-            jobContext.Console.WriteLine("game over");
+            jobContext.Console.Warning("game over");
         }
     }
 }

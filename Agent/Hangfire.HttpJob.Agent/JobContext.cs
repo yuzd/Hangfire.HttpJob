@@ -14,10 +14,12 @@ namespace Hangfire.HttpJob.Agent
 
         public JobContext()
         {
+            isDispose = false;
             StartWatch();
         }
         public JobContext(CancellationTokenSource cancelToken)
         {
+            isDispose = false;
             CancelToken = cancelToken;
             StartWatch();
         }
@@ -51,10 +53,31 @@ namespace Hangfire.HttpJob.Agent
         internal string RunJobId { get; set; }
         internal string HangfireServerId { get; set; }
         internal string ActionType { get; set; }
+        internal volatile bool isDispose = false;
 
         public CancellationTokenSource CancelToken { get; internal set; }
 
         public IHangfireConsole Console { get; set; }
+
+        /// <summary>
+        /// 解析传参 方便后面使用
+        /// </summary>
+        internal Lazy<Dictionary<string,string>> LazyParseParam => new Lazy<Dictionary<string, string>>(() =>
+        {
+            if(string.IsNullOrEmpty(this.Param)) return null;
+            try
+            {
+                Dictionary<string, string> datas = JsonConvert.DeserializeObject<Dictionary<string, string>>(this.Param);
+
+                return datas;
+            }
+            catch (Exception)
+            {
+                //ignore
+                return null;
+            }
+        });
+
 
         public JobItem JobItem { get; internal set; }
         public ConcurrentDictionary<string, string> Headers { get; set; }
@@ -70,10 +93,9 @@ namespace Hangfire.HttpJob.Agent
         /// <returns></returns>
         public T GetParameter<T>(string key, T defaultValue)
         {
-            if (string.IsNullOrEmpty(this.Param)) return defaultValue;
             try
             {
-                Dictionary<string, string> datas = JsonConvert.DeserializeObject<Dictionary<string, string>>(this.Param);
+                Dictionary<string, string> datas = LazyParseParam.Value;
 
                 if (datas != null)
                 {
@@ -182,6 +204,11 @@ namespace Hangfire.HttpJob.Agent
         /// 传了class就代表是agentjob
         /// </summary>
         public string AgentClass { get; set; }
+
+        /// <summary>
+        /// 执行超时
+        /// </summary>
+        public int AgentTimeout { get; set; }
 
         /// <summary>
         /// 是否成功发送邮件

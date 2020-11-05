@@ -396,7 +396,7 @@ namespace Hangfire.HttpJob.Server
 ### {Strings.DingTalkResponse}:
 >#### {resString}   
 ### {Strings.DingTalkLogDetail}：
->#### {logDetail}{(exception!=null?"\n\n"+exception.ToString():"")}    
+>#### {logDetail}{(exception!=null?"\n\n"+(CodingUtil.DingTalkErrReportSimplify()?exception.Message: exception.ToString()):"")}    
 ";
 
                 var title = $"{Strings.DingTalkTitle}";

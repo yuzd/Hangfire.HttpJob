@@ -81,7 +81,7 @@ namespace Hangfire.HttpJob.Server
                         await StartBackgroudJob(context);
                         return;
                     //暂停job
-                    case "stopbackgroudjob":
+                    case "stopbackgroundjob":
                         await StopBackgroudJob(context);
                         return;
                     //获取全局配置

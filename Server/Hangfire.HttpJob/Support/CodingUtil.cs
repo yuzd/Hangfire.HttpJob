@@ -78,6 +78,15 @@ namespace Hangfire.HttpJob.Support
         }
 
         /// <summary>
+        /// 钉钉错误内容通知默认用Exception.ToString 如果这个设置为true 那么只会用Exception.Message
+        /// </summary>
+        /// <returns></returns>
+        public static bool DingTalkErrReportSimplify()
+        {
+            return CodingUtil.GetGlobalAppsettings().TryGetValue("EnableDingTalkErrReportSimplify", out var value) && value is bool dd && dd;
+        }
+
+        /// <summary>
         /// 获取动态的全局配置
         /// </summary>
         /// <param name="value"></param>

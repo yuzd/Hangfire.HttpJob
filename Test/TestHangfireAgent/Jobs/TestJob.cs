@@ -18,9 +18,12 @@ namespace TestHangfireAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
-            jobContext.Console.WriteLine("开始等待1秒");
+            jobContext.Console.Info("info消息");
+            jobContext.Console.Warning("waring消息");
+            jobContext.Console.Error("error消息");
+            jobContext.Console.Info("开始等待1秒");
             await Task.Delay(1000 * 1);
-            jobContext.Console.WriteLine("结束等待1秒");
+            jobContext.Console.Info("结束等待1秒");
             jobContext.Console.WriteLine("开始测试Progressbar",ConsoleFontColor.Cyan);
 
             var bar = jobContext.Console.WriteProgressBar("testbar");

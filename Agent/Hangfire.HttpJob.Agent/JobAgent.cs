@@ -166,28 +166,33 @@ namespace Hangfire.HttpJob.Agent
                     return;
                 }
                 
-                this. _mainThread = new ManualResetEvent(false);
+                if(Hang)this. _mainThread = new ManualResetEvent(false);
                 this._cancelToken = new CancellationTokenSource();
                 jobContext.CancelToken = this._cancelToken;
                 this.Param = jobItem.JobParam;
                 this.RunActionJobId = jobItem.JobId;
-                
-                if (this.Hang)
-                {
-                    runTask = Task.Factory.StartNew(async () => {
-                        await start(jobContext);
-                    }, TaskCreationOptions.LongRunning).Unwrap();
-                }
-                else
-                {
-                    runTask = Task.Factory.StartNew(async () => {
-                        await start(jobContext);
-                    }).Unwrap();
-                }
-                
+                jobContext.isDispose = false;
+
+                runTask = Task.Factory.StartNew(async () => {
+                    await start(jobContext);
+                }, _cancelToken.Token).Unwrap();
+
                 runTask.ContinueWith(
-                    _ => { ReportToHangfireServer(jobContext,new TaskSchedulerException("runTask fail:"+_?.Exception?.Message)); }, 
+                    _ => { ReportToHangfireServer(jobContext, new TaskSchedulerException("runTask fail:" + _?.Exception?.Message)); },
                     TaskContinuationOptions.OnlyOnFaulted);
+
+                //执行超时
+                if (jobItem.AgentTimeout > 0)
+                {
+                    _cancelToken.Token.Register(() =>
+                    {
+                        JobStatus = JobStatus.Stoped;
+                        ReportToHangfireServer(jobContext, new TaskSchedulerException("timeout:" + jobItem.AgentTimeout));
+                        WriteToDashBordConsole(jobContext.Console, $"【Job Timeout】timeout:{jobItem.AgentTimeout}", true);
+                        DisposeJob(jobContext);
+                    });
+                    _cancelToken.CancelAfter(jobItem.AgentTimeout);
+                }
             }
             finally
             {
@@ -340,11 +345,11 @@ namespace Hangfire.HttpJob.Agent
             }
         }
 
-        private void WriteToDashBordConsole(IHangfireConsole console, string message)
+        private void WriteToDashBordConsole(IHangfireConsole console, string message, bool red = false)
         {
             try
             {
-                console.WriteLine(message, ConsoleFontColor.DarkGreen);
+                console.WriteLine(message, red? ConsoleFontColor.Red :ConsoleFontColor.DarkGreen);
             }
             catch (Exception)
             {
@@ -390,6 +395,10 @@ namespace Hangfire.HttpJob.Agent
 
         private void DisposeJob(JobContext jobContext)
         {
+            if (jobContext.isDispose) return;
+
+            jobContext.isDispose = true;
+
             if (jobContext.Console != null)
             {
                 WriteToDashBordConsole(jobContext.Console, Hang

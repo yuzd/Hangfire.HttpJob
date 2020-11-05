@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json;
 
-namespace Hangfire.HttpJob.Agent.RedisConsole
+namespace Hangfire.HttpJob.Agent
 {
-    public class RedisProgressBar: IProgressBar
+
+    public class HangfireProgressBar : IProgressBar
     {
-        private readonly RedisConsole _context;
+        private readonly HangfireConsole _context;
         private readonly string _progressBarId;
         private string _name;
         private string _color;
         private double _value;
 
-        internal RedisProgressBar(RedisConsole context, string progressBarId, string name,  ConsoleFontColor color = null)
+        internal HangfireProgressBar(HangfireConsole context, string progressBarId, string name, ConsoleFontColor color = null)
         {
             if (string.IsNullOrEmpty(progressBarId))
                 throw new ArgumentNullException(nameof(progressBarId));
@@ -48,4 +51,5 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             _color = String.IsNullOrEmpty(_color) ? null : _color;
         }
     }
+
 }

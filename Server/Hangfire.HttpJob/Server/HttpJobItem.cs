@@ -172,6 +172,11 @@ namespace Hangfire.HttpJob.Server
         public string AgentClass { get; set; }
 
         /// <summary>
+        /// agentjob异步执行的超时 为0代表不限制
+        /// </summary>
+        public int AgentTimeout { get; set; }
+
+        /// <summary>
         /// 是否成功发送邮件
         /// </summary>
         public bool SendSuccess { get; set; }

@@ -21,9 +21,11 @@ namespace TestHangfireRedisAgent.Jobs
         }
         public override async Task OnStart(JobContext jobContext)
         {
+            jobContext.Console.Warning("ManagedThreadId:" + Thread.CurrentThread.ManagedThreadId);
             _logger.LogWarning("ManagedThreadId:" + Thread.CurrentThread.ManagedThreadId);
             await Task.Delay(5000);
             _logger.LogWarning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
+            jobContext.Console.Warning(nameof(OnStart) + (jobContext.Param ?? string.Empty));
         }
 
         
