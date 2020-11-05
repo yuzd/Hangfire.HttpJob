@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Heartbeat.Dashboard;
 using Hangfire.Heartbeat.Server;
+using Hangfire.HttpJob.Content.resx;
 using Hangfire.HttpJob.Support;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -44,7 +45,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
         /// 获取agent服务器列表
         /// </summary>
         /// <returns></returns>
-        internal static string GetAgentServerListHtml()
+        internal static string GetAgentServerListHtml(string baseUrl)
         {
             //拿到所有的周期性job
             var jobagentServerList = new Dictionary<string, ServerView>();
@@ -57,8 +58,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                     var httpJob = job.Job.Args.FirstOrDefault() as HttpJobItem;
                     //只处理agentjob
                     if (httpJob == null || string.IsNullOrEmpty(httpJob.AgentClass)) continue;
-                    var uri = new Uri(httpJob.Url);
-                    var key = uri.Host + ":" + uri.Port;
+                    var key = httpJob.GetUrlHost();
                     if (!jobagentServerList.ContainsKey(key))
                     {
                         jobagentServerList.Add(key, new ServerView
@@ -104,7 +104,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
             var rowTemplete = @"<tr>" +
                 "                                        <td>\n" +
                 "                                            @ERROR@" +
-                "                                            <span class='labe label-defult text-uppercase' >@SERVER@</span>\n" +
+                "                                            <span class='labe label-defult text-uppercase' ><a href='@Url' target='_blank'>@SERVER@</a></span>\n" +
                 "                                        </td>\n" +
                 "                                        <td>\n" +
                 "                                           @JOBCOUNT@" +
@@ -120,9 +120,9 @@ namespace Hangfire.HttpJob.Server.JobAgent
                        "                            <table class=\"table\">\n" +
                        "                                <thead>\n" +
                        "                                    <tr>\n" +
-                       "                                        <th>Server</th>\n" +
-                       "                                        <th>JobCount</th>\n" +
-                       "                                        <th>HeartBeat</th>\n" +
+                       "                                        <th>"+ Strings.AgentServer +"</th>\n" +
+                       "                                        <th>" + Strings.AgentJobCount + "</th>\n" +
+                       "                                        <th>" + Strings.AgentServerBeat + "</th>\n" +
                        "                                    </tr>\n" +
                        "                                </thead>\n" +
                        "                                <tbody>\n@TEMP@" +
@@ -140,6 +140,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                         (agent.Error ? "glyphicon-remove text-danger" : "glyphicon-ok text-success") + "' title'" +
                         (agent.Error ? "Waiting" : "Active") + "'></span>")
                     .Replace("@SERVER@", agent.Name)
+                    .Replace("@Url", baseUrl+ "/recurring?search=name:" + agent.Name)
                     .Replace("@JOBCOUNT@", agent.DisplayName + "")
                     .Replace("@Timestamp@", agent.Timestamp + "")
                     .Replace("@TimeString@", agent.ProcessName);
@@ -173,8 +174,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                         var httpJob = job.Job.Args.FirstOrDefault() as HttpJobItem;
                         //只处理agentjob
                         if (httpJob == null || string.IsNullOrEmpty(httpJob.AgentClass)) continue;
-                        var uri = new Uri(httpJob.Url);
-                        var key = uri.Host + ":" + uri.Port;
+                        var key = httpJob.GetUrlHost();
                         if (!jobagentServerList.ContainsKey(key))
                         {
                             jobagentServerList.Add(key, new Tuple<string, string, string>(httpJob.Url, httpJob.BasicUserName, httpJob.BasicPassword));

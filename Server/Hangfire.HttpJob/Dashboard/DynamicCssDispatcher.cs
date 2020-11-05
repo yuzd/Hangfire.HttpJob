@@ -30,7 +30,7 @@ namespace Hangfire.HttpJob.Dashboard
             {
                 if (context is AspNetCoreDashboardContext abc)
                 {
-                    if (abc.HttpContext.Request.Headers.TryGetValue("Referer", out var refer) && (refer.ToString().EndsWith("/processing") ||refer.ToString().EndsWith("/recurring")|| refer.ToString().EndsWith("/succeeded") || refer.ToString().EndsWith("/deleted")))
+                    if (abc.HttpContext.Request.Headers.TryGetValue("Referer", out var refer) && (refer.ToString().Contains("/processing") ||refer.ToString().Contains("/recurring")|| refer.ToString().Contains("/succeeded") || refer.ToString().Contains("/deleted")))
                     {
                         builder.AppendLine(".table tbody { display:none; }");
                     }

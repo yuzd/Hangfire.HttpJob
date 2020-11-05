@@ -127,7 +127,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                var html = JobAgentHeartBeatServer.GetAgentServerListHtml();
+                var html = JobAgentHeartBeatServer.GetAgentServerListHtml(context.Request.PathBase);
                 await context.Response.WriteAsync(html);
             }
             catch (Exception e)
@@ -892,8 +892,14 @@ namespace Hangfire.HttpJob.Server
                     }
 
                     var RecurringJob = InvocationData.DeserializePayload(jobDetail).DeserializeJob();
-
-                    return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Args.FirstOrDefault()?.ToString()));
+                    var jobItem = RecurringJob.Args.FirstOrDefault() as HttpJobItem;
+                    if (jobItem == null) return "";
+                    if (string.IsNullOrEmpty(jobItem.RecurringJobIdentifier))
+                    {
+                        jobItem.RecurringJobIdentifier = jobItem.JobName;
+                    }
+                    
+                    return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(jobItem.ToString()));
                 }
             }
             catch (Exception ex)

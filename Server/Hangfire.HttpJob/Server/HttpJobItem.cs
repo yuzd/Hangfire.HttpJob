@@ -37,6 +37,12 @@ namespace Hangfire.HttpJob.Server
             return JsonConvert.SerializeObject(this);
         }
 
+        public string GetUrlHost()
+        {
+            var uri = new Uri(Url);
+            var key = uri.Host + ":" + uri.Port;
+            return key;
+        }
     }
 
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]

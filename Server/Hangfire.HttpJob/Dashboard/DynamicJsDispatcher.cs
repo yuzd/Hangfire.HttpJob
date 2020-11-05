@@ -37,6 +37,7 @@ namespace Hangfire.HttpJob.Dashboard
                   .AppendFormat("hangFire.httpjobConfig.PauseJobButtonName = '{0}';", _options.PauseJobButtonName)
                   .AppendFormat("hangFire.httpjobConfig.EditRecurringJobButtonName = '{0}';", _options.EditRecurringJobButtonName)
                   .AppendFormat("hangFire.httpjobConfig.SearchPlaceholder = '{0}';", _options.SearchPlaceholder)
+                  .AppendFormat("hangFire.httpjobConfig.SearchPlaceholderExt = '{0}';", _options.SearchPlaceholderUseName)
 
                   .AppendFormat("hangFire.httpjobConfig.DashboardTitle = '{0}';", _options.DashboardTitle)
                   .AppendFormat("hangFire.httpjobConfig.DashboardName = '{0}';", _options.DashboardName)

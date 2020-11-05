@@ -1119,18 +1119,75 @@ function changeTable() {
         $(".table tbody").show();
         return;
     }
+    var isreJob = window.location.pathname.endsWith('/recurring');
     var config = window.Hangfire.httpjobConfig;
     $(".table tbody").find('tr').each(function () {
         var tdArr = $(this).children();
+        var s1 = tdArr.eq(1).text();
+
+
+        if (s1.indexOf('|') >= 0) {
+            var ss1 = s1.split('|');
+            if (s1.indexOf('Agent:') > 0) {
+                //第一个是详细信息 第二个是className 第三个是别名(可能为空) 第四个是host
+
+                var h = '<span class="label label-primary" title="" data-original-title="' +
+                    ss1[0] +
+                    '">' +
+                    ss1[1] +
+                    '</span>' +
+                    (ss1[2] == ''
+                        ? ''
+                        : '<span class="label label-primary left5" title="" data-original-title="">' +
+                        ss1[2] +
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' :'<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                tdArr.eq(1).html(h);
+            } else {
+                var h = '<span class="label label-success" title="" data-original-title="' +
+                    ss1[0] +
+                    '">' +
+                    ss1[1] +
+                    '</span>' +
+                    (ss1[2] == ''
+                        ? ''
+                        : '<span class="label label-success left5" title="" data-original-title="">' +
+                        ss1[2] +
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                tdArr.eq(1).html(h);
+            }
+
+        }
+
         var ss = tdArr.eq(2).text();
 
 
         if (ss.indexOf('|') >= 0) {
             var ss1 = ss.split('|');
             if (ss.indexOf('Agent:') > 0) {
-                tdArr.eq(2).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-primary left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
+                //第一个是详细信息 第二个是className 第三个是别名(可能为空) 第四个是host
+                var h = '<span class="label label-primary" title="" data-original-title="' +
+                    ss1[0] +
+                    '">' +
+                    ss1[1] +
+                    '</span>' +
+                    (ss1[2] == ''
+                        ? ''
+                        : '<span class="label label-primary left5" title="" data-original-title="">' +
+                        ss1[2] +
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' :'<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>' );
+                tdArr.eq(2).html(h);
             } else {
-                tdArr.eq(2).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-success left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
+                var h = '<span class="label label-success" title="" data-original-title="' +
+                    ss1[0] +
+                    '">' +
+                    ss1[1] +
+                    '</span>' +
+                    (ss1[2] == ''
+                        ? ''
+                        : '<span class="label label-success left5" title="" data-original-title="">' +
+                        ss1[2] +
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>' );
+                tdArr.eq(2).html(h);
             }
            
         }
@@ -1139,9 +1196,29 @@ function changeTable() {
         if (ss2.indexOf('|') >= 0) {
             var ss1 = ss2.split('|');
             if (ss2.indexOf('Agent:') > 0) {
-                tdArr.eq(4).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-primary left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
+                var h = '<span class="label label-primary" title="" data-original-title="' +
+                    ss1[0] +
+                    '">' +
+                    ss1[1] +
+                    '</span>' +
+                    (ss1[2] == ''
+                        ? ''
+                        : '<span class="label label-primary left5" title="" data-original-title="">' +
+                        ss1[2] +
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                tdArr.eq(4).html(h);
             } else {
-                tdArr.eq(4).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-success left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
+                var h = '<span class="label label-success" title="" data-original-title="' +
+                    ss1[0] +
+                    '">' +
+                    ss1[1] +
+                    '</span>' +
+                    (ss1[2] == ''
+                        ? ''
+                        : '<span class="label label-success left5" title="" data-original-title="">' +
+                        ss1[2] +
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                tdArr.eq(4).html(h);
             }
            
         }
@@ -1153,9 +1230,29 @@ function changeTable() {
             if (ss3.indexOf('|') >= 0) {
                 var ss1 = ss3.split('|');
                 if (ss3.indexOf('Agent:') > 0) {
-                    tdArr.eq(3).html('<span class="label label-primary" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-primary left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
+                    var h = '<span class="label label-primary" title="" data-original-title="' +
+                        ss1[0] +
+                        '">' +
+                        ss1[1] +
+                        '</span>' +
+                        (ss1[2] == ''
+                            ? ''
+                            : '<span class="label label-primary left5" title="" data-original-title="">' +
+                            ss1[2] +
+                            '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                    tdArr.eq(3).html(h);
                 } else {
-                    tdArr.eq(3).html('<span class="label label-success" title="" data-original-title="' + ss1[0] + '">' + ss1[1] + '</span>' + (ss1.length != 3 ? '' : '<span class="label label-success left5" title="" data-original-title="' + ss1[0] + '">' + ss1[ss1.length - 1] + '</span>'));
+                    var h = '<span class="label label-success" title="" data-original-title="' +
+                        ss1[0] +
+                        '">' +
+                        ss1[1] +
+                        '</span>' +
+                        (ss1[2] == ''
+                            ? ''
+                            : '<span class="label label-success left5" title="" data-original-title="">' +
+                            ss1[2] +
+                            '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                    tdArr.eq(3).html(h);
                 }
                 
             }
@@ -1164,7 +1261,11 @@ function changeTable() {
 
 
         if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
-            tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="Go to Tag Page" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
+            var tag = tdArr.eq(1).html();
+            if (tag.indexOf('Go to Tag') == -1) {
+                tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="Go to Tag Page" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
+            }
+           
         }
     });
     $(".table tbody").show();
@@ -1184,7 +1285,7 @@ var jobSearcher = new function () {
     var createSearchBox = function () {
         $('#search-box').closest('div').remove();
         $('.js-jobs-list').prepend('<div class="search-box-div">' +
-            '<input type="text" id="search-box" placeholder="' + (window.Hangfire.httpjobConfig.SearchPlaceholder) + '">' +
+            '<input type="text" id="search-box" placeholder="' + (!window.Hangfire.httpjobConfig.NeedAddRecurringHttpJobButton ? window.Hangfire.httpjobConfig.SearchPlaceholder : window.Hangfire.httpjobConfig.SearchPlaceholder + " " + window.Hangfire.httpjobConfig.SearchPlaceholderExt) + '">' +
             //'<img class="loader-img" src ="" />' +
             '<span class="glyphicon glyphicon-search" id="loaddata"> Checking...</span>' +
             '<p id="total-items"></p>' +
@@ -1192,69 +1293,80 @@ var jobSearcher = new function () {
     };
     this.Init = function () {
         createSearchBox();
+
+        if (location.search.indexOf('?search=') === 0) {
+            var searchValue = location.search.replace('?search=', '');
+            $('#search-box').val(searchValue);
+            setTimeout(function () { FilterJobs(searchValue); }, 500);
+        }
     };
+
     this.BindEvents = function () {
         $('#search-box').bind('change', function (e) {
             if (this.value.length === 0)
                 window.location.reload();
-            else
-                GetPausedJobs();
+            //else
+            //    GetPausedJobs();
             FilterJobs(this.value);
         });
     };
+
+    
+    
+
     function FilterJobs(keyword) {
         $('#loaddata').css('visibility', 'unset');
         //在所有查询结果中查找满足条件的，模糊匹配时区分大小写
         //只读面板下筛选数据操作
-        if (window.location.href.indexOf('read') >= 0) {
-            $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
-                function () {
-                    var table = $('.table-responsive').find('table');
-                    if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
-                        var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) + ')').closest('tr');
-                    } else {
-                        var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
-                    }
-                    $(table).find('tbody tr').remove();
-                    //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
-                    if (location.href.endsWith('jobs/failed')) {
-                        for (var j = 0; j < filtered.length; j++) {
-                            $(table).find('tbody').append(filtered[j]);
-                            $(table).find('tbody').append('<tr></tr>');
-                        }
-                        $('.js-jobs-list .expander').remove();
-                    } else {
-                        $(table).find('tbody').append(filtered);
-                    }
-                    //如果作业已经暂停，则用红色字体标识
-                    $(table).find('tbody').find('tr').each(function () {
-                        var tdArr = $(this).children();
-                        var ss = tdArr.eq(1).text();
-                        for (var i = 0; i < pausedjob.length; i++) {
-                            if (ss === pausedjob[i]) {
-                                $(this).css("color", "red");
-                            }
-                        }
-                    });
-                    $('#loaddata').css('visibility', 'hidden');
-                    $('#total-items').text("Check Result: " + filtered.length);
-                    changeTable();
-                });
-            return;
-        }
+        //if (window.location.href.indexOf('read') >= 0) {
+        //    $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
+        //        function () {
+        //            var table = $('.table-responsive').find('table');
+        //            if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
+        //                var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) + ')').closest('tr');
+        //            } else {
+        //                var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+        //            }
+        //            $(table).find('tbody tr').remove();
+        //            //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
+        //            if (location.href.endsWith('jobs/failed')) {
+        //                for (var j = 0; j < filtered.length; j++) {
+        //                    $(table).find('tbody').append(filtered[j]);
+        //                    $(table).find('tbody').append('<tr></tr>');
+        //                }
+        //                $('.js-jobs-list .expander').remove();
+        //            } else {
+        //                $(table).find('tbody').append(filtered);
+        //            }
+        //            //如果作业已经暂停，则用红色字体标识
+        //            //$(table).find('tbody').find('tr').each(function () {
+        //            //    var tdArr = $(this).children();
+        //            //    var ss = tdArr.eq(1).text();
+        //            //    for (var i = 0; i < pausedjob.length; i++) {
+        //            //        if (ss === pausedjob[i]) {
+        //            //            $(this).css("color", "red");
+        //            //        }
+        //            //    }
+        //            //});
+        //            $('#loaddata').css('visibility', 'hidden');
+        //            $('#total-items').text("Check Result: " + filtered.length);
+        //            changeTable();
+        //        });
+        //    return;
+        //}
         //非只读数据下,筛选数据
         $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000 .table-responsive table",
             function () {
                 var table = $('.table-responsive').find('table');
-                if (keyword.indexOf('name:') == 0 && location.href.endsWith('/recurring')) {
+                if (keyword.indexOf('name:') == 0 && location.pathname.endsWith('/recurring')) {
                     var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) +')').closest('tr');
                 } else {
-                    var filtered = (location.href.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    var filtered = (location.pathname.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
                 }
                  
                 $(table).find('tbody tr').remove();
                 //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
-                if (location.href.endsWith('jobs/failed')) {
+                if (location.pathname.endsWith('jobs/failed')) {
                     for (var j = 0; j < filtered.length; j++) {
                         $(table).find('tbody').append(filtered[j]);
                         $(table).find('tbody').append('<tr></tr>');
@@ -1264,15 +1376,15 @@ var jobSearcher = new function () {
                     $(table).find('tbody').append(filtered);
                 }
                 //如果作业已经暂停，则用红色字体标识
-                $(table).find('tbody').find('tr').each(function () {
-                    var tdArr = $(this).children();
-                    var ss = tdArr.eq(1).text();
-                    for (var i = 0; i < pausedjob.length; i++) {
-                        if (ss === pausedjob[i]) {
-                            $(this).css("color", "red");
-                        }
-                    }
-                });
+                //$(table).find('tbody').find('tr').each(function () {
+                //    var tdArr = $(this).children();
+                //    var ss = tdArr.eq(1).text();
+                //    for (var i = 0; i < pausedjob.length; i++) {
+                //        if (ss === pausedjob[i]) {
+                //            $(this).css("color", "red");
+                //        }
+                //    }
+                //});
                 $('#loaddata').css('visibility', 'hidden');
                 $('#total-items').text("Check Result: " + filtered.length);
                 changeTable();

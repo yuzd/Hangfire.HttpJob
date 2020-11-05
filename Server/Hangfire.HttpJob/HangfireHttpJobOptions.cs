@@ -81,6 +81,7 @@ namespace Hangfire.HttpJob
         public string AgentJobDeatilButton { get; set; } = Strings.AgentJobDeatilButton;
 
         public string SearchPlaceholder { get; set; } = Strings.SearchPlaceholder;
+        public string SearchPlaceholderUseName { get; set; } = Strings.SearchPlaceholderUseName;
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";
 

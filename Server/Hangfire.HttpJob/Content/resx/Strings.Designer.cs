@@ -88,11 +88,38 @@ namespace Hangfire.HttpJob.Content.resx {
         }
         
         /// <summary>
+        ///   查找类似 JobCount 的本地化字符串。
+        /// </summary>
+        public static string AgentJobCount {
+            get {
+                return ResourceManager.GetString("AgentJobCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 AgentJobDetail 的本地化字符串。
         /// </summary>
         public static string AgentJobDeatilButton {
             get {
                 return ResourceManager.GetString("AgentJobDeatilButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Server 的本地化字符串。
+        /// </summary>
+        public static string AgentServer {
+            get {
+                return ResourceManager.GetString("AgentServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Heartbeat 的本地化字符串。
+        /// </summary>
+        public static string AgentServerBeat {
+            get {
+                return ResourceManager.GetString("AgentServerBeat", resourceCulture);
             }
         }
         
@@ -624,6 +651,15 @@ namespace Hangfire.HttpJob.Content.resx {
         public static string SearchPlaceholder {
             get {
                 return ResourceManager.GetString("SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 use 【name:xxx】 to search jobDetail 的本地化字符串。
+        /// </summary>
+        public static string SearchPlaceholderUseName {
+            get {
+                return ResourceManager.GetString("SearchPlaceholderUseName", resourceCulture);
             }
         }
         

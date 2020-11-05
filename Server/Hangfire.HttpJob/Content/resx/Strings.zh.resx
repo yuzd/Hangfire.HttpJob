@@ -354,4 +354,16 @@
   <data name="DingTalkTitle" xml:space="preserve">
     <value>任务通知</value>
   </data>
+  <data name="AgentJobCount" xml:space="preserve">
+    <value>作业数量</value>
+  </data>
+  <data name="AgentServer" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="AgentServerBeat" xml:space="preserve">
+    <value>心跳</value>
+  </data>
+  <data name="SearchPlaceholderUseName" xml:space="preserve">
+    <value>使用【name:xxx】可筛选作业列</value>
+  </data>
 </root>

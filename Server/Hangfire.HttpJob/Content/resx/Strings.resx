@@ -354,4 +354,16 @@
   <data name="DingTalkTitle" xml:space="preserve">
     <value>HttpJob-Alert</value>
   </data>
+  <data name="AgentJobCount" xml:space="preserve">
+    <value>JobCount</value>
+  </data>
+  <data name="AgentServer" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="AgentServerBeat" xml:space="preserve">
+    <value>Heartbeat</value>
+  </data>
+  <data name="SearchPlaceholderUseName" xml:space="preserve">
+    <value>use 【name:xxx】 to search jobDetail</value>
+  </data>
 </root>
