@@ -68,8 +68,19 @@ namespace Hangfire.HttpJob.Support
             var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
             try
             {
-               
-                if (!string.IsNullOrEmpty(job.JobName) && (TagsServiceStorage.Current != null) ) filterContext.BackgroundJob.Id.AddTags(job.JobName);
+
+                if (!string.IsNullOrEmpty(job.JobName) && (TagsServiceStorage.Current != null))
+                {
+                    filterContext.BackgroundJob.Id.AddTags(job.JobName);
+                    
+                    filterContext.BackgroundJob.Id.AddTags(job.GetUrlHost());
+
+                    if (!string.IsNullOrEmpty(job.RecurringJobIdentifier) &&
+                        !job.RecurringJobIdentifier.Equals(job.JobName))
+                    {
+                        filterContext.BackgroundJob.Id.AddTags(job.RecurringJobIdentifier);
+                    }
+                }
 
                 //设置运行时被设置的参数
                 try

@@ -73,7 +73,10 @@ namespace RedisHangfire
                 {
                     BackgroundColor = "#000079"
                 })
-                .UseTagsWithRedis()
+                .UseTagsWithRedis(new TagsOptions()
+                {
+                    TagsListStyle = TagsListStyle.Dropdown
+                })
                 .UseHangfireHttpJob(httpJobOptions)
                 .UseHeartbeatPage();
         }

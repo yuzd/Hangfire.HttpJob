@@ -77,7 +77,10 @@ namespace MysqlHangfire
                     BackgroundColor = "#000079"
                 })
                 .UseHangfireHttpJob(httpJobOptions)
-                .UseTagsWithMySql(sqlOptions:mysqlOption)
+                .UseTagsWithMySql(new TagsOptions()
+                {
+                    TagsListStyle = TagsListStyle.Dropdown
+                },sqlOptions:mysqlOption)
                 .UseHeartbeatPage();
         }
 

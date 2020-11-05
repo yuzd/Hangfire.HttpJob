@@ -74,7 +74,10 @@ namespace SqlserverHangfire
                 {
                     BackgroundColor = "#000079"
                 })
-                .UseTagsWithSql()
+                .UseTagsWithSql(new TagsOptions()
+                {
+                    TagsListStyle = TagsListStyle.Dropdown
+                })
                 .UseHangfireHttpJob(httpJobOptions)
                 .UseHeartbeatPage();
         }
