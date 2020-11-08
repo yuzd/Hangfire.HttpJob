@@ -12,6 +12,7 @@ using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Hangfire.Heartbeat;
@@ -23,6 +24,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Spring.Core.TypeConversion;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace MysqlHangfire
@@ -55,10 +57,17 @@ namespace MysqlHangfire
         {
             var serverProvider = services.BuildServiceProvider();
             var hangfireSettings = serverProvider.GetService<IOptions<HangfireSettings>>().Value;
+            ConfigFromEnv(hangfireSettings);
             var httpJobOptions = serverProvider.GetService<IOptions<HangfireHttpJobOptions>>().Value;
+            ConfigFromEnv(httpJobOptions);
+
+            httpJobOptions.GlobalSettingJsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hangfire",
+                "hangfire_global.json");
 
             var sqlConnectStr = Configuration.GetSection(HangfireConnectStringKey).Get<string>();
-            
+            var envSqlConnectStr = GetEnvConfig<string>("HangfireMysqlConnectionString");
+            if (!string.IsNullOrEmpty(envSqlConnectStr)) sqlConnectStr = envSqlConnectStr;
+
             var mysqlOption = new MySqlStorageOptions
             {
                 TransactionIsolationLevel = IsolationLevel.ReadCommitted,
@@ -87,6 +96,9 @@ namespace MysqlHangfire
         public static IApplicationBuilder ConfigureSelfHangfire(this IApplicationBuilder app, IConfiguration Configuration)
         {
             var langStr = Configuration.GetSection(HangfireLangKey).Get<string>();
+            var envLangStr = GetEnvConfig<string>("Lang");
+            if (!string.IsNullOrEmpty(envLangStr)) langStr = envLangStr;
+
             if (!string.IsNullOrEmpty(langStr))
             {
                 var options = new RequestLocalizationOptions
@@ -101,6 +113,7 @@ namespace MysqlHangfire
             
             var services = app.ApplicationServices;
             var hangfireSettings = services.GetService<IOptions<HangfireSettings>>().Value;
+            ConfigFromEnv(hangfireSettings);
 
             var queues = hangfireSettings.JobQueues.Select(m => m.ToLower()).Distinct().ToList();
 
@@ -108,7 +121,7 @@ namespace MysqlHangfire
 
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
-                ServerName = "HangfireServer",
+                ServerName = hangfireSettings.ServerName,
                 ServerTimeout = TimeSpan.FromMinutes(4),
                 SchedulePollingInterval = TimeSpan.FromSeconds(15), //秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
@@ -164,11 +177,113 @@ namespace MysqlHangfire
 
             return app;
         }
-        
+
+
+        #region Docker运行的参数配置https://github.com/yuzd/Hangfire.HttpJob/wiki/000.Docker-Quick-Start
+
+       
+        private static void ConfigFromEnv(HangfireSettings settings)
+        {
+            var HangfireQueues = GetEnvConfig<string>("HangfireQueues");
+            if (!string.IsNullOrEmpty(HangfireQueues))
+            {
+                settings.JobQueues = HangfireQueues.Split(',').ToList();
+            }
+            var ServerName = GetEnvConfig<string>("ServerName");
+            if (!string.IsNullOrEmpty(ServerName))
+            {
+                settings.ServerName = ServerName;
+            }
+            var WorkerCount = GetEnvConfig<string>("WorkerCount");
+            if (!string.IsNullOrEmpty(WorkerCount))
+            {
+                settings.WorkerCount = int.Parse(WorkerCount);
+            }
+
+            var TablePrefix = GetEnvConfig<string>("TablePrefix");
+            if (!string.IsNullOrEmpty(TablePrefix))
+            {
+                settings.TablePrefix = TablePrefix;
+            }
+
+            var HangfireUserName = GetEnvConfig<string>("HangfireUserName");
+            var HangfirePwd = GetEnvConfig<string>("HangfirePwd");
+            if (!string.IsNullOrEmpty(HangfireUserName) && !string.IsNullOrEmpty(HangfirePwd))
+            {
+                settings.HttpAuthInfo = new HttpAuthInfo { Users = new List<UserInfo>() };
+                settings.HttpAuthInfo.Users.Add(new UserInfo
+                {
+                    Login = HangfireUserName,
+                    PasswordClear = HangfirePwd
+                });
+            }
+        }
+
+        private static void ConfigFromEnv(HangfireHttpJobOptions settings)
+        {
+            var DefaultRecurringQueueName = GetEnvConfig<string>("DefaultRecurringQueueName");
+            if (!string.IsNullOrEmpty(DefaultRecurringQueueName))
+            {
+                settings.DefaultRecurringQueueName = DefaultRecurringQueueName;
+            }
+
+            if(settings.MailOption == null) settings.MailOption = new MailOption();
+
+            var HangfireMail_Server = GetEnvConfig<string>("HangfireMail_Server");
+            if (!string.IsNullOrEmpty(HangfireMail_Server))
+            {
+                settings.MailOption.Server = HangfireMail_Server;
+            }
+
+            var HangfireMail_Port = GetEnvConfig<int>("HangfireMail_Port");
+            if (HangfireMail_Port>0)
+            {
+                settings.MailOption.Port = HangfireMail_Port;
+            }
+
+            var HangfireMail_UseSsl = Environment.GetEnvironmentVariable("HangfireMail_UseSsl");
+            if (!string.IsNullOrEmpty(HangfireMail_UseSsl))
+            {
+                settings.MailOption.UseSsl = HangfireMail_UseSsl.ToLower().Equals("true");
+            }
+
+            var HangfireMail_User = GetEnvConfig<string>("HangfireMail_User");
+            if (!string.IsNullOrEmpty(HangfireMail_User))
+            {
+                settings.MailOption.User = HangfireMail_User;
+            }
+
+            var HangfireMail_Password = GetEnvConfig<string>("HangfireMail_Password");
+            if (!string.IsNullOrEmpty(HangfireMail_Password))
+            {
+                settings.MailOption.Password = HangfireMail_Password;
+            }
+
+        }
+        private static T GetEnvConfig<T>(string key)
+        {
+            try
+            {
+                var value = Environment.GetEnvironmentVariable(key.Replace(":", "_"));
+                if (!string.IsNullOrEmpty(value))
+                {
+                    return (T)TypeConversionUtils.ConvertValueIfNecessary(typeof(T), value, null);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return default;
+        }
+
+        #endregion
+
     }
 
     public class HangfireSettings
     {
+        public string ServerName { get; set; }
         public string TablePrefix { get; set; }
         public string StartUpPath { get; set; }
         public string ReadOnlyPath { get; set; }

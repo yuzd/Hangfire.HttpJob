@@ -6,3 +6,6 @@ packages/
 .vs
 .idea/
 _ReSharper.Caches/
+Test/TestHangfire/AntDeploy.json
+Test/RedisHangfire/AntDeploy.json
+Test/TestSqlserver/AntDeploy.json
