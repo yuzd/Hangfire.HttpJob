@@ -16,7 +16,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
             _storage = storage;
         }
 
-        public override IHangfireStorage Storage => Storage;
+        public override IHangfireStorage Storage => _storage;
     }
 
 }

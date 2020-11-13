@@ -78,7 +78,6 @@ namespace Hangfire.HttpJob.Agent
         public void WriteLine(string message, ConsoleFontColor fontColor = null)
         {
             if (this.ConsoleInfo == null || string.IsNullOrEmpty(message)) return;
-            if (string.IsNullOrEmpty(this.ConsoleInfo.HashKey) || string.IsNullOrEmpty(this.ConsoleInfo.SetKey)) return;
             message = "【JobAgent】" + message;
             lock (this)
             {
@@ -172,10 +171,12 @@ namespace Hangfire.HttpJob.Agent
         public void Init(ConsoleInfo consoleInfo)
         {
             if (consoleInfo == null) throw new ArgumentNullException(nameof(ConsoleInfo));
+            if (string.IsNullOrEmpty(consoleInfo.HashKey) || string.IsNullOrEmpty(consoleInfo.SetKey)) return;
+            
             ConsoleInfo = consoleInfo;
             _nextProgressBarId = consoleInfo.ProgressBarId;//初始化
 
-            if (consoleInfo != null && consoleInfo.StartTime == DateTime.MinValue)
+            if (consoleInfo.StartTime == DateTime.MinValue)
             {
                 consoleInfo.StartTime = DateTime.UtcNow;
             }
