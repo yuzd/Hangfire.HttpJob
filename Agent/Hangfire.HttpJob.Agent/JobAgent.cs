@@ -10,12 +10,11 @@ namespace Hangfire.HttpJob.Agent
     public abstract class JobAgent
     {
         private ManualResetEvent _mainThread;
-        private volatile int locked;
         /// <summary>
         ///     默认是非Hang
         /// </summary>
         internal volatile bool Hang = false;
-
+        private SpinLock _lookupLock = new SpinLock();
         private volatile JobStatus jobStatus = JobStatus.Default;
 
         /// <summary>
@@ -133,7 +132,7 @@ namespace Hangfire.HttpJob.Agent
         }
 
 
-        internal void Run(JobItem jobItem, IHangfireConsole console, IHangfireStorage storage,ConcurrentDictionary<string, string> headers)
+        internal bool Run(JobItem jobItem, IHangfireConsole console, IHangfireStorage storage,ConcurrentDictionary<string, string> headers)
         {
             var jobContext = new JobContext()
             {
@@ -150,20 +149,22 @@ namespace Hangfire.HttpJob.Agent
             if (JobStatus == JobStatus.Running)
             {
                 ReportToHangfireServer(jobContext, null);
-                return;
+                return false;
             }
-
+            var locked = false;
             try
             {
-                while (Interlocked.CompareExchange(ref locked, 1, 0) != 0)
+                _lookupLock.TryEnter(3000,ref locked);
+                if (!locked)
                 {
-                    continue; // spin
+                    ReportToHangfireServer(jobContext, null);
+                    return false;
                 }
-                
+
                 if (JobStatus == JobStatus.Running)  
                 {
                     ReportToHangfireServer(jobContext, null);
-                    return;
+                    return false;
                 }
                 
                 if(Hang)this. _mainThread = new ManualResetEvent(false);
@@ -193,11 +194,14 @@ namespace Hangfire.HttpJob.Agent
                     });
                     _cancelToken.CancelAfter(jobItem.AgentTimeout);
                 }
+                return true;
             }
             finally
             {
-                locked = 0;
+                if (locked)
+                    _lookupLock.Exit();
             }
+          
         }
 
         internal void Stop(JobItem jobItem, IHangfireConsole console,IHangfireStorage storage, ConcurrentDictionary<string, string> headers)
@@ -220,13 +224,15 @@ namespace Hangfire.HttpJob.Agent
                 return;
             }
 
+            var locked = false;
             try
             {
-                while (Interlocked.CompareExchange(ref locked, 1, 0) != 0)
+                _lookupLock.TryEnter(3000,ref locked);
+                if (!locked)
                 {
-                    continue; // spin
+                    ReportToHangfireServer(jobContext, null);
+                    return;
                 }
-                
                 if (JobStatus == JobStatus.Stoped || JobStatus == JobStatus.Stopping)
                 {
                     ReportToHangfireServer(jobContext, null);
@@ -251,7 +257,8 @@ namespace Hangfire.HttpJob.Agent
             }
             finally
             {
-                locked = 0;
+                if (locked)
+                    _lookupLock.Exit();
             }
         }
 

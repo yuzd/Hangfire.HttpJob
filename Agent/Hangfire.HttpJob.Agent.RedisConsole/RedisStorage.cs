@@ -62,8 +62,8 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
 
         public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
             var redisKey = this._options.TablePrefix + key;
             _redis.Value.HashSet(redisKey, ToHashEntries(keyValuePairs));
             _redis.Value.KeyExpire(redisKey,

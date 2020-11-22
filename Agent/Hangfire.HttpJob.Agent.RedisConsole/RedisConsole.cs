@@ -1,22 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading;
-using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Agent.RedisConsole
 {
     internal class RedisConsole : HangfireConsole
     {
-        private readonly IHangfireStorage _storage;
-
         public RedisConsole(IHangfireStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(IHangfireStorage));
-            _storage = storage;
+            Storage = storage ?? throw new ArgumentNullException(nameof(IHangfireStorage));
         }
 
-        public override IHangfireStorage Storage => _storage;
+        public override IHangfireStorage Storage { get; }
     }
 
 }

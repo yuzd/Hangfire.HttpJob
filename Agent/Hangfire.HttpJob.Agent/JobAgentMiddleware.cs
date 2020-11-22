@@ -202,7 +202,14 @@ public class JobAgentMiddleware : OwinMiddleware
                         var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
 
                         jobItem.JobParam = requestBody;
-                        job.Run(jobItem, console, jobStorage, jobHeaders);
+                        //单例的job存在锁竞争
+                        var result = job.Run(jobItem, console, jobStorage, jobHeaders);
+                        if (!result)
+                        {
+                            message = $"err:JobClass:{agentClass} can not start, is already Running!";
+                            _logger.LogWarning(message);
+                            return;
+                        }
                         message = $"JobClass:{agentClass} run success!";
                         _logger.LogInformation(message);
 
@@ -260,7 +267,7 @@ public class JobAgentMiddleware : OwinMiddleware
                     var jobStorage = GetHangfireStorage(httpContext, jobItem);
                     var console = GetHangfireConsole(httpContext, agentClassType.Item1, jobStorage);
                     jobItem.JobParam = requestBody;
-
+                    //多例的job不存在锁竞争
                     job.Run(jobItem, console, jobStorage, jobHeaders);
                     message = $"Transient JobClass:{agentClass} run success!";
                     _logger.LogInformation(message);
