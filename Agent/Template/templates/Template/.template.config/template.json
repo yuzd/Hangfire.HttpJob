@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "agent",
+  "classifications": [ "agent", "webapi","httpjob" ],
+  "identity": "HttpJob.Agent.Template",
+  "name": "Hangfire HttpJob Agent QuickStart Project Template",
+  "shortName": "agent",
+  "sourceName": "Template",
+  "preferNameDirectory": true,
+  "symbols":{
+    "type": {
+      "type": "parameter",
+      "defaultValue": "RedisConsole",
+      "replaces":"AgentType"
+    }
+  }
+}
