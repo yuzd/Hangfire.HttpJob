@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.HttpJob.Support;
+using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -15,6 +16,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
     /// </summary>
     public sealed class JobAgentReportServer
     {
+        private static readonly ILog Logger = LogProvider.For<JobAgentReportServer>();
         /// <summary>
         /// 每隔2s获取一次
         /// </summary>
@@ -129,9 +131,9 @@ namespace Hangfire.HttpJob.Server.JobAgent
                     }
                 }
             }
-            catch
+            catch(Exception e)
             {
-                // ignored
+                Logger.ErrorException("agent reporter fail", e);
             }
             finally
             {
