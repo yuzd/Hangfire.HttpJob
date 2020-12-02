@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire.HttpJob.Agent
 {
@@ -17,13 +18,16 @@ namespace Hangfire.HttpJob.Agent
         private volatile string _serverId;
         private IHangfireStorage _hangfireStorage;
         private static readonly ConcurrentDictionary<string, HeartBeatReport> _cache = new ConcurrentDictionary<string, HeartBeatReport>();
-        private static System.Threading.Timer mDetectionTimer;
+        private readonly System.Threading.Timer mDetectionTimer;
         private volatile int times = 5 * 60;
+        private volatile int newTimes = 0;
 
         private readonly Process _process;
         private readonly int _processorCount;
         private readonly TimeSpan _checkInterval;
         private (TimeSpan? current, TimeSpan? next) _processorTimeUsage;
+        internal static ILogger<HeartBeatReport> logger;
+        private object lockObj = new object();
 
         public HeartBeatReport(string serverId, string currenturl, IHangfireStorage hangfireStorage)
         {
@@ -31,6 +35,9 @@ namespace Hangfire.HttpJob.Agent
             _currenturl = currenturl;
             _hangfireStorage = hangfireStorage;
             mDetectionTimer = new System.Threading.Timer(OnVerify, null, 1000 * 1, 1000 * 1);
+#if DEBUG
+            logger?.LogDebug("start heartbeat for serverId:" + serverId);
+#endif
             this._process = Process.GetCurrentProcess();
             _processorCount = Environment.ProcessorCount;
             _checkInterval = TimeSpan.FromSeconds(1);
@@ -44,69 +51,78 @@ namespace Hangfire.HttpJob.Agent
                 _cache.TryAdd(serverId, reporter);
                 return;
             }
-
+            
             reporter.ReStart(serverId, currenturl, hangfireStorage);
         }
 
 
         private void OnVerify(object state)
         {
-            lock (this)
+            mDetectionTimer.Change(-1, -1);
+            lock (lockObj)
             {
-                mDetectionTimer.Change(-1, -1);
-                try
+                if (newTimes > 0)
                 {
-                    if (_processorTimeUsage.current.HasValue && _processorTimeUsage.next.HasValue)
-                    {
-                        var cpuPercentUsage = ComputeCpuUsage(_processorTimeUsage.current.Value, _processorTimeUsage.next.Value);
-                        var data = new ProcessInfo
-                        {
-                            Id = _process.Id,
-                            Idx = this.times,
-                            Server = _currenturl,
-                            ProcessName = _process.ProcessName,
-                            CpuUsage = cpuPercentUsage,
-                            WorkingSet = _process.WorkingSet64,
-                            Timestamp = DateTimeOffset.UtcNow
-                        };
-                        string fullPath = _process.MainModule?.FileName;
-                        if (!string.IsNullOrEmpty(fullPath))
-                        {
-                            string rootDir = Directory.GetDirectoryRoot(fullPath);
-                            DriveInfo driveInfo = new DriveInfo(rootDir);
-                            data.DiskUsage = driveInfo.AvailableFreeSpace;
-                        }
-                        var values = new Dictionary<string, string>
-                        {
-                            [_currenturl] = Newtonsoft.Json.JsonConvert.SerializeObject(data)
-                        };
-
-                        this._hangfireStorage.SetRangeInHash("AgentHeart:" + _serverId, values);
-                    }
-
-                    _process.Refresh();
-                    var next = _process.TotalProcessorTime;
-                    _processorTimeUsage = (_processorTimeUsage.next, next);
+                    times = newTimes;
+                    newTimes = 0;
                 }
-#pragma warning disable 168
-                catch(Exception exception)
-#pragma warning restore 168
+            }
+           
+            try
+            {
+                if (_processorTimeUsage.current.HasValue && _processorTimeUsage.next.HasValue)
                 {
-                    // ignored
+                    var cpuPercentUsage = ComputeCpuUsage(_processorTimeUsage.current.Value, _processorTimeUsage.next.Value);
+                    var data = new ProcessInfo
+                    {
+                        Id = _process.Id,
+                        Idx = this.times,
+                        Server = _currenturl,
+                        ProcessName = _process.ProcessName,
+                        CpuUsage = cpuPercentUsage,
+                        WorkingSet = _process.WorkingSet64,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    string fullPath = _process.MainModule?.FileName;
+                    if (!string.IsNullOrEmpty(fullPath))
+                    {
+                        string rootDir = Directory.GetDirectoryRoot(fullPath);
+                        DriveInfo driveInfo = new DriveInfo(rootDir);
+                        data.DiskUsage = driveInfo.AvailableFreeSpace;
+                    }
+                    var values = new Dictionary<string, string>
+                    {
+                        [_currenturl] = Newtonsoft.Json.JsonConvert.SerializeObject(data)
+                    };
+
+                    this._hangfireStorage.SetRangeInHash("AgentHeart:" + _serverId, values);
+#if DEBUG
+                    logger.LogDebug("send heartbeat success,serverId:"+_serverId);
+#endif
                 }
-                finally
+
+                _process.Refresh();
+                var next = _process.TotalProcessorTime;
+                _processorTimeUsage = (_processorTimeUsage.next, next);
+            }
+            catch (Exception exception)
+            {
+                logger?.LogError(exception, "send heartbeat fail,serverId:" + _serverId);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref this.times);
+
+                if (this.times < 1)
                 {
-                    Interlocked.Decrement(ref this.times);
+                    this.times = 0;
+                    _cache.TryRemove(this._serverId,out _);
+                    mDetectionTimer.Dispose();
+                }
 
-                    if (this.times < 1)
-                    {
-                        this.times = 0;
-                    }
-
-                    if (this.times > 0)
-                    {
-                        mDetectionTimer.Change(1000 * 1, 1000 * 1);
-                    }
+                if (this.times > 0)
+                {
+                    mDetectionTimer.Change(1000 * 1, 1000 * 1);
                 }
             }
         }
@@ -123,14 +139,12 @@ namespace Hangfire.HttpJob.Agent
 
         private void ReStart(string serverId, string currenturl, IHangfireStorage hangfireStorage)
         {
-            lock (this)
+            lock (lockObj)
             {
                 _serverId = serverId;
                 _currenturl = currenturl;
                 _hangfireStorage = hangfireStorage;
-                var isStoped = this.times < 1;
-                this.times = 5 * 60;//重置
-                if (isStoped) mDetectionTimer.Change(1000 * 1, 1000 * 1);
+                newTimes = 5 * 60;//重置
             }
         }
     }

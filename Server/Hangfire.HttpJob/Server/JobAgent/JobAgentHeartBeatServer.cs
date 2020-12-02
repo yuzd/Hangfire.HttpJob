@@ -14,6 +14,7 @@ using Hangfire.Heartbeat.Dashboard;
 using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob.Content.resx;
 using Hangfire.HttpJob.Support;
+using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -24,6 +25,9 @@ namespace Hangfire.HttpJob.Server.JobAgent
     /// </summary>
     public sealed class JobAgentHeartBeatServer
     {
+
+        private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
+
         /// <summary>
         /// 每隔2s获取一次
         /// </summary>
@@ -164,7 +168,6 @@ namespace Hangfire.HttpJob.Server.JobAgent
             try
             {
                 using (var connection = JobStorage.Current.GetConnection())
-                using (var lockStorage = connection.AcquireDistributedLock("JobAgentHeartbeat", TimeSpan.FromSeconds(30)))//防止多个server端竞争
                 {
                     //拿到所有的周期性job
                     var jobagentServerList = new Dictionary<string, Tuple<string, string, string>>();
@@ -278,9 +281,10 @@ namespace Hangfire.HttpJob.Server.JobAgent
                 agentServerId = content.Headers.GetValues("agentServerId").FirstOrDefault() ?? "";
                
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 //ignore agent挂了就到这
+                Logger.ErrorException("send agent heartbeat fail,agent:"+url,e);
             }
 
             try
@@ -301,9 +305,10 @@ namespace Hangfire.HttpJob.Server.JobAgent
                     writeTransaction.Commit();
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 //ignore
+                Logger.ErrorException("get agent heartbeat fail", e);
             }
 
         }

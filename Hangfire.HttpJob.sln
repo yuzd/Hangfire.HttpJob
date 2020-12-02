@@ -47,6 +47,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfireRedisAgent", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOwinHangfireRedisAgent", "Test\TestOwinHangfireRedisAgent\TestOwinHangfireRedisAgent\TestOwinHangfireRedisAgent.csproj", "{BC8B9574-1C54-46FE-B2F0-C0AEE74B5CFF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{9419DCD0-5219-457E-97A1-8E8CDACC8F39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryHangfire", "Test\MemoryHangfire\MemoryHangfire\MemoryHangfire.csproj", "{81C32164-495D-4D04-8350-C2C13E63A4B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +113,10 @@ Global
 		{BC8B9574-1C54-46FE-B2F0-C0AEE74B5CFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC8B9574-1C54-46FE-B2F0-C0AEE74B5CFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC8B9574-1C54-46FE-B2F0-C0AEE74B5CFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81C32164-495D-4D04-8350-C2C13E63A4B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81C32164-495D-4D04-8350-C2C13E63A4B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81C32164-495D-4D04-8350-C2C13E63A4B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81C32164-495D-4D04-8350-C2C13E63A4B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,6 +139,8 @@ Global
 		{ACB85454-6B5B-47AD-87CE-55501B19F0F5} = {6387D13B-20FC-41C7-BE18-0EB20E863D0F}
 		{8BA5974D-CCE8-429D-8CB1-DDA9B9AFFD86} = {1B9027FD-6546-4A3D-9C7F-ADDE858E170F}
 		{BC8B9574-1C54-46FE-B2F0-C0AEE74B5CFF} = {1B9027FD-6546-4A3D-9C7F-ADDE858E170F}
+		{9419DCD0-5219-457E-97A1-8E8CDACC8F39} = {6C712EFD-9B0C-431B-8B79-06177DF325BA}
+		{81C32164-495D-4D04-8350-C2C13E63A4B3} = {9419DCD0-5219-457E-97A1-8E8CDACC8F39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A5F0048D-888D-47DA-8714-2283937235BC}

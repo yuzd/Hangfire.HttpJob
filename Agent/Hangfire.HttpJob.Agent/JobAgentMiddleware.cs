@@ -36,6 +36,7 @@ public class JobAgentMiddleware : OwinMiddleware
             _logger = logger;
             _options = options;
             transitentJob = new LazyConcurrentDictionary();
+            HeartBeatReport.logger = _loggerFactory.CreateLogger<HeartBeatReport>();
         }
 
 #else
@@ -52,6 +53,7 @@ public class JobAgentMiddleware : OwinMiddleware
             this._options = options;
             transitentJob = new LazyConcurrentDictionary();
             this.serviceProvider = serviceProvider;
+            HeartBeatReport.logger = _loggerFactory.CreateLogger<HeartBeatReport>();
         }
 
 
@@ -158,6 +160,7 @@ public class JobAgentMiddleware : OwinMiddleware
                     var currentServerUrl = GetHeader(httpContext, "x-job-agent-server");
                     var jobStorage = GetHangfireStorage(httpContext, jobItem);
                     HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, jobStorage);
+                 
                     return;
                 }
 
