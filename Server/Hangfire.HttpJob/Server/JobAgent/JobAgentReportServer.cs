@@ -22,6 +22,13 @@ namespace Hangfire.HttpJob.Server.JobAgent
 
         private static string keyPrefix = "_agent_result_";
 
+        private static BackgroundJobClient backgroundJobClient;
+
+        static JobAgentReportServer()
+        {
+            backgroundJobClient = new BackgroundJobClient();
+        }
+
         public static void Start()
         {
             mDetectionTimer  = new System.Threading.Timer(OnVerify, null, 1000 * 2, 1000 * 2);
@@ -53,6 +60,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             //job已经不存在了 就直接删除set 
                             if (jobData == null)
                             {
+                                backgroundJobClient.ChangeState(jobId, new SucceededState(null, 0, 0));
                                 tran.RemoveFromSet(keyPrefix, jobId);
                                 tran.Commit();
                                 continue;
@@ -64,7 +72,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             //如果job存在 但是没有拿到hash数据 认为成功
                             if (result == null || !result.Any())
                             {
-                                tran.SetJobState(jobId, new SucceededState(jobId, latency, latency));
+                                backgroundJobClient.ChangeState(jobId, new SucceededState(null, latency, latency));
                                 tran.RemoveFromSet(keyPrefix, jobId);
                                 tran.RemoveHash(hashKey);
                                 tran.Commit();
@@ -77,7 +85,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             //异常数据 认为成功
                             if (resultData == null)
                             {
-                                tran.SetJobState(jobId, new SucceededState(jobId, latency, latency));
+                                backgroundJobClient.ChangeState(jobId, new SucceededState(null, latency, latency));
                                 tran.RemoveFromSet(keyPrefix, jobId);
                                 tran.RemoveHash(hashKey);
                                 tran.Commit();
@@ -103,14 +111,14 @@ namespace Hangfire.HttpJob.Server.JobAgent
                                 }
                                 else
                                 {
-                                    new BackgroundJobClient().ChangeState(jobId, new SucceededState(null, latency, realTotalMilliseconds));
+                                    backgroundJobClient.ChangeState(jobId, new SucceededState(null, latency, realTotalMilliseconds));
                                 }
                             }
                             else
                             {
                                 var jobItem = jobData.Job.Args.FirstOrDefault() as HttpJobItem;
                                 var ex = new AgentJobException(jobItem.AgentClass, resultData.E);
-                                new BackgroundJobClient().ChangeState(jobId, new FailedState(ex));
+                                backgroundJobClient.ChangeState(jobId, new FailedState(ex));
                                 HttpJob.SendFail(jobId,jobItem,"AgentJobFail",ex);
                             }
                             
