@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.HttpJob.Agent.Util;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire.HttpJob.Agent
 {
     public abstract class JobAgent
     {
+        internal static ILogger<JobAgent> logger;
+
         private ManualResetEvent _mainThread;
         /// <summary>
         ///     默认是非Hang
@@ -125,9 +128,9 @@ namespace Hangfire.HttpJob.Agent
                 jobContext.HangfireStorage?.AddToSet(key,jobContext.JobItem.JobId,1);
                 
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                //ignore
+                logger.LogError(exception, string.Format("report to hangfire server fail, serverId:{0}, agentId:{1}, result:{2}",jobContext.HangfireServerId,jobContext.JobItem.JobId, ex != null ? ex.Message : "ok"));
             }
         }
 
@@ -358,9 +361,9 @@ namespace Hangfire.HttpJob.Agent
             {
                 console.WriteLine(message, red? ConsoleFontColor.Red :ConsoleFontColor.DarkGreen);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                //ignore
+                logger.LogError(exception,"write log to hangfire console storage fail");
             }
         }
 

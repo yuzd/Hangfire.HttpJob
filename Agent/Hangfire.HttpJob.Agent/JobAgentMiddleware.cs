@@ -37,6 +37,7 @@ public class JobAgentMiddleware : OwinMiddleware
             _options = options;
             transitentJob = new LazyConcurrentDictionary();
             HeartBeatReport.logger = _loggerFactory.CreateLogger<HeartBeatReport>();
+            JobAgent.logger = _loggerFactory.CreateLogger<JobAgent>();
         }
 
 #else
@@ -54,6 +55,7 @@ public class JobAgentMiddleware : OwinMiddleware
             transitentJob = new LazyConcurrentDictionary();
             this.serviceProvider = serviceProvider;
             HeartBeatReport.logger = _loggerFactory.CreateLogger<HeartBeatReport>();
+            JobAgent.logger = _loggerFactory.CreateLogger<JobAgent>();
         }
 
 
