@@ -24,7 +24,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
 
         private static string keyPrefix = "_agent_result_";
 
-        private static BackgroundJobClient backgroundJobClient;
+        private static readonly BackgroundJobClient backgroundJobClient;
 
         static JobAgentReportServer()
         {
@@ -47,7 +47,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                     //拿到有上报的jobId集合
                     var jobIdList = connection.GetAllItemsFromSet(keyPrefix);
                     
-                    if (!jobIdList.Any()) return;
+                    if (jobIdList == null || !jobIdList.Any()) return;
 
                     foreach (var jobId in jobIdList)
                     {
@@ -62,7 +62,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             //job已经不存在了 就直接删除set 
                             if (jobData == null)
                             {
-                                backgroundJobClient.ChangeState(jobId, new SucceededState(null, 0, 0));
+                                tran.AddJobState(jobId, new SucceededState(null, 0, 0));
                                 tran.RemoveFromSet(keyPrefix, jobId);
                                 tran.Commit();
                                 continue;
@@ -74,7 +74,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             //如果job存在 但是没有拿到hash数据 认为成功
                             if (result == null || !result.Any())
                             {
-                                backgroundJobClient.ChangeState(jobId, new SucceededState(null, latency, latency));
+                                tran.AddJobState(jobId, new SucceededState(null, latency, latency));
                                 tran.RemoveFromSet(keyPrefix, jobId);
                                 tran.RemoveHash(hashKey);
                                 tran.Commit();
@@ -87,7 +87,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             //异常数据 认为成功
                             if (resultData == null)
                             {
-                                backgroundJobClient.ChangeState(jobId, new SucceededState(null, latency, latency));
+                                tran.AddJobState(jobId, new SucceededState(null, latency, latency));
                                 tran.RemoveFromSet(keyPrefix, jobId);
                                 tran.RemoveHash(hashKey);
                                 tran.Commit();

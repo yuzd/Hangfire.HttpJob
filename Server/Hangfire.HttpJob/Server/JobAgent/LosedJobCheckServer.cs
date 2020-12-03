@@ -22,11 +22,20 @@ namespace Hangfire.HttpJob.Server.JobAgent
         /// </summary>
         private static System.Threading.Timer mDetectionTimer;
 
+        private static readonly BackgroundJobClient backClient;
+
+        static LosedJobCheckServer()
+        {
+            backClient = new BackgroundJobClient();
+        }
+
+
         public static void Start()
         {
             mDetectionTimer = new System.Threading.Timer(OnVerify, null, 1000 * 5, 1000 * 5);
         }
 
+       
         private static void OnVerify(object state)
         {
             mDetectionTimer.Change(-1, -1);
@@ -46,7 +55,6 @@ namespace Hangfire.HttpJob.Server.JobAgent
                 for (int i = 0; i < totalPages; i++)
                 {
                     var list = api.ProcessingJobs(pageSize * i, pageSize);
-                    var backClient = new BackgroundJobClient();
                     using (var connection = JobStorage.Current.GetConnection())
                     {
                         foreach (var job in list)
@@ -58,15 +66,21 @@ namespace Hangfire.HttpJob.Server.JobAgent
                             }
 
                             var jobItem = job.Value.Job.Args.FirstOrDefault() as HttpJobItem;
-                            if (!job.Value.ServerId.Equals(ProcessMonitor.CurrentServerId))
+
+                            //如果是起多个server的情况 检查 job.Value.ServerId 是否还存活
+                            var servers = JobStorage.Current.GetMonitoringApi().Servers();
+                            var targetServer = servers.FirstOrDefault(r => r.Name.Equals(job.Value.ServerId));
+                            //如果server不存在了 或者 server的最后心跳已经是10分钟之前了
+                            if (targetServer == null || (targetServer.Heartbeat!=null && (DateTime.UtcNow - targetServer.Heartbeat.Value).TotalMinutes>10 ))
                             {
                                 //hangfire的server挂了导致滞留在processing的job
                                 //转移到error里面去
                                 var ex1 = new HangfireServerShutDownError();
                                 backClient.ChangeState(job.Key, new FailedState(ex1));
-                                if(jobItem!=null) HttpJob.SendFail(job.Key, jobItem,"AgentJobFail",ex1);
+                                if (jobItem != null) HttpJob.SendFail(job.Key, jobItem, "AgentJobFail", ex1);
                                 continue;
                             }
+
 
                             //查看是否是agentJob
                             if (jobItem == null || string.IsNullOrEmpty(jobItem.AgentClass)) continue;

@@ -17,6 +17,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
     <PackageReference Include="Hangfire.Tags.MySql.Official" Version="1.7.0" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.3" />
