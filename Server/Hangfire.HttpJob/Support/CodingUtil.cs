@@ -62,7 +62,7 @@ namespace Hangfire.HttpJob.Support
             //优先使用全局配置里面的参数
             CodingUtil.GetGlobalAppsettings().TryGetValue("CurrentDomain", out var currentDomain);
 
-            var logDetail = currentDomain != null && !string.IsNullOrEmpty(currentDomain.ToString()) ? $"{currentDomain}/job/jobs/details/{jobId}" : string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{CodingUtil.HangfireHttpJobOptions.CurrentDomain}/job/jobs/details/{jobId}";
+            var logDetail = currentDomain != null && !string.IsNullOrEmpty(currentDomain.ToString()) ? $"{currentDomain}/jobs/details/{jobId}" : string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.CurrentDomain) ? $"JobId:{jobId}" : $"{CodingUtil.HangfireHttpJobOptions.CurrentDomain}/jobs/details/{jobId}";
 
             return logDetail;
         }
