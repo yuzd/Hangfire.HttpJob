@@ -46,7 +46,7 @@ namespace Hangfire.HttpJob.Server
         [AutomaticRetrySet(Attempts = 3, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [HttpJobDisplayNameAttribute("{0}")]
-        [Support.JobFilter(timeoutInSeconds: 3600)]
+        [Support.JobFilter(timeoutInSeconds: 30)]
         public static void Excute(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
         {
             var logList = new List<string>();

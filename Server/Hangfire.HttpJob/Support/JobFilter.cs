@@ -64,8 +64,8 @@ namespace Hangfire.HttpJob.Support
             }
             var jobKey = ((!string.IsNullOrEmpty(job.RecurringJobIdentifier) ? job.RecurringJobIdentifier : job.JobName));
             //设置新的分布式锁,分布式锁会阻止两个相同的任务并发执行，用方法名称和JobName
-            var jobresource = $"{CurrentProcessId}.{jobKey}";
-            var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
+            //var jobresource = $"{CurrentProcessId}.{jobKey}";
+            //var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
             try
             {
 
@@ -103,9 +103,18 @@ namespace Hangfire.HttpJob.Support
                     //ignore
                 }
 
-                //申请分布式锁
-                var distributedLock = filterContext.Connection.AcquireDistributedLock(jobresource, locktimeout);
-                filterContext.Items["DistributedLock"] = distributedLock;
+                ////申请分布式锁
+                //IDisposable distributedLock = null;
+                //try
+                //{
+                //    distributedLock = filterContext.Connection.AcquireDistributedLock(jobresource, locktimeout);
+                //    filterContext.Items["DistributedLock"] = distributedLock;
+                //}
+                //catch (Exception)
+                //{
+                //    //获取锁异常了
+                //    distributedLock?.Dispose();
+                //}
             }
             catch (Exception ec)
             {
@@ -117,10 +126,10 @@ namespace Hangfire.HttpJob.Support
             
         public void OnPerformed(PerformedContext filterContext)
         {
-            if (!filterContext.Items.ContainsKey("DistributedLock"))
-            {
-                throw new InvalidOperationException("can not found DistributedLock in filterContext");
-            }
+            //if (!filterContext.Items.ContainsKey("DistributedLock"))
+            //{
+            //    throw new InvalidOperationException("can not found DistributedLock in filterContext");
+            //}
 
             //删除设置运行时被设置的参数
             try
@@ -169,8 +178,8 @@ namespace Hangfire.HttpJob.Support
 
             
             //释放系统自带的分布式锁
-            var distributedLock = (IDisposable)filterContext.Items["DistributedLock"];
-            distributedLock.Dispose();
+            //var distributedLock = (IDisposable)filterContext.Items["DistributedLock"];
+            //distributedLock.Dispose();
         }
 
     

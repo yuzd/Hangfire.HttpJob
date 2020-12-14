@@ -34,7 +34,7 @@ namespace Hangfire.HttpJob.Agent
             _serverId = serverId;
             _currenturl = currenturl;
             _hangfireStorage = hangfireStorage;
-            mDetectionTimer = new System.Threading.Timer(OnVerify, null, 1000 * 1, 1000 * 1);
+            mDetectionTimer = new System.Threading.Timer(OnVerify, null, 1000 * 3, 1000 * 3);
 #if DEBUG
             logger?.LogDebug("start heartbeat for serverId:" + serverId);
 #endif
@@ -122,7 +122,7 @@ namespace Hangfire.HttpJob.Agent
 
                 if (this.times > 0)
                 {
-                    mDetectionTimer.Change(1000 * 1, 1000 * 1);
+                    mDetectionTimer.Change(1000 * 3, 1000 * 3);
                 }
             }
         }
