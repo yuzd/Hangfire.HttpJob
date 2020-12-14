@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.960
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Server\Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{DE788EAF-44CC-48CB-860E-80EE3554FE67}"
 EndProject
@@ -49,15 +49,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOwinHangfireRedisAgent"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{9419DCD0-5219-457E-97A1-8E8CDACC8F39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryHangfire", "Test\MemoryHangfire\MemoryHangfire\MemoryHangfire.csproj", "{81C32164-495D-4D04-8350-C2C13E63A4B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryHangfire", "Test\MemoryHangfire\MemoryHangfire\MemoryHangfire.csproj", "{81C32164-495D-4D04-8350-C2C13E63A4B3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSql", "PostgreSql", "{970B3B7D-2766-402C-9256-028A8EB1A148}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.HttpJob.Agent.PostgreSqlConsole", "Agent\Hangfire.HttpJob.Agent.PostgreSqlConsole\Hangfire.HttpJob.Agent.PostgreSqlConsole.csproj", "{1EAAB38E-1BDC-459E-8AB6-D2BC28DEE278}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Agent.PostgreSqlConsole", "Agent\Hangfire.HttpJob.Agent.PostgreSqlConsole\Hangfire.HttpJob.Agent.PostgreSqlConsole.csproj", "{1EAAB38E-1BDC-459E-8AB6-D2BC28DEE278}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHangfirePostgreSqlAgent", "Test\TestHangfirePostgreSqlAgent\TestHangfirePostgreSqlAgent.csproj", "{39D1E69F-943E-4CEA-82CC-1F1689379A3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHangfirePostgreSqlAgent", "Test\TestHangfirePostgreSqlAgent\TestHangfirePostgreSqlAgent.csproj", "{39D1E69F-943E-4CEA-82CC-1F1689379A3C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSql", "PostgreSql", "{E769ED90-3C3E-11EB-83C9-CB73B258353F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgreSqlHangfire", "Test\PostgreSqlHangfire\PostgreSqlHangfire.csproj", "{BD74A077-6ED0-46DA-9E48-82ED01542644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,12 +135,15 @@ Global
 		{39D1E69F-943E-4CEA-82CC-1F1689379A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39D1E69F-943E-4CEA-82CC-1F1689379A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39D1E69F-943E-4CEA-82CC-1F1689379A3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD74A077-6ED0-46DA-9E48-82ED01542644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD74A077-6ED0-46DA-9E48-82ED01542644}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD74A077-6ED0-46DA-9E48-82ED01542644}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD74A077-6ED0-46DA-9E48-82ED01542644}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E769ED90-3C3E-11EB-83C9-CB73B258353F} = {6C712EFD-9B0C-431B-8B79-06177DF325BA}
 		{DE788EAF-44CC-48CB-860E-80EE3554FE67} = {5CF4C3B9-FEDD-48B1-9F92-61C06D6E2830}
 		{51DBD93B-CEE7-4DC9-890B-81AF5F0C35B8} = {F695ABD0-FE6D-4F25-852D-91DCCB410E82}
 		{535C99D1-1D5B-4E42-8C5F-927691C61B37} = {5CF4C3B9-FEDD-48B1-9F92-61C06D6E2830}
@@ -160,6 +165,8 @@ Global
 		{81C32164-495D-4D04-8350-C2C13E63A4B3} = {9419DCD0-5219-457E-97A1-8E8CDACC8F39}
 		{1EAAB38E-1BDC-459E-8AB6-D2BC28DEE278} = {970B3B7D-2766-402C-9256-028A8EB1A148}
 		{39D1E69F-943E-4CEA-82CC-1F1689379A3C} = {E769ED90-3C3E-11EB-83C9-CB73B258353F}
+		{E769ED90-3C3E-11EB-83C9-CB73B258353F} = {6C712EFD-9B0C-431B-8B79-06177DF325BA}
+		{BD74A077-6ED0-46DA-9E48-82ED01542644} = {E769ED90-3C3E-11EB-83C9-CB73B258353F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A5F0048D-888D-47DA-8714-2283937235BC}

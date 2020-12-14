@@ -18,7 +18,7 @@ namespace MysqlHangfire
             var logger = NLog.Web.NLogBuilder.ConfigureNLog("NLog.Config").GetCurrentClassLogger();
             try
             {
-                logger.Debug("init main");
+                logger.Info("Starting jobagent host");
                 CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)

@@ -56,7 +56,7 @@ namespace Hangfire.HttpJob.Agent.PostgreSqlConsole
 
             JobStorageConfig.LocalJobStorageConfig = new JobStorageConfig
             {
-                Type = "PostgreSQL",
+                Type = "postgresql",
                 HangfireDb = options.Value?.HangfireDbConnString,
                 TablePrefix = options.Value?.TablePrefix,
                 ExpireAtDays = options.Value?.ExpireAtDays

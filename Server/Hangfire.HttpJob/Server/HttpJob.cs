@@ -29,6 +29,7 @@ namespace Hangfire.HttpJob.Server
         #region Field
 
         private static readonly ILog Logger = LogProvider.For<HttpJob>();
+        private static Lazy<string> _currentStorage = new Lazy<string>(GetCurrentJobStorage);
       
         #endregion
 
@@ -720,11 +721,11 @@ namespace Hangfire.HttpJob.Server
             return request;
         }
 
-        #region 利用反射获取当前的Storage的配置参数 只支持mysql sqlserver redis
+        #region 利用反射获取当前的Storage的配置参数 只支持mysql sqlserver redis postgresql
 
         internal static Lazy<string> GetJobStorage()
         {
-            return new Lazy<string>(GetCurrentJobStorage);
+            return _currentStorage;
         }
 
         private static string GetCurrentJobStorage()
@@ -789,6 +790,17 @@ namespace Hangfire.HttpJob.Server
                 var tablePrefixField = _storageOptions?.GetType()?.GetProperty("Prefix");
                 var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
                 return JsonConvert.SerializeObject(new { Type = "redis", ExpireAtDays = days, TablePrefix = tablePrefix, Db = _dbString?.ToString(), HangfireDb = _connectionString?.ToString() });
+            }
+            else if (storageType.Name == "PostgreSqlStorage")
+            {
+                var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
+                var _connectionString = _connectionStringField?.GetValue(storage);
+                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                {
+                    return "";
+                }
+
+                return JsonConvert.SerializeObject(new { Type = "postgresql", TablePrefix = "", ExpireAtDays = days, HangfireDb = _connectionString?.ToString() });
             }
 
             return "";

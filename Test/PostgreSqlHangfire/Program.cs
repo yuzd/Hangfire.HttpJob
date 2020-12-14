@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using NLog.Web;
 
-namespace TestSqlserverHangfireAgent
+namespace PostgreSqlHangfire
 {
     public class Program
     {
@@ -19,7 +17,7 @@ namespace TestSqlserverHangfireAgent
             var logger = NLog.Web.NLogBuilder.ConfigureNLog("NLog.Config").GetCurrentClassLogger();
             try
             {
-                logger.Info("Starting jobagent host");
+                logger.Debug("init main");
                 CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
@@ -47,9 +45,9 @@ namespace TestSqlserverHangfireAgent
                             logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
 
 #else
-                            logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                            logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
 #endif
-                        }).UseNLog().UseUrls("http://*:5002");
+                        }).UseNLog();
                 });
     }
 }
