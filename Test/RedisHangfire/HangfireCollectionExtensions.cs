@@ -75,6 +75,7 @@ namespace RedisHangfire
                 Prefix =hangfireSettings.TablePrefix,
                 SucceededListSize = 9999,
                 DeletedListSize = 4999,
+                UseTransactions = false
             };
             var redis = ConnectionMultiplexer.Connect(sqlConnectStr);
             

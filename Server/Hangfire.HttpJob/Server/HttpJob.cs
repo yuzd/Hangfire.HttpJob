@@ -744,7 +744,7 @@ namespace Hangfire.HttpJob.Server
                 var tablePrefixField = _storageOptions?.GetType()?.GetProperty("TablesPrefix");
                 var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
 
-                if (_connectionString!=null && string.IsNullOrEmpty(_connectionString.ToString()))
+                if (_connectionString==null || string.IsNullOrEmpty(_connectionString.ToString()))
                 {
                     return "";
                 }
@@ -754,7 +754,7 @@ namespace Hangfire.HttpJob.Server
             {
                 var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
                 var _connectionString = _connectionStringField?.GetValue(storage);
-                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
                 {
                     return "";
                 }
@@ -771,7 +771,7 @@ namespace Hangfire.HttpJob.Server
             {
                 var _connectionStringField = storageType.GetProperty("ConnectionString");
                 var _connectionString = _connectionStringField?.GetValue(storage);
-                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
                 {
                     return "";
                 }
@@ -779,10 +779,6 @@ namespace Hangfire.HttpJob.Server
                 var _dbField = storageType.GetProperty("Db");
                 var _dbString = _dbField?.GetValue(storage);
 
-                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
-                {
-                    return "";
-                }
 
                 var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
                 var _storageOptions = _storageOptionsField?.GetValue(storage);
@@ -795,7 +791,7 @@ namespace Hangfire.HttpJob.Server
             {
                 var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
                 var _connectionString = _connectionStringField?.GetValue(storage);
-                if (_connectionString != null && string.IsNullOrEmpty(_connectionString.ToString()))
+                if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
                 {
                     return "";
                 }
