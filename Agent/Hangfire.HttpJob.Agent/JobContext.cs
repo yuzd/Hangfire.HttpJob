@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace Hangfire.HttpJob.Agent
 {
-    public class JobContext
+    public class JobContext:IDisposable
     {
         private Stopwatch _stopwatch;
 
@@ -130,6 +130,12 @@ namespace Hangfire.HttpJob.Agent
             if (this.Headers == null) return null;
             this.Headers.TryGetValue(key, out var value);
             return value;
+        }
+
+        public void Dispose()
+        {
+            Headers.Clear();
+            CancelToken?.Dispose();
         }
     }
 

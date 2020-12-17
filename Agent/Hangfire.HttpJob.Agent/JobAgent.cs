@@ -325,6 +325,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     WriteToDashBordConsole(jobContext.Console, $"【Job Hang Success】{AgentClass}");
                     _mainThread.WaitOne();
+                    _mainThread.Dispose();
                     _mainThread = null;
                 }
             }
@@ -416,6 +417,16 @@ namespace Hangfire.HttpJob.Agent
                     : $"【{(Singleton ? "SingletonJob" : "TransientJob")} End】{AgentClass}");
             }
 
+            try
+            {
+                jobContext.Dispose();
+                runTask?.Dispose();
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+           
 
             try
             {
