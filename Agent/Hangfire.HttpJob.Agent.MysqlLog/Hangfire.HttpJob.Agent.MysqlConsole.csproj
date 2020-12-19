@@ -9,7 +9,7 @@
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <Description>agent job console to hangfire mysql</Description>
-    <Version>1.3.4</Version>
+    <Version>1.3.5</Version>
   </PropertyGroup>
 
   <ItemGroup>

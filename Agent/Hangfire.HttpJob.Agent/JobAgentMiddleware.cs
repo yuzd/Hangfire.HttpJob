@@ -158,7 +158,7 @@ public class JobAgentMiddleware : OwinMiddleware
                 agentAction = agentAction.ToLower();
                 if (agentAction == "heartbeat" && !string.IsNullOrEmpty(jobItem.HangfireServerId))
                 {
-                    jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
+                    if(jobItem.Storage!=null)jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
                     var currentServerUrl = GetHeader(httpContext, "x-job-agent-server");
                     var jobStorage = GetHangfireStorage(httpContext, jobItem);
                     HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, jobStorage);
