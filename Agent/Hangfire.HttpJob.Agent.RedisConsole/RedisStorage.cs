@@ -18,7 +18,7 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
                 ExpireAt = config.ExpireAt,
                 ExpireAtDays = config.ExpireAtDays ?? 7,
                 HangfireDb = config.HangfireDb,
-                DataBase = config.Db??0,
+                DataBase = config.Db ?? 0,
                 TablePrefix = config.TablePrefix
             });
         }
@@ -33,30 +33,29 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
     internal class RedisStorage : IHangfireStorage, IDisposable
     {
         private readonly RedisStorageOptions _options;
-        private readonly Lazy<IDatabase> _redis;
+        private readonly string _cacheKey;
         private static readonly ConcurrentDictionary<string, Lazy<IDatabase>> _redisConnectionCache = new ConcurrentDictionary<string, Lazy<IDatabase>>();
         public RedisStorage(RedisStorageOptions options)
         {
-            if (options == null ) throw new ArgumentNullException(nameof(RedisStorageOptions));
+            if (options == null) throw new ArgumentNullException(nameof(RedisStorageOptions));
             var connectionString = options.HangfireDb;
             _options = options;
             if (_options.ExpireAtDays <= 0) _options.ExpireAtDays = 7;
             if (connectionString == null) throw new ArgumentNullException("connectionString");
-            var cachekey = connectionString + options.DataBase;
-            if (!_redisConnectionCache.TryGetValue(cachekey, out var redis))
+            _cacheKey = connectionString + options.DataBase;
+            if (!_redisConnectionCache.TryGetValue(_cacheKey, out var redis))
             {
                 redis = new Lazy<IDatabase>(() =>
                 {
                     var connection = ConnectionMultiplexer.Connect(connectionString);
                     return connection.GetDatabase(options.DataBase);
                 });
-                
-                _redisConnectionCache.TryAdd(cachekey, redis);
+
+                _redisConnectionCache.TryAdd(_cacheKey, redis);
             }
 
-            this._redis = redis;
         }
-        public RedisStorage(IOptions<RedisStorageOptions> options):this(options.Value)
+        public RedisStorage(IOptions<RedisStorageOptions> options) : this(options.Value)
         {
         }
 
@@ -64,12 +63,16 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
-            var redisKey = this._options.TablePrefix + key;
-            _redis.Value.HashSet(redisKey, ToHashEntries(keyValuePairs));
-            _redis.Value.KeyExpire(redisKey,
-                _options.ExpireAt != null
-                    ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
-                    : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
+
+            if (_redisConnectionCache.TryGetValue(_cacheKey, out var _redis))
+            {
+                var redisKey = this._options.TablePrefix + key;
+                _redis.Value.HashSet(redisKey, ToHashEntries(keyValuePairs));
+                _redis.Value.KeyExpire(redisKey,
+                    _options.ExpireAt != null
+                        ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
+                        : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
+            }
         }
         public HashEntry[] ToHashEntries(IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
@@ -90,13 +93,17 @@ namespace Hangfire.HttpJob.Agent.RedisConsole
 
         public void AddToSet(string key, string value, double score)
         {
-            var redisKey = this._options.TablePrefix + key;
-            _redis.Value.SortedSetAddAsync(redisKey, value, score);
+            if (_redisConnectionCache.TryGetValue(_cacheKey, out var _redis))
+            {
+                var redisKey = this._options.TablePrefix + key;
+                _redis.Value.SortedSetAddAsync(redisKey, value, score);
 
-            _redis.Value.KeyExpire(redisKey,
-                _options.ExpireAt != null
-                    ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
-                    : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
+                _redis.Value.KeyExpire(redisKey,
+                    _options.ExpireAt != null
+                        ? DateTime.UtcNow.Add(_options.ExpireAt.Value)
+                        : DateTime.UtcNow.AddDays(_options.ExpireAtDays));
+            }
+
         }
         public void Dispose()
         {

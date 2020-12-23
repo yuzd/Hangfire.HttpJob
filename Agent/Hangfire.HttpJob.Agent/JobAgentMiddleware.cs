@@ -83,7 +83,7 @@ public class JobAgentMiddleware : OwinMiddleware
                     _logger.LogError(message);
                     return;
                 }
-                var agentClass = GetHeader(httpContext, "x-job-agent-class");
+                var agentClass = string.Intern(GetHeader(httpContext, "x-job-agent-class")) ;
                 var agentAction = GetHeader(httpContext, "x-job-agent-action");
                 var jobBody = GetHeader(httpContext, "x-job-body");
                 var jobUrl = GetHeader(httpContext, "x-job-url");
@@ -153,16 +153,14 @@ public class JobAgentMiddleware : OwinMiddleware
                 }
 
                 jobItem.JobId = runJobId;
-                if (!string.IsNullOrEmpty(serverInfo)) jobItem.HangfireServerId = serverInfo.Split(new string[] { "@_@" }, StringSplitOptions.None)[0];
+                if (!string.IsNullOrEmpty(serverInfo)) jobItem.HangfireServerId = String.Intern(serverInfo.Split(new string[] { "@_@" }, StringSplitOptions.None)[0]);
 
                 agentAction = agentAction.ToLower();
                 if (agentAction == "heartbeat" && !string.IsNullOrEmpty(jobItem.HangfireServerId))
                 {
                     if(jobItem.Storage!=null)jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
                     var currentServerUrl = GetHeader(httpContext, "x-job-agent-server");
-                    var jobStorage = GetHangfireStorage(httpContext, jobItem);
-                    HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, jobStorage);
-                 
+                    HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, ()=>GetHangfireStorage(httpContext, jobItem));
                     return;
                 }
 

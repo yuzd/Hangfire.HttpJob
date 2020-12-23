@@ -28,7 +28,8 @@ namespace Hangfire.HttpJob.Agent
         private (TimeSpan? current, TimeSpan? next) _processorTimeUsage;
         internal static ILogger<HeartBeatReport> logger;
         private object lockObj = new object();
-
+        private readonly string _processName = "";
+        private readonly string fullPath;
         public HeartBeatReport(string serverId, string currenturl, IHangfireStorage hangfireStorage)
         {
             _serverId = serverId;
@@ -39,20 +40,22 @@ namespace Hangfire.HttpJob.Agent
             logger?.LogDebug("start heartbeat for serverId:" + serverId);
 #endif
             this._process = Process.GetCurrentProcess();
+            this._processName = _process.ProcessName;
             _processorCount = Environment.ProcessorCount;
+            fullPath   = _process.MainModule?.FileName;
             _checkInterval = TimeSpan.FromSeconds(1);
         }
 
-        public static void ReportHeartBeat(string serverId, string currenturl, IHangfireStorage hangfireStorage)
+        public static void ReportHeartBeat(string serverId, string currenturl, Func<IHangfireStorage> hangfireStorage)
         {
             if (!_cache.TryGetValue(serverId, out var reporter))
             {
-                reporter = new HeartBeatReport(serverId, currenturl, hangfireStorage);
+                reporter = new HeartBeatReport(serverId, currenturl, hangfireStorage());
                 _cache.TryAdd(serverId, reporter);
                 return;
             }
             
-            reporter.ReStart(serverId, currenturl, hangfireStorage);
+            reporter.ReStart();
         }
 
 
@@ -78,12 +81,12 @@ namespace Hangfire.HttpJob.Agent
                         Id = _process.Id,
                         Idx = this.times,
                         Server = _currenturl,
-                        ProcessName = _process.ProcessName,
+                        ProcessName =_processName,
                         CpuUsage = cpuPercentUsage,
                         WorkingSet = _process.WorkingSet64,
                         Timestamp = DateTime.UtcNow
                     };
-                    string fullPath = _process.MainModule?.FileName;
+                    
                     if (!string.IsNullOrEmpty(fullPath))
                     {
                         string rootDir = Directory.GetDirectoryRoot(fullPath);
@@ -137,13 +140,10 @@ namespace Hangfire.HttpJob.Agent
 
 
 
-        private void ReStart(string serverId, string currenturl, IHangfireStorage hangfireStorage)
+        private void ReStart()
         {
             lock (lockObj)
             {
-                _serverId = serverId;
-                _currenturl = currenturl;
-                _hangfireStorage = hangfireStorage;
                 newTimes = 5 * 60;//重置
             }
         }
