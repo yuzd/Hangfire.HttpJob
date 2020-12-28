@@ -191,7 +191,7 @@ public class JobAgentMiddleware : OwinMiddleware
                         //单例的 一次只能运行一次
                         if (job.JobStatus == JobStatus.Running || job.JobStatus == JobStatus.Stopping)
                         {
-                            message = $"err:JobClass:{agentClass} can not start, is already Running!";
+                            message = $"err:JobClass:{agentClass} can not start, is already Running,JobId:{job.RunActionJobId}";
                             _logger.LogWarning(message);
                             return;
                         }
@@ -222,14 +222,14 @@ public class JobAgentMiddleware : OwinMiddleware
                     {
                         if (job.JobStatus == JobStatus.Stopping)
                         {
-                            message = $"err:JobClass:{agentClass} is Stopping!";
+                            message = $"err:JobClass:{agentClass} is Stopping,JobId:{job.RunActionJobId}";
                             _logger.LogWarning(message);
                             return;
                         }
 
                         if (job.JobStatus == JobStatus.Stoped)
                         {
-                            message = $"err:JobClass:{agentClass} is already Stoped!";
+                            message = $"err:JobClass:{agentClass} is already Stoped,JobId:{job.RunActionJobId}";
                             _logger.LogWarning(message);
                             return;
                         }

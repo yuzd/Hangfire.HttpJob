@@ -216,7 +216,7 @@ namespace Hangfire.HttpJob.Agent
                 Console = console,
                 Headers = headers,
                 HangfireStorage = storage,
-                RunJobId = this.RunActionJobId,
+                RunJobId = this.RunActionJobId,//stop的时候不去重置lastjobid 所以这个字段是执行时候的记录的runjobid
                 HangfireServerId = jobItem.HangfireServerId,
                 ActionType = "stop"
             };

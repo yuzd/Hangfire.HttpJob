@@ -212,9 +212,14 @@ namespace Hangfire.HttpJob.Server
                     }
 
                     //jobagent的单例没有执行完重复调度的case是否要作为异常
-                    if (!CodingUtil.IgnoreJobAgentSingletonMultExcuteError() && httpResponse.StatusCode == HttpStatusCode.NotImplemented)
+                    if (httpResponse.StatusCode == HttpStatusCode.NotImplemented)
                     {
-                        throw new AgentJobException(item.AgentClass, result);
+                        if (!CodingUtil.IgnoreJobAgentSingletonMultExcuteError())
+                        {
+                            throw new AgentJobException(item.AgentClass, result);
+                        }
+
+                        AddErrToJob(context, new Exception("ignore:"+ result));
                     }
 
                     //jobagent的话 在header里面有一个agentServerId

@@ -62,18 +62,13 @@ namespace Hangfire.HttpJob.Support
             {
                 return;
             }
-            var jobKey = ((!string.IsNullOrEmpty(job.RecurringJobIdentifier) ? job.RecurringJobIdentifier : job.JobName));
-            //设置新的分布式锁,分布式锁会阻止两个相同的任务并发执行，用方法名称和JobName
-            //var jobresource = $"{CurrentProcessId}.{jobKey}";
-            //var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
+          
             try
             {
 
                 if (!string.IsNullOrEmpty(job.JobName) && (TagsServiceStorage.Current != null))
                 {
                     filterContext.BackgroundJob.Id.AddTags(job.JobName);
-                    
-                    filterContext.BackgroundJob.Id.AddTags(job.GetUrlHost());
 
                     if (!string.IsNullOrEmpty(job.RecurringJobIdentifier) &&
                         !job.RecurringJobIdentifier.Equals(job.JobName))
@@ -85,6 +80,7 @@ namespace Hangfire.HttpJob.Support
                 //设置运行时被设置的参数
                 try
                 {
+                    var jobKey = ((!string.IsNullOrEmpty(job.RecurringJobIdentifier) ? job.RecurringJobIdentifier : job.JobName));
                     var hashKey = CodingUtil.MD5(jobKey + ".runtime");
                     var excuteDataList = filterContext.Connection.GetAllEntriesFromHash(hashKey);
                     if (excuteDataList != null && excuteDataList.Any())
@@ -103,18 +99,6 @@ namespace Hangfire.HttpJob.Support
                     //ignore
                 }
 
-                ////申请分布式锁
-                //IDisposable distributedLock = null;
-                //try
-                //{
-                //    distributedLock = filterContext.Connection.AcquireDistributedLock(jobresource, locktimeout);
-                //    filterContext.Items["DistributedLock"] = distributedLock;
-                //}
-                //catch (Exception)
-                //{
-                //    //获取锁异常了
-                //    distributedLock?.Dispose();
-                //}
             }
             catch (Exception ec)
             {
@@ -126,11 +110,6 @@ namespace Hangfire.HttpJob.Support
             
         public void OnPerformed(PerformedContext filterContext)
         {
-            //if (!filterContext.Items.ContainsKey("DistributedLock"))
-            //{
-            //    throw new InvalidOperationException("can not found DistributedLock in filterContext");
-            //}
-
             //删除设置运行时被设置的参数
             try
             {
@@ -175,11 +154,6 @@ namespace Hangfire.HttpJob.Support
             {
                 //ignore
             }
-
-            
-            //释放系统自带的分布式锁
-            //var distributedLock = (IDisposable)filterContext.Items["DistributedLock"];
-            //distributedLock.Dispose();
         }
 
     
@@ -203,6 +177,20 @@ namespace Hangfire.HttpJob.Support
                 if (!string.IsNullOrEmpty(jobResult))
                 {
                     context.SetJobParameter("jobErr", string.Empty);//临时记录 拿到后就删除
+                    if (jobResult.StartsWith("ignore:"))
+                    {
+                        context.SetJobParameter("serverInfo", string.Empty);
+                        var jobErrIds = jobResult.Split(new string[] { ",JobId:" }, StringSplitOptions.None);
+                        //还原lastjobid为上一次的
+                        if (jobErrIds.Length>1)
+                        {
+                            var jobKeyName =
+                                $"recurring-job:{(!string.IsNullOrEmpty(httpJobItem.RecurringJobIdentifier) ? httpJobItem.RecurringJobIdentifier : httpJobItem.JobName)}";
+                            context.Transaction.SetRangeInHash(jobKeyName, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("LastJobId", jobErrIds[1]) });
+                        }
+                        return;
+                    }
+                    
                     if (httpJobItem.DelayFromMinutes.Equals(-1))
                     {
                         context.CandidateState = new ErrorState(jobResult, Strings.MultiBackgroundJobFailToContinue);
