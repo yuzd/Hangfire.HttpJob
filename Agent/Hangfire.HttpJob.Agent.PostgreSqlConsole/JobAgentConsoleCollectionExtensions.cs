@@ -19,7 +19,7 @@ namespace Hangfire.HttpJob.Agent.PostgreSqlConsole
         }
 
         public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
-            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<PostgreSqlConsoleServiceConfigurer> configureStorageOptions = null)
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<PostgreSqlStorageOptions> configureStorageOptions = null)
         {
             app.UseHangfireHttpJobAgent(configureOptions);
             app.UseJobAgentConsoleToPostgreSql(configureStorageOptions);
@@ -37,17 +37,16 @@ namespace Hangfire.HttpJob.Agent.PostgreSqlConsole
         }
 
         public static IApplicationBuilder UseJobAgentConsoleToPostgreSql(this IApplicationBuilder app,
-            Action<PostgreSqlConsoleServiceConfigurer> configureOptions = null)
+            Action<PostgreSqlStorageOptions> configureOptions = null)
         {
             var appServices = app.ApplicationServices;
             var evt = new EventId(1, "Hangfire.HttpJob.Agent.PostgreSqlConsole");
             var options = appServices.GetService<IOptions<PostgreSqlStorageOptions>>();
-            var configurer = new PostgreSqlConsoleServiceConfigurer(options.Value);
             var loggerFactory = appServices.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<PostgreSqlConsoleOptionsConfigurer>();
             try
             {
-                configureOptions?.Invoke(configurer);
+                configureOptions?.Invoke(options.Value);
             }
             catch (Exception exception)
             {

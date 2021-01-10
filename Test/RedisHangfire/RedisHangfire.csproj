@@ -12,19 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="NLog.Config" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
     <PackageReference Include="Hangfire.Tags.Redis.StackExchange" Version="1.0.0" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="NLog.Config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

@@ -26,7 +26,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
 
 #if NETCORE
         public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
-            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MssqlConsoleOptionsConfigurer> configureStorageOptions = null)
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MssqlStorageOptions> configureStorageOptions = null)
         {
             app.UseHangfireHttpJobAgent(configureOptions);
             app.UseJobAgentConsoleToSqlServer(configureStorageOptions);
@@ -34,7 +34,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
         }
 #else
   public static IAppBuilder UseHangfireJobAgent(this IAppBuilder app,IServiceCollection services,
-            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MssqlConsoleOptionsConfigurer> configureStorageOptions = null)
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MssqlStorageOptions> configureStorageOptions = null)
          {
             app.UseHangfireHttpJobAgent(services,configureOptions);
             app.UseJobAgentConsoleToSqlServer(services,configureStorageOptions);
@@ -47,7 +47,7 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
         public static IServiceCollection AddJobAgentConsoleToSqlServer(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddOptions();
-            serviceCollection.TryAddSingleton<IConfigureOptions<MssqlStorageOptions>, MssqlConsoleOptions>();
+            serviceCollection.TryAddSingleton<IConfigureOptions<MssqlStorageOptions>, MssqlConsoleOptionsConfigurer>();
             serviceCollection.TryAddSingleton<IHangfireStorage, MssqlStorage>();
             serviceCollection.TryAddTransient<IHangfireConsole, MssqlConsole>();
             serviceCollection.TryAddTransient<IStorageFactory, IMssqlStorageFactory>();
@@ -55,9 +55,9 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
         }
 
 #if NETCORE
-        public static IApplicationBuilder UseJobAgentConsoleToSqlServer(this IApplicationBuilder app, Action<MssqlConsoleOptionsConfigurer> configureOptions = null)
+        public static IApplicationBuilder UseJobAgentConsoleToSqlServer(this IApplicationBuilder app, Action<MssqlStorageOptions> configureOptions = null)
 #else
-        public static IAppBuilder UseJobAgentConsoleToSqlServer(this IAppBuilder app, IServiceCollection services,Action<MssqlConsoleOptionsConfigurer> configureOptions = null)
+        public static IAppBuilder UseJobAgentConsoleToSqlServer(this IAppBuilder app, IServiceCollection services,Action<MssqlStorageOptions> configureOptions = null)
 #endif
 
         {
@@ -72,12 +72,11 @@ namespace Hangfire.HttpJob.Agent.MssqlConsole
 #endif
             var evt = new EventId(1, "Hangfire.HttpJob.Agent.MssqlConsole");
             var options = sp.GetService<IOptions<MssqlStorageOptions>>();
-            var configurer = new MssqlConsoleOptionsConfigurer(options.Value);
             var loggerFactory = sp.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<MssqlConsoleOptionsConfigurer>();
             try
             {
-                configureOptions?.Invoke(configurer);
+                configureOptions?.Invoke(options.Value);
             }
             catch (Exception exception)
             {

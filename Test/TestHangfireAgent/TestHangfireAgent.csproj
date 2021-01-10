@@ -4,19 +4,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="NLog.Config" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="NLog.Config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Agent\Hangfire.HttpJob.Agent.MysqlLog\Hangfire.HttpJob.Agent.MysqlConsole.csproj" />

@@ -27,7 +27,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
 #if NETCORE
 
         public static IApplicationBuilder UseHangfireJobAgent(this IApplicationBuilder app,
-            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MysqlConsoleServiceConfigurer> configureStorageOptions = null)
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MySqlStorageOptions> configureStorageOptions = null)
         {
             app.UseHangfireHttpJobAgent(configureOptions);
             app.UseJobAgentConsoleToMysql(configureStorageOptions);
@@ -35,7 +35,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
         }
 #else
   public static IAppBuilder UseHangfireJobAgent(this IAppBuilder app,IServiceCollection services,
-            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MysqlConsoleServiceConfigurer> configureStorageOptions = null)
+            Action<JobAgentOptionsConfigurer> configureOptions = null, Action<MySqlStorageOptions> configureStorageOptions = null)
          {
             app.UseHangfireHttpJobAgent(services,configureOptions);
             app.UseJobAgentConsoleToMysql(services,configureStorageOptions);
@@ -55,9 +55,9 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
 
 
 #if NETCORE
-        public static IApplicationBuilder UseJobAgentConsoleToMysql(this IApplicationBuilder app, Action<MysqlConsoleServiceConfigurer> configureOptions = null)
+        public static IApplicationBuilder UseJobAgentConsoleToMysql(this IApplicationBuilder app, Action<MySqlStorageOptions> configureOptions = null)
 #else
-        public static IAppBuilder UseJobAgentConsoleToMysql(this IAppBuilder app, IServiceCollection services,Action<MysqlConsoleServiceConfigurer> configureOptions = null)
+        public static IAppBuilder UseJobAgentConsoleToMysql(this IAppBuilder app, IServiceCollection services,Action<MySqlStorageOptions> configureOptions = null)
 #endif
         {
 #if NETCORE
@@ -70,12 +70,11 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
 #endif
             var evt = new EventId(1, "Hangfire.HttpJob.Agent.MysqlConsole");
             var options = sp.GetService<IOptions<MySqlStorageOptions>>();
-            var configurer = new MysqlConsoleServiceConfigurer(options.Value);
             var loggerFactory = sp.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<MysqlConsoleOptionsConfigurer>();
             try
             {
-                configureOptions?.Invoke(configurer);
+                configureOptions?.Invoke(options.Value);
             }
             catch (Exception exception)
             {
