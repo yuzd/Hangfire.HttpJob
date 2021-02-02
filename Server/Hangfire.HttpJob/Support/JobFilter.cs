@@ -159,10 +159,8 @@ namespace Hangfire.HttpJob.Support
     
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            var timeout = CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay < 1
-                ? 1
-                : CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay;
-            context.JobExpirationTimeout = TimeSpan.FromDays(timeout);
+            var globalTimeout = CodingUtil.JobTimeoutDays();
+            context.JobExpirationTimeout = TimeSpan.FromDays(globalTimeout);
         }
 
         public void OnStateElection(ElectStateContext context)
@@ -266,10 +264,8 @@ namespace Hangfire.HttpJob.Support
 
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            var timeout = CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay < 1
-                ? 1
-                : CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay;
-            context.JobExpirationTimeout = TimeSpan.FromDays(timeout);
+            var globalTimeout = CodingUtil.JobTimeoutDays();
+            context.JobExpirationTimeout = TimeSpan.FromDays(globalTimeout);
         }
 
     }

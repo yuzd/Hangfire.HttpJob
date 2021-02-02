@@ -738,7 +738,7 @@ namespace Hangfire.HttpJob.Server
             var storage = JobStorage.Current;
 
             var storageType = storage.GetType();
-            var days = CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay < 1 ? 1 : CodingUtil.HangfireHttpJobOptions.JobExpirationTimeoutDay;
+            var days =  CodingUtil.JobTimeoutDays();
             if (storageType.Name == "MySqlStorage")
             {
                 var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);

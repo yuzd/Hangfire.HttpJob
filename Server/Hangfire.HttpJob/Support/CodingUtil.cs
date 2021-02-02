@@ -87,6 +87,30 @@ namespace Hangfire.HttpJob.Support
         }
 
         /// <summary>
+        /// 配置设置job的过期时间单位是天
+        /// </summary>
+        /// <returns></returns>
+        public static long JobTimeoutDays()
+        {
+            var timeoutDays = 0L;
+            //如果在全局配置页面有配置的话优先使用这个配置
+            if (!GetGlobalAppsettings().TryGetValue("JobTimeoutDays", out var value))
+            {
+                timeoutDays = 0L;
+            }
+            else
+            {
+                if (value is long)
+                {
+                    timeoutDays = (long)value;
+                }
+            }
+
+            return timeoutDays > 0 ? timeoutDays :
+                HangfireHttpJobOptions.JobExpirationTimeoutDay < 1 ? 1L : HangfireHttpJobOptions.JobExpirationTimeoutDay;
+        }
+
+        /// <summary>
         /// 获取动态的全局配置
         /// </summary>
         /// <param name="value"></param>

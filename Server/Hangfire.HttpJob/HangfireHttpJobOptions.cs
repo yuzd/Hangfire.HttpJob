@@ -22,7 +22,7 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 默认保留7天执行记录
         /// </summary>
-        public int JobExpirationTimeoutDay { get; set; } = 7;
+        public long JobExpirationTimeoutDay { get; set; } = 7;
    
         /// <summary>
         /// 设置默认的执行backgroundjob的queue名称

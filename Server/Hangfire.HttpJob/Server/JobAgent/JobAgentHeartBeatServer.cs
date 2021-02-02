@@ -174,6 +174,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                     var jobList = connection.GetRecurringJobs();
                     foreach (var job in jobList)
                     {
+                        if(job == null || job.Job == null || job.Job.Args == null) continue;
                         var httpJob = job.Job.Args.FirstOrDefault() as HttpJobItem;
                         //只处理agentjob
                         if (httpJob == null || string.IsNullOrEmpty(httpJob.AgentClass)) continue;
