@@ -52,19 +52,6 @@ namespace Hangfire.HttpJob
                 options.GlobalSettingJsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hangfire_global.json");
             }
 
-            if (!File.Exists(options.GlobalSettingJsonFilePath))
-            {
-                try
-                {
-                    var fileAll = File.ReadAllText(options.GlobalSettingJsonFilePath);
-                    File.WriteAllText(options.GlobalSettingJsonFilePath, fileAll);//如果没有权限则会报错
-                }
-                catch (Exception e)
-                {
-                    Logger.WarnException($"{nameof(HangfireHttpJobOptions.GlobalSettingJsonFilePath)}:[{options.GlobalSettingJsonFilePath}] access error",e);
-                }
-            }
-
             CodingUtil.HangfireHttpJobOptions = options;
             JobAgentReportServer.Start();
             JobAgentHeartBeatServer.Start();
