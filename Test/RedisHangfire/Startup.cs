@@ -10,8 +10,6 @@ using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob;
 using Hangfire.Redis;
-using Hangfire.Tags.Redis;
-using Hangfire.Tags.Redis.StackExchange;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

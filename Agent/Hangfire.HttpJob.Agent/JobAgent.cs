@@ -157,7 +157,7 @@ namespace Hangfire.HttpJob.Agent
             var locked = false;
             try
             {
-                _lookupLock.TryEnter(3000,ref locked);
+                _lookupLock.TryEnter(1000,ref locked);
                 if (!locked)
                 {
                     ReportToHangfireServer(jobContext, null);

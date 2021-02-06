@@ -18,7 +18,6 @@ using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
 using Hangfire.Redis;
 using Hangfire.Tags;
-using Hangfire.Tags.Redis.StackExchange;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -82,10 +81,6 @@ namespace RedisHangfire
                 .UseConsole(new ConsoleOptions
                 {
                     BackgroundColor = "#000079"
-                })
-                .UseTagsWithRedis(new TagsOptions()
-                {
-                    TagsListStyle = TagsListStyle.Dropdown
                 })
                 .UseHangfireHttpJob(httpJobOptions)
                 .UseHeartbeatPage();

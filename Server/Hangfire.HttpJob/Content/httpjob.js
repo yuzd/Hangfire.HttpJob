@@ -684,36 +684,6 @@
                 });
             });
 
-            //GetJobList();
-            //function GetJobList() {
-            //    $.ajax({
-            //        type: "post",
-            //        url: getlisturl,
-            //        contentType: "application/json; charset=utf-8",
-            //        data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
-            //        async: true,
-            //        success: function (returndata) {
-            //            if (config.NeedEditRecurringJobButton) {
-            //                if (!returndata) return;
-            //                if (returndata.length < 1) return;
-
-
-            //                $(".table tbody").find('tr').each(function () {
-            //                    var tdArr = $(this).children();
-            //                    var ss = tdArr.eq(1).text();
-            //                    for (var i = 0; i < returndata.length; i++) {
-            //                        if (ss === returndata[i].Id) {
-            //                            $(this).css("color", "red");
-            //                            $(this).addClass("Paused");
-            //                        }
-            //                    }
-            //                });
-            //            }
-
-            //        }
-            //    });
-            //}
-
 
             //全局配置
             $('#GlobalSet').click(function (e) {
@@ -1067,6 +1037,40 @@
                 }
                 return settings;
             }
+
+
+            //设置job详细
+            window.AgentJobDetail = function(name, isAgent) {
+                var jobId = atob(name);
+
+                if (!jobId) {
+                    return;
+                }
+
+                $(".modal-title").html(config.EditRecurringJobButtonName + (isAgent?"【AgentJob】":""));
+                $.ajax({
+                    type: "post",
+                    url: editgeturl,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
+                    async: true,
+                    success: function (returndata) {
+                        window.jsonEditor.setText(JSON.stringify(returndata));
+                        window.jsonEditor.format();
+                        $('#httpJobModal').modal('show');
+                    },
+                    fail: function (errText) {
+                        swal({
+                            title: "",
+                            text: errText.responseText || "edit job fail！",
+                            type: "error"
+                        });
+                    }
+
+                });
+
+
+            }
         };
 
         return HttpJob;
@@ -1127,12 +1131,12 @@ function changeTable() {
         var tdArr = $(this).children();
         var s1 = tdArr.eq(1).text();
 
-
+        var isAgentJob = false;
+        var isHttpJob = false;
         if (s1.indexOf('|') >= 0) {
             var ss1 = s1.split('|');
             if (s1.indexOf('Agent:') > 0) {
                 //第一个是详细信息 第二个是className 第三个是别名(可能为空) 第四个是host
-
                 var h = '<span class="label label-primary" title="" data-original-title="' +
                     ss1[0] +
                     '">' +
@@ -1198,6 +1202,7 @@ function changeTable() {
         if (ss2.indexOf('|') >= 0) {
             var ss1 = ss2.split('|');
             if (ss2.indexOf('Agent:') > 0) {
+                isAgentJob = true;
                 var h = '<span class="label label-primary" title="" data-original-title="' +
                     ss1[0] +
                     '">' +
@@ -1220,7 +1225,8 @@ function changeTable() {
                         : '<span class="label label-success left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                tdArr.eq(4).html(h);
+               tdArr.eq(4).html(h);
+               isHttpJob = true;
             }
            
         }
@@ -1232,6 +1238,7 @@ function changeTable() {
             if (ss3.indexOf('|') >= 0) {
                 var ss1 = ss3.split('|');
                 if (ss3.indexOf('Agent:') > 0) {
+                    isAgentJob = true;
                     var h = '<span class="label label-primary" title="" data-original-title="' +
                         ss1[0] +
                         '">' +
@@ -1260,7 +1267,13 @@ function changeTable() {
             }
         }
 
+        if (isreJob && isAgentJob) {
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭'?'点击查看详情':'Detail')+'" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(tdArr.eq(1).text()) + '\',true)">' + tdArr.eq(1).text()+'</a>');
+        }
 
+        if (isreJob && isHttpJob) {
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') +'" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(tdArr.eq(1).text()) + '\',false)">' + tdArr.eq(1).text() + '</a>');
+        }
 
         if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
             var tag = tdArr.eq(1).html();
@@ -1415,6 +1428,5 @@ if (window.attachEvent) {
         window.onload = loadHttpJobModule;
     }
 }
-
 
 
