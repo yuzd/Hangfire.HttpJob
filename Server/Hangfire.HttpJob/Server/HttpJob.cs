@@ -182,14 +182,14 @@ namespace Hangfire.HttpJob.Server
                 if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("proxy", out var enableCurrentJobProxy) && !string.IsNullOrEmpty(enableCurrentJobProxy) && enableCurrentJobProxy.ToLower().Equals("true"))
                 {
                     // per proxy per HttpClient
-                    client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(globalProxy);
+                    client = HangfireHttpClientFactory.HttpJobInstance.GetProxiedHttpClient(globalProxy);
                     RunWithTry(() => context.WriteLine($"Use Proxy:{globalProxy}"));
                     logList.Add($"Proxy:{globalProxy}");
                 }
                 else
                 {
                     //per host per HttpClient
-                    client = HangfireHttpClientFactory.Instance.GetHttpClient(item.Url);
+                    client = HangfireHttpClientFactory.HttpJobInstance.GetHttpClient(item.Url);
                 }
 
                 var httpMesage = PrepareHttpRequestMessage(item, context, parentJob);
@@ -336,12 +336,12 @@ namespace Hangfire.HttpJob.Server
             if (!string.IsNullOrEmpty(CodingUtil.HangfireHttpJobOptions.Proxy))
             {
                 // per proxy per HttpClient
-                client = HangfireHttpClientFactory.Instance.GetProxiedHttpClient(CodingUtil.HangfireHttpJobOptions.Proxy);
+                client = HangfireHttpClientFactory.HttpJobInstance.GetProxiedHttpClient(CodingUtil.HangfireHttpJobOptions.Proxy);
             }
             else
             {
                 //per host per HttpClient
-                client = HangfireHttpClientFactory.Instance.GetHttpClient(item.Url);
+                client = HangfireHttpClientFactory.HttpJobInstance.GetHttpClient(item.Url);
             }
 
             var request = new HttpRequestMessage(new HttpMethod("Get"), item.Url);

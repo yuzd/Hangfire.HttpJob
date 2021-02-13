@@ -258,7 +258,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                     return;
                 }
 
-                HttpClient client = HangfireHttpClientFactory.Instance.GetHttpClient(url);
+                HttpClient client = HangfireHttpClientFactory.HttpJobInstance.GetHttpClient(url);
                 var request = new HttpRequestMessage(new HttpMethod("Post"), url);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 if (!string.IsNullOrEmpty(basicUserName) && !string.IsNullOrEmpty(basicPassword))

@@ -52,6 +52,16 @@ namespace Hangfire.HttpJob
                 options.GlobalSettingJsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hangfire_global.json");
             }
 
+            if (options.GlobalHttpClientTimeOut > 0)
+            {
+                HangfireHttpClientFactory.SetDefaultHttpJobInstance(new HangfireHttpClientFactory(TimeSpan.FromMilliseconds(options.GlobalHttpClientTimeOut),null));
+            }
+            else
+            {
+                HangfireHttpClientFactory.SetDefaultHttpJobInstance(options.HttpJobClientFactory);
+            }
+            HangfireHttpClientFactory.SetDefaultDingTalkInstance(options.DingTalkClientFactory);
+            
             CodingUtil.HangfireHttpJobOptions = options;
             JobAgentReportServer.Start();
             JobAgentHeartBeatServer.Start();

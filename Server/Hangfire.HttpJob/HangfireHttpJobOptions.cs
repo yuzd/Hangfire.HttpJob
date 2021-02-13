@@ -4,15 +4,33 @@ using System.Net;
 using Hangfire.HttpJob.Content.resx;
 using Hangfire.HttpJob.Server;
 using Hangfire.States;
+using HttpClientFactory;
 
 namespace Hangfire.HttpJob
 {
     public class HangfireHttpJobOptions
     {
+        
+        /// <summary>
+        /// 默认的HttpClient工厂
+        /// </summary>
+        public IHttpClientFactory HttpJobClientFactory{ get; set; }
+        
+        /// <summary>
+        /// 默认的dingding发送HttpClient的工厂
+        /// </summary>
+        public IHttpClientFactory DingTalkClientFactory{ get; set; }
+        
         /// <summary>
         /// 超时时间 毫秒
         /// </summary>
         public int GlobalHttpTimeOut { get; set; } = 5000;
+        
+        
+        /// <summary>
+        /// 默认的HttpClient工厂 超时时间 毫秒 不设置默认为1小时
+        /// </summary>
+        public int GlobalHttpClientTimeOut { get; set; }
 
         /// <summary>
         /// 默认的时区
