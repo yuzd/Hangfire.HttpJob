@@ -1,5 +1,5 @@
 ﻿(function (hangfire) {
-
+   
     hangfire.HttpJob = (function () {
         function HttpJob() {
             this._initialize();
@@ -1284,6 +1284,52 @@ function changeTable() {
         }
     });
     $(".table tbody").show();
+    if (document.documentElement.lang == "zh") {
+        try {
+            moment.locale('zh-cn');
+            var updateRelativeDates = function () {
+                $('*[data-moment]').each(function () {
+                    var $this = $(this);
+                    var timestamp = $this.data('moment');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.html(time.fromNow())
+                            .attr('title', time.format('llll'))
+                            .attr('data-original-title', time.format("l LTS"))
+                            .attr('data-container', 'body');
+                    }
+                });
+
+                $('*[data-moment-title]').each(function () {
+                    var $this = $(this);
+                    var timestamp = $this.data('moment-title');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.prop('title', time.format('llll'))
+                            .attr('data-original-title', time.format("l LTS"))
+                            .attr('data-container', 'body');
+                    }
+                });
+
+                $('*[data-moment-local]').each(function () {
+                    var $this = $(this);
+                    var timestamp = $this.data('moment-local');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.html(time.format('l LTS'));
+                    }
+                });
+            };
+
+            updateRelativeDates();
+        } catch (e) {
+
+        } 
+      
+    }
     $('*[title]').tooltip();
 }
 
