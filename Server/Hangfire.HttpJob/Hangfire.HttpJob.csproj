@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Content\Base64.js" />
     <None Remove="Content\cron.js" />
     <None Remove="Content\httpjob.js" />
     <None Remove="Content\jsoneditor.css" />
@@ -29,6 +30,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Content\cron.js" />
     <EmbeddedResource Include="Content\httpjob.js" />
+    <EmbeddedResource Include="Content\Base64.js" />
     <EmbeddedResource Include="Content\jsoneditor.css" />
     <EmbeddedResource Include="Content\jsoneditor.js" />
     <EmbeddedResource Include="Content\sweetalert2.min.css" />
