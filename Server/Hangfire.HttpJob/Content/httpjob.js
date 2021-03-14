@@ -1041,7 +1041,7 @@
 
             //设置job详细
             window.AgentJobDetail = function(name, isAgent) {
-                var jobId = atob(name);
+                var jobId = decodeURIComponent(atob(name));
 
                 if (!jobId) {
                     return;
@@ -1268,11 +1268,11 @@ function changeTable() {
         }
 
         if (isreJob && isAgentJob) {
-            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭'?'点击查看详情':'Detail')+'" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(tdArr.eq(1).text()) + '\',true)">' + tdArr.eq(1).text()+'</a>');
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',true)">' + tdArr.eq(1).text()+'</a>');
         }
 
         if (isreJob && isHttpJob) {
-            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') +'" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(tdArr.eq(1).text()) + '\',false)">' + tdArr.eq(1).text() + '</a>');
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',false)">' + tdArr.eq(1).text() + '</a>');
         }
 
         if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
