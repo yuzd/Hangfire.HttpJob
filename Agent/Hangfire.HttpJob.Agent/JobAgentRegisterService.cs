@@ -49,6 +49,7 @@ namespace Hangfire.HttpJob.Agent
 
             _timer = new System.Threading.Timer(DoRegister, null, 1000 * 5, 1000 * 5);
 #if NETCORE
+//owin的话启动慢
             DoRegister(null);
 #endif
             return Task.CompletedTask;
@@ -146,6 +147,7 @@ namespace Hangfire.HttpJob.Agent
                 if (retryTimes >=3)
                 {
                     _timer.Change(-1, -1);
+                    _logger.LogInformation(new EventId(1, "Hangfire.HttpJob.AutoRegister"), "HttpJob End Registered");
                 }
                 else
                 {
