@@ -20,6 +20,15 @@ namespace Hangfire.HttpJob.Agent
         private SpinLock _lookupLock = new SpinLock();
         private volatile JobStatus jobStatus = JobStatus.Default;
 
+        #region 专门处理关闭任务的线程池
+        private static readonly AgentThreadPool Pool = new AgentThreadPool(new AgentThreadPoolSettings(2,"hangfire",exceptionHandler: (ex) =>
+        {
+            try{ logger?.LogError(ex,"agentThreadPool err"); } catch (Exception) { /*ignore*/}
+        }));
+        private static readonly AgentThreadPoolTaskScheduler Scheduler = new AgentThreadPoolTaskScheduler(Pool);
+        private static readonly TaskFactory TaskFactory = new TaskFactory(Scheduler);
+        #endregion
+     
         /// <summary>
         ///     默认是单例
         /// </summary>
@@ -28,7 +37,7 @@ namespace Hangfire.HttpJob.Agent
         /// <summary>
         /// 线程
         /// </summary>
-        private Task runTask;
+        private Thread runTask;
         
         /// <summary>
         ///     取消
@@ -130,7 +139,14 @@ namespace Hangfire.HttpJob.Agent
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, string.Format("report to hangfire server fail, serverId:{0}, agentId:{1}, result:{2}",jobContext.HangfireServerId,jobContext.JobItem.JobId, ex != null ? ex.Message : "ok"));
+                try
+                {
+                    logger.LogError(exception, string.Format("report to hangfire server fail, serverId:{0}, agentId:{1}, result:{2}",jobContext.HangfireServerId,jobContext.JobItem.JobId, ex != null ? ex.Message : "ok"));
+                }
+                catch (Exception)
+                {
+                    //ignore
+                }
             }
         }
 
@@ -177,13 +193,13 @@ namespace Hangfire.HttpJob.Agent
                 this.RunActionJobId = jobItem.JobId;
                 jobContext.isDispose = false;
 
-                runTask = Task.Factory.StartNew(async () => {
-                    await start(jobContext);
-                }, _cancelToken.Token).Unwrap();
-
-                runTask.ContinueWith(
-                    _ => { ReportToHangfireServer(jobContext, new TaskSchedulerException("runTask fail:" + _?.Exception?.Message)); },
-                    TaskContinuationOptions.OnlyOnFaulted);
+                runTask = new Thread(async () =>
+                {
+                    await start(jobContext).ConfigureAwait(false);
+                })
+                {
+                    IsBackground = true
+                };
 
                 //执行超时
                 if (jobItem.AgentTimeout > 0)
@@ -197,6 +213,7 @@ namespace Hangfire.HttpJob.Agent
                     });
                     _cancelToken.CancelAfter(jobItem.AgentTimeout);
                 }
+                runTask.Start();
                 return true;
             }
             finally
@@ -247,7 +264,7 @@ namespace Hangfire.HttpJob.Agent
                     _mainThread?.Set();
                 }
                 
-                Task.Factory.StartNew(async () => {
+                TaskFactory.StartNew(async () => {
                         await stop(jobContext);
                     })
                     .Unwrap()
@@ -279,7 +296,7 @@ namespace Hangfire.HttpJob.Agent
                     WriteToDashBordConsole(jobContext.Console,
                         $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStop】{AgentClass}");
                 }
-                await OnStop(jobContext);
+                await OnStop(jobContext).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -320,7 +337,7 @@ namespace Hangfire.HttpJob.Agent
                 WriteToDashBordConsole(jobContext.Console, Hang
                     ? $"【HangJob OnStart】{AgentClass}"
                     : $"【{(Singleton ? "SingletonJob" : "TransientJob")} OnStart】{AgentClass}");
-                await OnStart(jobContext);
+                await OnStart(jobContext).ConfigureAwait(false);
                 if (Hang)
                 {
                     WriteToDashBordConsole(jobContext.Console, $"【Job Hang Success】{AgentClass}");
@@ -364,7 +381,14 @@ namespace Hangfire.HttpJob.Agent
             }
             catch (Exception exception)
             {
-                logger.LogError(exception,"write log to hangfire console storage fail");
+                try
+                {
+                    logger.LogError(exception,"write log to hangfire console storage fail");
+                }
+                catch (Exception)
+                {
+                    //ignore
+                }
             }
         }
 
@@ -392,7 +416,7 @@ namespace Hangfire.HttpJob.Agent
                 {
                     try
                     {
-                        list.Add($"ThreadState:【{runTask.Status.ToString()}】");
+                        list.Add($"ThreadState:【{runTask.ThreadState.ToString()}】");
                     }
                     catch (Exception)
                     {
@@ -420,7 +444,14 @@ namespace Hangfire.HttpJob.Agent
             try
             {
                 jobContext.Dispose();
-                runTask?.Dispose();
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+            try
+            {
+                runTask?.Abort();
             }
             catch (Exception)
             {
