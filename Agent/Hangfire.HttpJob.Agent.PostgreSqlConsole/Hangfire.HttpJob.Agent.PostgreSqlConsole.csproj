@@ -13,6 +13,6 @@
     <Authors>ghwillbe</Authors>
     <Description>agent job console to hangfire postgresql</Description>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>1.3.7</Version>
+    <Version>1.3.8</Version>
   </PropertyGroup>
 </Project>
