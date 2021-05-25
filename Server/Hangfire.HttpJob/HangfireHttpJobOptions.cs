@@ -153,6 +153,11 @@ namespace Hangfire.HttpJob
         /// 钉钉Webhook地址
         /// </summary>
         public string Token { get; set; }
+        
+        /// <summary>
+        /// 钉钉签名密钥
+        /// </summary>
+        public string Secret { get; set; }
 
         /// <summary>
         /// 通知是否@对应手机号的人员 , 分割

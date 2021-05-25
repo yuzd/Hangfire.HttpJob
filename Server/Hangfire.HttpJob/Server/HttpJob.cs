@@ -424,6 +424,18 @@ namespace Hangfire.HttpJob.Server
 
                 var requestUri = $"https://oapi.dingtalk.com/robot/send?access_token={dingTalk.Token}";
                 
+                if (!string.IsNullOrEmpty(dingTalk.Secret))
+                {
+                    var timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    var secretEnc = Encoding.UTF8.GetBytes(dingTalk.Secret);
+                    var stringToSign = $"{timestamp}\n{dingTalk.Secret}";
+                    var stringToSignEnc = Encoding.UTF8.GetBytes(stringToSign);
+                    var hmac256 = new HMACSHA256(secretEnc);
+                    var hashMessage = hmac256.ComputeHash(stringToSignEnc);
+                    var sign = Convert.ToBase64String(hashMessage);
+                    requestUri=$"{requestUri}&timestamp={timestamp}&sign={sign}";
+                }
+
                 HttpClient httpClient;
                 //当前job的钉钉如果开启了proxy 并且 有配置代理 那么就走代理
                 if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("dingProxy", out var enableDingProxy) && !string.IsNullOrEmpty(enableDingProxy) && enableDingProxy.ToLower().Equals("true"))
