@@ -153,10 +153,10 @@ namespace Hangfire.HttpJob.Client
         /// <param name="recurringJob"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public static Task<HangfirJobResult> AddRecurringJob(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
+        public static HangfirJobResult AddRecurringJob(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
         {
 
-            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,true, option).PostAsync<HangfirJobResult>();
+            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,true, option).Post<HangfirJobResult>();
         }
 
         /// <summary>
@@ -166,10 +166,10 @@ namespace Hangfire.HttpJob.Client
         /// <param name="recurringJob"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public static HangfirJobResult AddRecurringJobAsync(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
+        public static Task<HangfirJobResult> AddRecurringJobAsync(string hangfireServerUrl, RecurringJob recurringJob, HangfireServerPostOption option = null)
         {
 
-            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,true, option).Post<HangfirJobResult>();
+            return PrepareAddRecurringHttpJobItem(hangfireServerUrl, recurringJob,true, option).PostAsync<HangfirJobResult>();
         }
 
         private static HttpJobItem PrepareAddRecurringHttpJobItem(string hangfireServerUrl, RecurringJob recurringJob,bool isAddOnly = false,

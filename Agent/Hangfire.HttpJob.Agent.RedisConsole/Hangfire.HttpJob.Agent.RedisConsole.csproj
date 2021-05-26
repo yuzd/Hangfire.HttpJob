@@ -9,7 +9,7 @@
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <Description>agent job console to hangfire redis</Description>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
