@@ -243,7 +243,8 @@ namespace Hangfire.HttpJob.Client
                 BasicPassword = recurringJob.BasicPassword,
                 AgentClass = recurringJob.AgentClass,
                 Headers = recurringJob.Headers,
-                CallbackEL = recurringJob.CallbackEL
+                CallbackEL = recurringJob.CallbackEL,
+                TimeZone = recurringJob.TimeZone
             };
             
             AppendChildJob(jobItem,recurringJob.Success,recurringJob.Fail);
