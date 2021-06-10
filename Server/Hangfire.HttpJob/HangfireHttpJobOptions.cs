@@ -144,7 +144,12 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 当前hangfire调度服务的部署站点域名
         /// </summary>
-        public string CurrentDomain { get; set; } 
+        public string CurrentDomain { get; set; }
+
+        /// <summary>
+        /// 给spEl表达式执行的变量 
+        /// </summary>
+        public Dictionary<string, object> SpelVarDictionary { get; set; } = new Dictionary<string, object>();
     }
 
     public class DingTalkOption

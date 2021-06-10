@@ -113,7 +113,8 @@ namespace Hangfire.HttpJob.Client
                 AgentClass = backgroundJob.AgentClass,
                 Headers = backgroundJob.Headers,
                 CallbackEL = backgroundJob.CallbackEL,
-                QueueName = backgroundJob.QueueName
+                QueueName = backgroundJob.QueueName,
+                TimeZone = backgroundJob.TimeZone
             };
 
             AppendChildJob(jobItem, backgroundJob.Success, backgroundJob.Fail);

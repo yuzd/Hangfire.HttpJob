@@ -977,6 +977,18 @@ namespace Hangfire.HttpJob.Server
 
         private static string ResolveSpringElPlaceholder(string placeholder, Dictionary<string, object> param)
         {
+            if (CodingUtil.HangfireHttpJobOptions.SpelVarDictionary != null)
+            {
+                //合并自定义的变量
+                foreach (var item in CodingUtil.HangfireHttpJobOptions.SpelVarDictionary)
+                {
+                    if (!param.ContainsKey(item.Key))
+                    {
+                        param.Add(item.Key,item.Value);
+                    }
+                }
+            }
+           
             var parameterValue = ExpressionEvaluator.GetValue(null, placeholder, param);
             return parameterValue.ToString();
         }
