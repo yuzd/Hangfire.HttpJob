@@ -77,7 +77,7 @@ namespace Hangfire.HttpJob.Server
                         await AddOrUpdateRecurringJob(context);
                         return;
                     //启动job
-                    case "startbackgroudjob":
+                    case "startbackgroundjob":
                         await StartBackgroudJob(context);
                         return;
                     //暂停job
