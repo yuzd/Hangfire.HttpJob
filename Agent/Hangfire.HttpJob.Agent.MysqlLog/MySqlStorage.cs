@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Dapper;
 using Microsoft.Extensions.Options;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Hangfire.HttpJob.Agent.MysqlConsole
 {

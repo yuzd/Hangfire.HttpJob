@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Hangfire.Dashboard;
 using Hangfire.Logging;
 using Newtonsoft.Json;
 using Spring.Core.TypeConversion;
@@ -12,6 +13,11 @@ namespace Hangfire.HttpJob.Support
     public class CodingUtil
     {
         private static readonly ILog Logger = LogProvider.For<CodingUtil>();
+
+        /// <summary>
+        ///判断是否引用了tag服务
+        /// </summary>
+        public static bool IsTagServiceInstalled = DashboardRoutes.Routes.FindDispatcher("/tags/all") != null;
 
         /// <summary>
         /// 启动配置

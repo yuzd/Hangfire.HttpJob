@@ -3,12 +3,8 @@ using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.HttpJob;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,15 +13,13 @@ using System.Linq;
 using System.Text;
 using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
+using Hangfire.Server;
 using Hangfire.SqlServer;
 using Hangfire.Tags;
 using Hangfire.Tags.SqlServer;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Spring.Core.TypeConversion;
-using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace SqlserverHangfire
 {
@@ -36,34 +30,66 @@ namespace SqlserverHangfire
         private const string HangfireConnectStringKey = "Hangfire:HangfireSettings:ConnectionString";
         private const string HangfireLangKey = "Hangfire:HttpJobOptions:Lang";
 
-        public static IServiceCollection AddSelfHangfire(this IServiceCollection services, IConfiguration Configuration)
+        public static IServiceCollection AddSelfHangfire(this IServiceCollection services, IConfiguration configuration)
         {
-            var hangfireSettings = Configuration.GetSection(HangfireSettingsKey);
-            var httpJobOptions = Configuration.GetSection(HttpJobOptionsKey);
+            var hangfireSettings = configuration.GetSection(HangfireSettingsKey);
+            var httpJobOptions = configuration.GetSection(HttpJobOptionsKey);
 
             services.Configure<HangfireSettings>(hangfireSettings);
             services.Configure<HangfireHttpJobOptions>(httpJobOptions);
 
+            services.AddTransient<IBackgroundProcess, ProcessMonitor>();
+
             services.AddHangfire(globalConfiguration =>
             {
-                services.ConfigurationHangfire(Configuration, globalConfiguration);
+                services.ConfigurationHangfire(configuration, globalConfiguration);
             });
+
+
+
+            services.AddHangfireServer((provider, config) =>
+            {
+                var settings = provider.GetService<IOptions<HangfireSettings>>().Value;
+                ConfigFromEnv(settings);
+                var queues = settings.JobQueues.Select(m => m.ToLower()).Distinct().ToList();
+                var workerCount = Math.Max(Environment.ProcessorCount, settings.WorkerCount); //工作线程数，当前允许的最大线程，默认20
+
+
+                config.ServerName = settings.ServerName;
+                config.ServerTimeout = TimeSpan.FromMinutes(4);
+                config.SchedulePollingInterval = TimeSpan.FromSeconds(5);//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
+                config.ShutdownTimeout = TimeSpan.FromMinutes(30); //超时时间
+                config.Queues = queues.ToArray(); //队列
+                config.WorkerCount = workerCount;
+            });
+
             return services;
         }
 
 
-        public static void ConfigurationHangfire(this IServiceCollection services, IConfiguration Configuration,
+        public static void ConfigurationHangfire(this IServiceCollection services, IConfiguration configuration,
             IGlobalConfiguration globalConfiguration)
         {
             var serverProvider = services.BuildServiceProvider();
+
+            var langStr = configuration.GetSection(HangfireLangKey).Get<string>();
+            var envLangStr = GetEnvConfig<string>("Lang");
+            if (!string.IsNullOrEmpty(envLangStr)) langStr = envLangStr;
+            if (!string.IsNullOrEmpty(langStr))
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(langStr);
+            }
+
+            var hangfireSettings = serverProvider.GetService<IOptions<HangfireSettings>>().Value;
+            ConfigFromEnv(hangfireSettings);
+
             var httpJobOptions = serverProvider.GetService<IOptions<HangfireHttpJobOptions>>().Value;
             ConfigFromEnv(httpJobOptions);
 
-            httpJobOptions.GlobalSettingJsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hangfire",
+            httpJobOptions.GlobalSettingJsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory!, "hangfire",
                 "hangfire_global.json");
 
-
-            var sqlConnectStr = Configuration.GetSection(HangfireConnectStringKey).Get<string>();
+            var sqlConnectStr = configuration.GetSection(HangfireConnectStringKey).Get<string>();
             var envSqlConnectStr = GetEnvConfig<string>("HangfireSqlserverConnectionString");
             if (!string.IsNullOrEmpty(envSqlConnectStr)) sqlConnectStr = envSqlConnectStr;
 
@@ -76,8 +102,8 @@ namespace SqlserverHangfire
                 UsePageLocksOnDequeue = true,
                 DisableGlobalLocks = true
             };
-            
-            globalConfiguration.UseSqlServerStorage(sqlConnectStr,mssqlOption)
+
+            globalConfiguration.UseSqlServerStorage(sqlConnectStr, mssqlOption)
                 .UseConsole(new ConsoleOptions
                 {
                     BackgroundColor = "#000079"
@@ -90,11 +116,12 @@ namespace SqlserverHangfire
                 .UseHeartbeatPage();
         }
 
-        public static IApplicationBuilder ConfigureSelfHangfire(this IApplicationBuilder app, IConfiguration Configuration)
+        public static IApplicationBuilder ConfigureSelfHangfire(this IApplicationBuilder app, IConfiguration configuration)
         {
-            var langStr = Configuration.GetSection(HangfireLangKey).Get<string>();
+            var langStr = configuration.GetSection(HangfireLangKey).Get<string>();
             var envLangStr = GetEnvConfig<string>("Lang");
             if (!string.IsNullOrEmpty(envLangStr)) langStr = envLangStr;
+
             if (!string.IsNullOrEmpty(langStr))
             {
                 var options = new RequestLocalizationOptions
@@ -102,28 +129,11 @@ namespace SqlserverHangfire
                     DefaultRequestCulture = new RequestCulture(langStr)
                 };
                 app.UseRequestLocalization(options);
-                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(langStr);
             }
-            
-           
-            
+
+
             var services = app.ApplicationServices;
             var hangfireSettings = services.GetService<IOptions<HangfireSettings>>().Value;
-            ConfigFromEnv(hangfireSettings);
-
-            var queues = hangfireSettings.JobQueues.Select(m => m.ToLower()).Distinct().ToList();
-
-            var workerCount = Math.Max(Environment.ProcessorCount, hangfireSettings.WorkerCount); //工作线程数，当前允许的最大线程，默认20
-
-            app.UseHangfireServer(new BackgroundJobServerOptions
-            {
-                ServerName = hangfireSettings.ServerName,
-                ServerTimeout = TimeSpan.FromMinutes(4),
-                SchedulePollingInterval = TimeSpan.FromSeconds(5), //秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
-                ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
-                Queues = queues.ToArray(), //队列
-                WorkerCount = workerCount
-            },additionalProcesses: new[] { new ProcessMonitor() });
 
 
             var dashbordConfig = new DashboardOptions
@@ -173,86 +183,86 @@ namespace SqlserverHangfire
 
             return app;
         }
+
+
         #region Docker运行的参数配置https://github.com/yuzd/Hangfire.HttpJob/wiki/000.Docker-Quick-Start
 
 
         private static void ConfigFromEnv(HangfireSettings settings)
         {
-            var HangfireQueues = GetEnvConfig<string>("HangfireQueues");
-            if (!string.IsNullOrEmpty(HangfireQueues))
+            var hangfireQueues = GetEnvConfig<string>("HangfireQueues");
+            if (!string.IsNullOrEmpty(hangfireQueues))
             {
-                settings.JobQueues = HangfireQueues.Split(',').ToList();
+                settings.JobQueues = hangfireQueues.Split(',').ToList();
+            }
+            var serverName = GetEnvConfig<string>("ServerName");
+            if (!string.IsNullOrEmpty(serverName))
+            {
+                settings.ServerName = serverName;
+            }
+            var workerCount = GetEnvConfig<string>("WorkerCount");
+            if (!string.IsNullOrEmpty(workerCount))
+            {
+                settings.WorkerCount = int.Parse(workerCount);
             }
 
-            var TablePrefix = GetEnvConfig<string>("TablePrefix");
-            if (!string.IsNullOrEmpty(TablePrefix))
+            var tablePrefix = GetEnvConfig<string>("TablePrefix");
+            if (!string.IsNullOrEmpty(tablePrefix))
             {
-                settings.TablePrefix = TablePrefix;
+                settings.TablePrefix = tablePrefix;
             }
 
-            var ServerName = GetEnvConfig<string>("ServerName");
-            if (!string.IsNullOrEmpty(ServerName))
-            {
-                settings.ServerName = ServerName;
-            }
-
-            var WorkerCount = GetEnvConfig<string>("WorkerCount");
-            if (!string.IsNullOrEmpty(WorkerCount))
-            {
-                settings.WorkerCount = int.Parse(WorkerCount);
-            }
-
-            var HangfireUserName = GetEnvConfig<string>("HangfireUserName");
-            var HangfirePwd = GetEnvConfig<string>("HangfirePwd");
-            if (!string.IsNullOrEmpty(HangfireUserName) && !string.IsNullOrEmpty(HangfirePwd))
+            var hangfireUserName = GetEnvConfig<string>("HangfireUserName");
+            var hangfirePwd = GetEnvConfig<string>("HangfirePwd");
+            if (!string.IsNullOrEmpty(hangfireUserName) && !string.IsNullOrEmpty(hangfirePwd))
             {
                 settings.HttpAuthInfo = new HttpAuthInfo { Users = new List<UserInfo>() };
                 settings.HttpAuthInfo.Users.Add(new UserInfo
                 {
-                    Login = HangfireUserName,
-                    PasswordClear = HangfirePwd
+                    Login = hangfireUserName,
+                    PasswordClear = hangfirePwd
                 });
             }
         }
 
         private static void ConfigFromEnv(HangfireHttpJobOptions settings)
         {
-            var DefaultRecurringQueueName = GetEnvConfig<string>("DefaultRecurringQueueName");
-            if (!string.IsNullOrEmpty(DefaultRecurringQueueName))
+            var defaultRecurringQueueName = GetEnvConfig<string>("DefaultRecurringQueueName");
+            if (!string.IsNullOrEmpty(defaultRecurringQueueName))
             {
-                settings.DefaultRecurringQueueName = DefaultRecurringQueueName;
+                settings.DefaultRecurringQueueName = defaultRecurringQueueName;
             }
 
             if (settings.MailOption == null) settings.MailOption = new MailOption();
 
-            var HangfireMail_Server = GetEnvConfig<string>("HangfireMail_Server");
-            if (!string.IsNullOrEmpty(HangfireMail_Server))
+            var hangfireMailServer = GetEnvConfig<string>("HangfireMail_Server");
+            if (!string.IsNullOrEmpty(hangfireMailServer))
             {
-                settings.MailOption.Server = HangfireMail_Server;
+                settings.MailOption.Server = hangfireMailServer;
             }
 
-            var HangfireMail_Port = GetEnvConfig<int>("HangfireMail_Port");
-            if (HangfireMail_Port > 0)
+            var hangfireMailPort = GetEnvConfig<int>("HangfireMail_Port");
+            if (hangfireMailPort > 0)
             {
-                settings.MailOption.Port = HangfireMail_Port;
+                settings.MailOption.Port = hangfireMailPort;
             }
 
-            var HangfireMail_UseSsl = Environment.GetEnvironmentVariable("HangfireMail_UseSsl");
-            if (!string.IsNullOrEmpty(HangfireMail_UseSsl))
+            var hangfireMailUseSsl = Environment.GetEnvironmentVariable("HangfireMail_UseSsl");
+            if (!string.IsNullOrEmpty(hangfireMailUseSsl))
             {
-                settings.MailOption.UseSsl = HangfireMail_UseSsl.ToLower().Equals("true");
+                settings.MailOption.UseSsl = hangfireMailUseSsl.ToLower().Equals("true");
             }
 
-            var HangfireMail_User = GetEnvConfig<string>("HangfireMail_User");
-            if (!string.IsNullOrEmpty(HangfireMail_User))
+            var hangfireMailUser = GetEnvConfig<string>("HangfireMail_User");
+            if (!string.IsNullOrEmpty(hangfireMailUser))
             {
-                settings.MailOption.User = HangfireMail_User;
+                settings.MailOption.User = hangfireMailUser;
             }
 
-            var HangfireMail_Password = GetEnvConfig<string>("HangfireMail_Password");
-            if (!string.IsNullOrEmpty(HangfireMail_Password))
+            var hangfireMailPassword = GetEnvConfig<string>("HangfireMail_Password");
+            if (!string.IsNullOrEmpty(hangfireMailPassword))
             {
-                settings.MailOption.Password = HangfireMail_Password;
+                settings.MailOption.Password = hangfireMailPassword;
             }
 
         }

@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
-    <PackageReference Include="HangFire.Redis.StackExchange" Version="1.8.4" />
+    <PackageReference Include="Hangfire.Tags.Redis.StackExchange" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup>

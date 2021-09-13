@@ -298,13 +298,13 @@
     <value>JobEnd</value>
   </data>
   <data name="StartBackgroudJobButtonName" xml:space="preserve">
-    <value>StartWithParam</value>
+    <value>Start</value>
   </data>
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
     <value>StopAgent</value>
   </data>
   <data name="AgentJobDeatilButton" xml:space="preserve">
-    <value>AgentJobDetail</value>
+    <value>AgentDetail</value>
   </data>
   <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
     <value>The ContinueJob Can‘t Start, Please Delete Or Retry this job! </value>

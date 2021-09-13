@@ -5,10 +5,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>httpjob for Hangfire(基于hangfire的webjob调度服务)</Description>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>3.6.3</Version>
+    <Version>3.6.4</Version>
     <Authors>yuzd</Authors>
-    <AssemblyVersion>3.6.2.0</AssemblyVersion>
-    <FileVersion>3.6.2.0</FileVersion>
+    <AssemblyVersion>3.6.4.0</AssemblyVersion>
+    <FileVersion>3.6.4.0</FileVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
@@ -44,11 +44,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.22" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.25" />
     <PackageReference Include="Hangfire.Console" Version="1.4.2" />
-    <PackageReference Include="Hangfire.Tags" Version="1.7.3" />
+    <PackageReference Include="Hangfire.Tags" Version="1.8.0" />
     <PackageReference Include="HttpClientFactory" Version="1.0.3" />
-    <PackageReference Include="MailKit" Version="2.12.0" />
+    <PackageReference Include="MailKit" Version="2.15.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Spring.EL" Version="1.0.5" />

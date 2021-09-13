@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TestSqlserverHangfireAgent.Jobs
 {
-    [HangJobUntilStop]
+    [HangJobUntilStop(RegisterName = "HangJob测试")]
     public class TestHangJob : JobAgent
     {
         private readonly ILogger<TestHangJob> _logger;

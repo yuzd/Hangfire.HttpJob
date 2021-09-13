@@ -18,7 +18,6 @@ namespace Hangfire.HttpJob.Dashboard
         public async Task Dispatch(DashboardContext context)
         {
             var builder = new StringBuilder();
-
             string DefaultTimeZone = CodingUtil.GetGlobalAppsetting<string>("DefaultTimeZone",null);
             bool EnableDingTalk = CodingUtil.GetGlobalAppsetting<bool>("EnableDingTalk", false);
 
@@ -72,7 +71,7 @@ namespace Hangfire.HttpJob.Dashboard
                    .AppendFormat("hangFire.httpjobConfig.GetJobListUrl = '{0}/httpjob?op=GetJobList';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.GetAgentServerListUrl = '{0}/httpjob?op=getagentserver';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.IsReadonly = '{0}';", context.Request.PathBase.Contains("read"))
-                   .AppendFormat("hangFire.httpjobConfig.ShowTag = '{0}';", TagsServiceStorage.Current != null)
+                   .AppendFormat("hangFire.httpjobConfig.ShowTag = '{0}';", CodingUtil.IsTagServiceInstalled)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddNomalHttpJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.ScheduledEndPath)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddRecurringHttpJobButton = location.href.indexOf('/enqueued/')==-1 && location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddCronButton = location.href.indexOf('/enqueued/')==-1 && location.href.indexOf('{0}') >= 0;;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)

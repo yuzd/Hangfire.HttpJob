@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TestSqlserverHangfireAgent.Jobs
 {
-    [TransientJob]
+    [TransientJob(RegisterName = "多例job")]
     public class TestTransientJob:JobAgent
     {
         private readonly ILogger<TestTransientJob> _logger;
