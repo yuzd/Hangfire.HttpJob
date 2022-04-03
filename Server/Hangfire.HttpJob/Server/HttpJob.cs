@@ -748,76 +748,94 @@ namespace Hangfire.HttpJob.Server
 
         private static string GetCurrentJobStorage()
         {
-            var storage = JobStorage.Current;
-
-            var storageType = storage.GetType();
-            var days =  CodingUtil.JobTimeoutDays();
-            if (storageType.Name == "MySqlStorage")
+            try
             {
-                var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
-                var _connectionString = _connectionStringField?.GetValue(storage);
-                var _storageOptionsField = storageType.GetField("_storageOptions", BindingFlags.Instance | BindingFlags.NonPublic);
-                var _storageOptions = _storageOptionsField?.GetValue(storage);
-                // TablesPrefix
-                var tablePrefixField = _storageOptions?.GetType()?.GetProperty("TablesPrefix");
-                var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+                var storage = JobStorage.Current;
 
-                if (_connectionString==null || string.IsNullOrEmpty(_connectionString.ToString()))
+                var storageType = storage.GetType();
+                var days = CodingUtil.JobTimeoutDays();
+                if (storageType.Name == "MySqlStorage")
                 {
-                    return "";
+                    var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var _connectionString = _connectionStringField?.GetValue(storage);
+                    var _storageOptionsField = storageType.GetField("_storageOptions", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var _storageOptions = _storageOptionsField?.GetValue(storage);
+                    // TablesPrefix
+                    var tablePrefixField = _storageOptions?.GetType()?.GetProperty("TablesPrefix");
+                    var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+
+                    if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
+                    {
+                        return "";
+                    }
+                    return JsonConvert.SerializeObject(new { Type = "mysql", ExpireAtDays = days, TablePrefix = tablePrefix, HangfireDb = _connectionString?.ToString() });
                 }
-                return JsonConvert.SerializeObject(new {Type="mysql", ExpireAtDays = days,  TablePrefix = tablePrefix, HangfireDb = _connectionString?.ToString()});
+                else if (storageType.Name == "SqlServerStorage")
+                {
+                    var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var _connectionString = _connectionStringField?.GetValue(storage);
+                    if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
+                    {
+                        return "";
+                    }
+
+                    var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var _storageOptions = _storageOptionsField?.GetValue(storage);
+                    // TablesPrefix
+                    var tablePrefixField = _storageOptions?.GetType()?.GetField("_schemaName", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+
+                    return JsonConvert.SerializeObject(new { Type = "sqlserver", TablePrefix = tablePrefix, ExpireAtDays = days, HangfireDb = _connectionString?.ToString() });
+                }
+                else if (storageType.Name == "RedisStorage")
+                {
+                    var _connectionStringField = storageType.GetProperty("ConnectionString");
+                    var _connectionString = _connectionStringField?.GetValue(storage);
+                    if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
+                    {
+                        return "";
+                    }
+
+                    var _dbField = storageType.GetProperty("Db");
+                    var _dbString = _dbField?.GetValue(storage);
+
+
+                    var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var _storageOptions = _storageOptionsField?.GetValue(storage);
+                    // TablesPrefix
+                    var tablePrefixField = _storageOptions?.GetType()?.GetProperty("Prefix");
+                    var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+                    return JsonConvert.SerializeObject(new { Type = "redis", ExpireAtDays = days, TablePrefix = tablePrefix, Db = _dbString?.ToString(), HangfireDb = _connectionString?.ToString() });
+                }
+                else if (storageType.Name == "PostgreSqlStorage")
+                {
+                    var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (_connectionStringField == null)
+                    {
+                        _connectionStringField = storageType.GetField("_connectionStringBuilder",
+                            BindingFlags.Instance | BindingFlags.NonPublic);
+                    }
+                    var _connectionString = _connectionStringField?.GetValue(storage);
+                    if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
+                    {
+                        return "";
+                    }
+
+                    var _storageOptionsField = storageType.GetField("<Options>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic); ;
+                    var _storageOptions = _storageOptionsField?.GetValue(storage);
+                    var tablePrefixField = _storageOptions?.GetType()?.GetProperty("SchemaName");
+                    var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
+                    return JsonConvert.SerializeObject(new { Type = "postgresql", TablePrefix = tablePrefix, ExpireAtDays = days, HangfireDb = _connectionString?.ToString() });
+                }
+
+                return "";
             }
-            else if (storageType.Name == "SqlServerStorage")
+            catch (Exception e)
             {
-                var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
-                var _connectionString = _connectionStringField?.GetValue(storage);
-                if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
-                {
-                    return "";
-                }
-
-                var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
-                var _storageOptions = _storageOptionsField?.GetValue(storage);
-                // TablesPrefix
-                var tablePrefixField = _storageOptions?.GetType()?.GetField("_schemaName", BindingFlags.Instance | BindingFlags.NonPublic);
-                var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
-
-                return JsonConvert.SerializeObject(new { Type = "sqlserver",TablePrefix = tablePrefix, ExpireAtDays = days, HangfireDb = _connectionString?.ToString() });
+                Logger.ErrorException("get connectionString fail",e);
+                return "";
             }
-            else if (storageType.Name == "RedisStorage")
-            {
-                var _connectionStringField = storageType.GetProperty("ConnectionString");
-                var _connectionString = _connectionStringField?.GetValue(storage);
-                if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
-                {
-                    return "";
-                }
-
-                var _dbField = storageType.GetProperty("Db");
-                var _dbString = _dbField?.GetValue(storage);
-
-
-                var _storageOptionsField = storageType.GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
-                var _storageOptions = _storageOptionsField?.GetValue(storage);
-                // TablesPrefix
-                var tablePrefixField = _storageOptions?.GetType()?.GetProperty("Prefix");
-                var tablePrefix = tablePrefixField?.GetValue(_storageOptions);
-                return JsonConvert.SerializeObject(new { Type = "redis", ExpireAtDays = days, TablePrefix = tablePrefix, Db = _dbString?.ToString(), HangfireDb = _connectionString?.ToString() });
-            }
-            else if (storageType.Name == "PostgreSqlStorage")
-            {
-                var _connectionStringField = storageType.GetField("_connectionString", BindingFlags.Instance | BindingFlags.NonPublic);
-                var _connectionString = _connectionStringField?.GetValue(storage);
-                if (_connectionString == null || string.IsNullOrEmpty(_connectionString.ToString()))
-                {
-                    return "";
-                }
-
-                return JsonConvert.SerializeObject(new { Type = "postgresql", TablePrefix = "", ExpireAtDays = days, HangfireDb = _connectionString?.ToString() });
-            }
-
-            return "";
+            
         }
 
         #endregion

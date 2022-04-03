@@ -18,7 +18,7 @@ namespace Hangfire.HttpJob.Agent.PostgreSqlConsole
                 ExpireAt = config.ExpireAt,
                 ExpireAtDays = config.ExpireAtDays ?? 7,
                 HangfireDbConnString = config.HangfireDb,
-                TablePrefix = config.TablePrefix
+                TablePrefix = string.IsNullOrEmpty(config.TablePrefix)?"": config.TablePrefix.EndsWith(".")? config.TablePrefix: config.TablePrefix+"."
             });
         }
 
