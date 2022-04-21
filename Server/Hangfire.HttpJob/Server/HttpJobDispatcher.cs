@@ -104,6 +104,10 @@ namespace Hangfire.HttpJob.Server
                     case "importjobs":
                         await ImportJobsAsync(context);
                         return;
+                    //分页获取周期性任务
+                    case "getrecurringjobs":
+                        await RecurringJobsAsync(context);
+                        return;
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                         break;
@@ -898,7 +902,7 @@ namespace Hangfire.HttpJob.Server
                     {
                         jobItem.RecurringJobIdentifier = jobItem.JobName;
                     }
-                    
+
                     return JsonConvert.SerializeObject(JsonConvert.DeserializeObject<RecurringJobItem>(jobItem.ToString()));
                 }
             }
@@ -1034,6 +1038,27 @@ namespace Hangfire.HttpJob.Server
         }
 
         /// <summary>
+        /// 分页获取任务
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task RecurringJobsAsync(DashboardContext context)
+        {
+            try
+            {
+                var contentBody = await GetRequestBody<PageDto>(context);
+                var jobList = GetAllRecurringJobs(contentBody.Item1.PageNo, contentBody.Item1.PageSize);
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(jobList));
+            }
+            catch (Exception e)
+            {
+                await context.Response.WriteAsync("err:" + e.Message);
+            }
+        }
+
+        /// <summary>
         /// 导入所有的任务
         /// </summary>
         /// <param name="context"></param>
@@ -1119,6 +1144,35 @@ namespace Hangfire.HttpJob.Server
             return jobList;
         }
 
+        private object GetAllRecurringJobs(int pageNo, int pageSize)
+        {
+            var jobList = new List<RecurringJobDto>();
+            try
+            {
+                using (var connection = JobStorage.Current.GetConnection())
+                {
+                    if (connection is JobStorageConnection storageConnection)
+                    {
+                        var pager = new Pager(pageNo, pageSize, storageConnection.GetRecurringJobCount());
+                        jobList = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
 
+                        return new
+                        {
+                            pageNo = pageNo,
+                            pageSize = pageSize,
+                            rows = jobList.Select(m => m.Job.Args[0]).ToList(),
+                            totalPage = pager.TotalRecordCount,
+                            totalRows = pager.TotalPageCount
+                        };
+                    }
+                    jobList = connection.GetRecurringJobs();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("HttpJobDispatcher.GetAllRecurringJobs", ex);
+            }
+            return jobList;
+        }
     }
 }
