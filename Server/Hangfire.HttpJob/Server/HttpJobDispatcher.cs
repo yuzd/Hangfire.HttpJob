@@ -1153,7 +1153,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     if (connection is JobStorageConnection storageConnection)
                     {
-                        var pager = new Pager(pageNo, pageSize, storageConnection.GetRecurringJobCount());
+                        var pager = new Pager((pageNo-1)*pageSize, pageSize, storageConnection.GetRecurringJobCount());
                         jobList = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
 
                         return new
@@ -1161,8 +1161,8 @@ namespace Hangfire.HttpJob.Server
                             pageNo = pageNo,
                             pageSize = pageSize,
                             rows = jobList.Select(m => m.Job.Args[0]).ToList(),
-                            totalPage = pager.TotalRecordCount,
-                            totalRows = pager.TotalPageCount
+                            totalPage = pager.TotalPageCount,
+                            totalRows = pager.TotalRecordCount
                         };
                     }
                     jobList = connection.GetRecurringJobs();
