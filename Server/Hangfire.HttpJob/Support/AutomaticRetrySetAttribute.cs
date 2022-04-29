@@ -225,7 +225,7 @@ namespace Hangfire.HttpJob.Support
             var delayArr = _delaysInSeconds;
             if (!string.IsNullOrEmpty(httpjob.RetryDelaysInSeconds))
             {
-                var delayArrStr = httpjob.RetryDelaysInSeconds.Replace("，","").Split(new string[] { ","},StringSplitOptions.RemoveEmptyEntries);
+                var delayArrStr = httpjob.RetryDelaysInSeconds.Replace("，",",").Split(new string[] { ","},StringSplitOptions.RemoveEmptyEntries);
                 if (delayArrStr.Any())
                 {
                     try

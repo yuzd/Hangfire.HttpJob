@@ -108,7 +108,7 @@ namespace Hangfire.HttpJob.Server
 
                 //获取重试次数
                 var count = RunWithTry<string>(() => context.GetJobParameter<string>("RetryCount")) ?? string.Empty;
-                if (count == "3") //重试达到三次的时候发邮件通知
+                if (count == item.RetryTimes.ToString()) //重试达到上线的时候发邮件通知
                 {
                     if (item.Fail != null)
                     {
