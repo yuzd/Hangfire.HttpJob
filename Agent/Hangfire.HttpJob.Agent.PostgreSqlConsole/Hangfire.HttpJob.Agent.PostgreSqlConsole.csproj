@@ -17,7 +17,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Company>zdyu</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AssemblyVersion>1.4.3.0</AssemblyVersion>
-    <FileVersion>1.4.3.0</FileVersion>
+    <AssemblyVersion>1.4.5.0</AssemblyVersion>
+    <FileVersion>1.4.5.0</FileVersion>
   </PropertyGroup>
 </Project>

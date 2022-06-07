@@ -145,7 +145,7 @@ namespace Hangfire.HttpJob.Agent.MysqlConsole
                 foreach (var keyValuePair in keyValuePairs)
                 {
                     connection.Execute(
-                        $"insert into {_options.TablePrefix}Hash (`Key`, Field, Value,ExpireAt) " +
+                        $"insert into `{_options.TablePrefix}Hash` (`Key`, Field, Value,ExpireAt) " +
                         "value (@key, @field, @value,@ExpireAt) " +
                         "on duplicate key update Value = @value,ExpireAt=@ExpireAt",
                         new { key = key, field = keyValuePair.Key, value = keyValuePair.Value , ExpireAt = _options.ExpireAt!=null? DateTime.UtcNow.Add(_options.ExpireAt.Value) : DateTime.UtcNow.AddDays(_options.ExpireAtDays) });
