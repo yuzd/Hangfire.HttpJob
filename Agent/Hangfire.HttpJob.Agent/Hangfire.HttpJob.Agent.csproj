@@ -8,11 +8,11 @@
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>yuzd</Authors>
-    <Version>1.4.5</Version>
+    <Version>1.4.6</Version>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AssemblyVersion>1.4.5.0</AssemblyVersion>
-    <FileVersion>1.4.5.0</FileVersion>
+    <AssemblyVersion>1.4.6.0</AssemblyVersion>
+    <FileVersion>1.4.6.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
