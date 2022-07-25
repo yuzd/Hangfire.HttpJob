@@ -51,7 +51,7 @@ namespace Hangfire.HttpJob.Server
         {
             var client = new HttpClient(handler);
             client.DefaultRequestHeaders.ConnectionClose = false;
-            client.DefaultRequestHeaders.Add("UserAgent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+            client.DefaultRequestHeaders.Add("UserAgent", "Hangfire.HttpClient");
             client.Timeout = this._timeOut;
 
             if (!string.IsNullOrEmpty(_contentType))

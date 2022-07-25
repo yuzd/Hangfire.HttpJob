@@ -893,6 +893,22 @@
                     });
 
                 }).fail(function (errText) {
+                    if (errText.responseText && errText.status == 200 ) {
+                        swal({
+                            title: "Success",
+                            type: "success",
+                            showCancelButton: false,
+                            closeOnConfirm: false,
+                            animation: "slide-from-top",
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "OK",
+                        }, function () {
+                            $('#httpJobModal').modal('hide');
+                            clearJsonEditor();
+                            location.reload();
+                        });
+                        return;
+                    }
                     swal({
                         title: "",
                         text: errText.responseText || "Add job fail！",

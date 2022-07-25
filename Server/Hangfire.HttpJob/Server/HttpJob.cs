@@ -22,6 +22,7 @@ using Hangfire.Common;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using Spring.Expressions;
+using MailKit;
 
 namespace Hangfire.HttpJob.Server
 {
@@ -668,7 +669,8 @@ namespace Hangfire.HttpJob.Server
                         continue;
                     }
 
-                    request.Headers.TryAddWithoutValidation(headerKey, headerValue);
+                    bool addHeaderSucc = request.Headers.TryAddWithoutValidation(headerKey, headerValue);
+                    RunWithTry(() => context.WriteLine($"【Header】【{headerKey}】Add {addHeaderSucc}"));
                 }
 
                 headerKeys = string.Join("_@_", item.Headers.Keys);
@@ -734,6 +736,7 @@ namespace Hangfire.HttpJob.Server
             {
                 var byteArray = Encoding.ASCII.GetBytes(item.BasicUserName + ":" + item.BasicPassword);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                RunWithTry(() => context.WriteLine($"【Header】【Authorization】Add True"));
             }
 
             return request;
