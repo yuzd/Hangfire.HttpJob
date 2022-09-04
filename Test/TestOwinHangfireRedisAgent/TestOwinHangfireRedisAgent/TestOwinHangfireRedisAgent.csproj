@@ -77,13 +77,13 @@
       <Version>4.2.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Owin.Host.HttpListener">
-      <Version>4.1.1</Version>
+      <Version>4.2.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Owin.Hosting">
-      <Version>4.1.1</Version>
+      <Version>4.2.2</Version>
     </PackageReference>
     <PackageReference Include="NLog.Extensions.Logging">
-      <Version>1.6.5</Version>
+      <Version>5.0.4</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
