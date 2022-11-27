@@ -670,7 +670,7 @@
                     url: pauseurl,
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json" }),
-                    async: true,
+                    async: false,
                     success: function (returndata) {
                         window.location.reload();
                     },

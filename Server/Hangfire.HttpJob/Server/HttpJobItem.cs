@@ -233,7 +233,13 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 钉钉配置
         /// </summary>
-        public DingTalkOption DingTalk { get; set; } 
+        public DingTalkOption DingTalk { get; set; }
 
-    }
+        public string getJobIdentifier()
+        {
+	        return string.IsNullOrEmpty(RecurringJobIdentifier) ? JobName : RecurringJobIdentifier;
+        }
+
+
+	}
 }
