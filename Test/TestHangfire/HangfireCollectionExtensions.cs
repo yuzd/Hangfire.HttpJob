@@ -18,10 +18,9 @@ using System.Text;
 using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob.Content.resx;
-using Hangfire.MySql;
 using Hangfire.Server;
+using Hangfire.Storage.MySql;
 using Hangfire.Tags;
-using Hangfire.Tags.MySql;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -114,15 +113,11 @@ namespace MysqlHangfire
             };
 
             globalConfiguration
-                .UseStorage(new MySqlStorage(sqlConnectStr, mysqlOption))
+                .UseStorage(new MySqlStorage (sqlConnectStr, mysqlOption))
                 .UseConsole(new ConsoleOptions
                 {
                     BackgroundColor = "#000079"
                 })
-                .UseTagsWithMySql(new TagsOptions()
-                {
-                    TagsListStyle = TagsListStyle.Dropdown
-                }, sqlOptions: mysqlOption)
                 .UseHangfireHttpJob(httpJobOptions)
                 .UseHeartbeatPage();
         }
