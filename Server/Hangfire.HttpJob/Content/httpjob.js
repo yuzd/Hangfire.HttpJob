@@ -1142,6 +1142,7 @@ function changeTable() {
         return;
     }
     var isreJob = window.location.pathname.endsWith('/recurring');
+    var temp = '<code class="cron-badge">@@</code>'
     var config = window.Hangfire.httpjobConfig;
     $(".table tbody").find('tr').each(function () {
         var tdArr = $(this).children();
@@ -1213,7 +1214,22 @@ function changeTable() {
             }
            
         }
-
+        if(isreJob && ss){
+            var cron = ss.replace(/^\s+|\s+$/g, '');
+            if(cron == '0 0 31 2 *'){
+                // 获取实际暂停前的cron表达式
+                $.ajax({
+                    type: "post",
+                    url: window.Hangfire.httpjobConfig.GetPauseCronUrl,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ "JobName": s1, "URL": "baseurl", "ContentType": "application/json" }),
+                    async: true,
+                    success: function (cron) {
+                        tdArr.eq(2).html('<span class="label label-danger">'+cron +'</span>')
+                    }
+                });
+            }
+        }
         var ss2 = tdArr.eq(4).text();
         if (ss2.indexOf('|') >= 0) {
             var ss1 = ss2.split('|');

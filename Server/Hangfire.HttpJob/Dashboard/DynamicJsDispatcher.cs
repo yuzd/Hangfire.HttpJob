@@ -70,6 +70,7 @@ namespace Hangfire.HttpJob.Dashboard
                    .AppendFormat("hangFire.httpjobConfig.StopBackgroudJobUrl = '{0}/httpjob?op=StopBackgroundJob';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.GetJobListUrl = '{0}/httpjob?op=GetJobList';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.GetAgentServerListUrl = '{0}/httpjob?op=getagentserver';", context.Request.PathBase)
+                   .AppendFormat("hangFire.httpjobConfig.GetPauseCronUrl = '{0}/httpjob?op=getpasusejobcron';", context.Request.PathBase)
                    .AppendFormat("hangFire.httpjobConfig.IsReadonly = '{0}';", context.Request.PathBase.Contains("read"))
                    .AppendFormat("hangFire.httpjobConfig.ShowTag = '{0}';", CodingUtil.IsTagServiceInstalled)
                   .AppendFormat("hangFire.httpjobConfig.NeedAddNomalHttpJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.ScheduledEndPath)

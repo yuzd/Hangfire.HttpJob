@@ -108,6 +108,9 @@ namespace Hangfire.HttpJob.Server
 					case "getrecurringjobs":
 						await RecurringJobsAsync(context);
 						return;
+					case "getpasusejobcron":
+						await GetPauseJobCron(context);
+						return;
 					default:
 						context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
 						break;
@@ -669,6 +672,23 @@ namespace Hangfire.HttpJob.Server
 		}
 
 		/// <summary>
+		/// 获取已暂停job配置的cron
+		/// </summary>
+		/// <param name="jobname"></param>
+		/// <returns></returns>
+		private string getPauseJobCronText(string jobname)
+		{
+			using (var connection = JobStorage.Current.GetConnection())
+			{
+				//拿到所有的设置
+				var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
+				var cron = conts.FirstOrDefault(r => r.StartsWith("Cron:"));
+				if (!string.IsNullOrEmpty(cron)) cron = cron.Replace("Cron:", "");
+				return cron;
+			}
+		}
+		
+		/// <summary>
 		/// 停止或者暂停项目
 		/// </summary>
 		/// <param name="jobname"></param>
@@ -753,6 +773,29 @@ namespace Hangfire.HttpJob.Server
 			}
 		}
 
+		/// <summary>
+		/// 获取已暂停job原来的cron表达式
+		/// </summary>
+		/// <param name="context"></param>
+		private async Task GetPauseJobCron(DashboardContext context)
+		{
+			var jobItemBody = await GetRequestBody<HttpJobItem>(context);
+			var jobItem = jobItemBody.Item1;
+			if (jobItem == null || string.IsNullOrEmpty(jobItem.JobName))
+			{
+				context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+				await context.Response.WriteAsync($"invalid request body:{jobItemBody.Item2}");
+				return;
+			}
+
+			var cron = getPauseJobCronText(jobItem.JobName);
+			if (string.IsNullOrEmpty(cron))
+			{
+				cron = Cron.Never();
+			}
+			context.Response.StatusCode = (int)HttpStatusCode.OK;
+			await context.Response.WriteAsync(cron);
+		}
 
 		/// <summary>
 		/// 暂停或开始job
