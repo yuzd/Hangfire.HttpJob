@@ -3,27 +3,17 @@ using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.HttpJob;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Hangfire.Heartbeat;
-using Hangfire.Heartbeat.Server;
-using Hangfire.Tags;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Spring.Core.TypeConversion;
-using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace MemoryHangfire
 {
@@ -45,7 +35,21 @@ namespace MemoryHangfire
             {
                 services.ConfigurationHangfire(Configuration, globalConfiguration);
             });
-            return services;
+
+            services.AddHangfireServer((provider, config) =>
+            {
+	            var settings = provider.GetService<IOptions<HangfireSettings>>().Value;
+	            ConfigFromEnv(settings);
+	            var queues = settings.JobQueues.Select(m => m.ToLower()).Distinct().ToList();
+	            var workerCount = Math.Max(Environment.ProcessorCount, settings.WorkerCount); //工作线程数，当前允许的最大线程，默认20
+	            config.ServerName = settings.ServerName;
+	            config.ServerTimeout = TimeSpan.FromMinutes(4);
+	            config.SchedulePollingInterval = TimeSpan.FromSeconds(5);//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
+	            config.ShutdownTimeout = TimeSpan.FromMinutes(30); //超时时间
+	            config.Queues = queues.ToArray(); //队列
+	            config.WorkerCount = workerCount;
+            });
+			return services;
         }
 
 
@@ -92,21 +96,7 @@ namespace MemoryHangfire
             var hangfireSettings = services.GetService<IOptions<HangfireSettings>>().Value;
             ConfigFromEnv(hangfireSettings);
 
-            var queues = hangfireSettings.JobQueues.Select(m => m.ToLower()).Distinct().ToList();
-
-            var workerCount = Math.Max(Environment.ProcessorCount, hangfireSettings.WorkerCount); //工作线程数，当前允许的最大线程，默认20
-
-            app.UseHangfireServer(new BackgroundJobServerOptions
-            {
-                ServerName = hangfireSettings.ServerName,
-                ServerTimeout = TimeSpan.FromMinutes(4),
-                SchedulePollingInterval = TimeSpan.FromSeconds(15), //秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
-                ShutdownTimeout = TimeSpan.FromMinutes(30), //超时时间
-                Queues = queues.ToArray(), //队列
-                WorkerCount = workerCount
-            },additionalProcesses: new[] { new ProcessMonitor() });
-
-
+          
             var dashbordConfig = new DashboardOptions
             {
                 AppPath = "#",
