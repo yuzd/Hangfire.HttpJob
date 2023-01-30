@@ -21,6 +21,7 @@ namespace Hangfire.HttpJob.Dashboard
             string DefaultTimeZone = CodingUtil.GetGlobalAppsetting<string>("DefaultTimeZone",null);
             bool EnableDingTalk = CodingUtil.GetGlobalAppsetting<bool>("EnableDingTalk", false);
             var hangfireUrl = context.GetCurrentHangfireUrl();
+            System.Console.WriteLine("当前hanfire路径：" + hangfireUrl);
 
             builder.Append(@"(function (hangFire) {")
                   .Append("hangFire.httpjobConfig =  {};")
