@@ -134,7 +134,7 @@ namespace Hangfire.HttpJob.Server
 		{
 			try
 			{
-				var html = JobAgentHeartBeatServer.GetAgentServerListHtml(context.Request.PathBase);
+				var html = JobAgentHeartBeatServer.GetAgentServerListHtml(context.GetCurrentHangfireUrl());
 				await context.Response.WriteAsync(html);
 			}
 			catch (Exception e)
