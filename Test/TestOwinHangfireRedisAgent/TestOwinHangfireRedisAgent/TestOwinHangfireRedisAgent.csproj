@@ -83,7 +83,7 @@
       <Version>4.2.2</Version>
     </PackageReference>
     <PackageReference Include="NLog.Extensions.Logging">
-      <Version>5.0.4</Version>
+      <Version>5.2.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

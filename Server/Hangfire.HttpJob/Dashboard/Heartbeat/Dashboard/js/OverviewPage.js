@@ -263,7 +263,7 @@ window.onload = function () {
     var updateUrl = $("#heartbeatConfig").data("pollurl");
     var updateInterval = parseInt($("#heartbeatConfig").data("pollinterval"));
     var showFullNameInPopup = $("#heartbeatConfig").data("showfullname") === "true";
-
+   
     var colorGenerator = new ColorGenerator();
     var cpuGraph = new SeriesGraph("cpu-chart", formatPercentage, colorGenerator, updateInterval);
     var memGraph = new SeriesGraph("mem-chart", formatBytes, colorGenerator, updateInterval);
@@ -272,4 +272,9 @@ window.onload = function () {
 
     updater(viewModel, cpuGraph, memGraph, updateUrl);
     setInterval(function () { updater(viewModel, cpuGraph, memGraph, updateUrl); }, updateInterval);
+
+    if (window.Hangfire.httpjobConfig.DashboardName) {
+        //更改控制面板标题
+        $(".navbar-brand").html(window.Hangfire.httpjobConfig.DashboardName);
+    }
 };

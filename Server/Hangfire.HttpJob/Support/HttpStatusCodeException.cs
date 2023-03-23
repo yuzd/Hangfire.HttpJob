@@ -63,4 +63,13 @@ namespace Hangfire.HttpJob.Support
 
         }
     }
+
+    public class HangfireAgentShutDownCauseJobRequeue : Exception
+    {
+        
+        public HangfireAgentShutDownCauseJobRequeue(string msg) : base("hangfire agent was shut down! the processing job requeue:" + msg)
+        {
+
+        }
+    }
 }

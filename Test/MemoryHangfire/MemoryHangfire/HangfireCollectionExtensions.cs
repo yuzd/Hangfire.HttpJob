@@ -130,7 +130,7 @@ namespace MemoryHangfire
 
             }
 
-            app.UseHangfireDashboard(hangfireSettings.StartUpPath, dashbordConfig);
+            app.UseHangfireHttpJob().UseHangfireDashboard(hangfireSettings.StartUpPath, dashbordConfig);
 
             if (!string.IsNullOrEmpty(hangfireSettings.ReadOnlyPath))
                 //只读面板，只能读取不能操作 

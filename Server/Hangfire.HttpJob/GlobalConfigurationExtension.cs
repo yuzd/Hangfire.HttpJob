@@ -1,14 +1,20 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Hangfire.Dashboard;
 using Hangfire.HttpJob.Dashboard;
 using Hangfire.HttpJob.Server;
 using Hangfire.HttpJob.Support;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.HttpJob.Dashboard.Pages;
 using Hangfire.HttpJob.Server.JobAgent;
 using Hangfire.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace Hangfire.HttpJob
 {
@@ -44,7 +50,7 @@ namespace Hangfire.HttpJob
             if (options.GlobalHttpTimeOut < 2000) options.GlobalHttpTimeOut = 2000;
             if (options.CheckHttpResponseStatusCode == null)
             {
-                options.CheckHttpResponseStatusCode = (code,result) => ((int)code) < 400;
+                options.CheckHttpResponseStatusCode = (code, result) => ((int)code) < 400;
             }
 
             if (string.IsNullOrEmpty(options.GlobalSettingJsonFilePath))
@@ -54,14 +60,14 @@ namespace Hangfire.HttpJob
 
             if (options.GlobalHttpClientTimeOut > 0)
             {
-                HangfireHttpClientFactory.SetDefaultHttpJobInstance(new HangfireHttpClientFactory(TimeSpan.FromMilliseconds(options.GlobalHttpClientTimeOut),null));
+                HangfireHttpClientFactory.SetDefaultHttpJobInstance(new HangfireHttpClientFactory(TimeSpan.FromMilliseconds(options.GlobalHttpClientTimeOut), null));
             }
             else
             {
                 HangfireHttpClientFactory.SetDefaultHttpJobInstance(options.HttpJobClientFactory);
             }
             HangfireHttpClientFactory.SetDefaultDingTalkInstance(options.DingTalkClientFactory);
-            
+
             CodingUtil.HangfireHttpJobOptions = options;
             JobAgentReportServer.Start();
             JobAgentHeartBeatServer.Start();
@@ -70,5 +76,67 @@ namespace Hangfire.HttpJob
         }
 
 
+        public static IApplicationBuilder UseHangfireHttpJob(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<HangfireDashboardCustomOptionsMiddleware>(CodingUtil.HangfireHttpJobOptions);
+        }
+
+    }
+
+
+    internal class HangfireDashboardCustomOptionsMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly HangfireHttpJobOptions _options;
+        private readonly Regex _titleRegex = new Regex(@"\s*Hangfire\ Dashboard\s*", RegexOptions.Compiled);
+
+        public HangfireDashboardCustomOptionsMiddleware(RequestDelegate next, HangfireHttpJobOptions options)
+        {
+            _next = next;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+
+            if (!IsHtmlPageRequest(context))
+            {
+                await _next.Invoke(context);
+                return;
+            }
+
+            var originalBody = context.Response.Body;
+
+            using (var newBody = new MemoryStream())
+            {
+                context.Response.Body = newBody;
+
+                await _next.Invoke(context);
+                context.Response.Body = originalBody;
+
+                newBody.Seek(0, SeekOrigin.Begin);
+
+                string newContent;
+                using (var reader = new StreamReader(newBody, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
+                {
+                    newContent = await reader.ReadToEndAsync();
+                }
+
+                var newDashboardTitle = _options?.DashboardName ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(newDashboardTitle))
+                {
+                    newContent = _titleRegex.Replace(newContent, newDashboardTitle);
+                }
+
+                await context.Response.WriteAsync(newContent);
+            }
+        }
+
+        private static bool IsHtmlPageRequest(HttpContext context)
+        {
+            if (!context.Request.Headers.TryGetValue("Accept", out var accept)) return false;
+            if (!accept.Any(a => a.IndexOf("text/html", StringComparison.OrdinalIgnoreCase) >= 0)) return false;
+            return true;
+        }
     }
 }
