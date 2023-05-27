@@ -1,5 +1,5 @@
-﻿(function (hangfire) {
-   
+﻿﻿(function (hangfire) {
+
     hangfire.HttpJob = (function () {
         function HttpJob() {
             this._initialize();
@@ -90,7 +90,7 @@
                 Mail: "",
                 CallbackEL: ""
             };
-         
+
             var recurringObj = {
                 RecurringJobIdentifier: "",
                 JobName: "",
@@ -267,7 +267,7 @@
             PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-success" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="PauseJob">' +
                 '<span class="glyphicon glyphicon-stop"> ' + (config.NeedAddNomalHttpJobButton ? config.StartBackgroudJobButtonName : config.PauseJobButtonName) + '</span>' +
                 '</button>';
-            
+
             // 获取AgentJob 详情
             var getAgentJobDeatilButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="..." disabled id="JobDetail">' +
                 '<span class="glyphicon glyphicon-record"> ' + (config.AgentJobDeatilButton) + '</span>' +
@@ -597,7 +597,7 @@
 
             //删除job
             $('#DelJob').click(function (e) {
-              
+
                 var jobId = [];
                 $.each($(".js-jobs-list-checkbox:checked"), function (index, d) { jobId.push($(d).val()) });
                 if (jobId.length<1) {
@@ -932,12 +932,12 @@
                         $('#btn_importJobs_save').hide();
                         $('#div_import_model').modal('show');
                     }).fail(function () {
-                        swal({
-                            title: "",
-                            text: "Export Jobs Fail！",
-                            type: "error"
-                        });
+                    swal({
+                        title: "",
+                        text: "Export Jobs Fail！",
+                        type: "error"
                     });
+                });
             });
 
             $('#importHttpJobs').click(function () {
@@ -1002,12 +1002,12 @@
                         });
 
                     }).fail(function () {
-                        window.swal({
-                            title: "",
-                            text: "Add job fail！",
-                            type: "error"
-                        });
+                    window.swal({
+                        title: "",
+                        text: "Add job fail！",
+                        type: "error"
                     });
+                });
             });
 
             function setJson2JsonEditor(edit, json) {
@@ -1131,7 +1131,7 @@
             });
         }
     });
-  
+
 
 })(window.Hangfire = window.Hangfire || {});
 
@@ -1212,7 +1212,7 @@ function changeTable() {
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>' );
                 tdArr.eq(2).html(h);
             }
-           
+
         }
         if(isreJob && ss){
             var cron = ss.replace(/^\s+|\s+$/g, '');
@@ -1257,10 +1257,10 @@ function changeTable() {
                         : '<span class="label label-success left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
-               tdArr.eq(4).html(h);
-               isHttpJob = true;
+                tdArr.eq(4).html(h);
+                isHttpJob = true;
             }
-           
+
         }
 
         if (tdArr.eq(3).text().indexOf('China Standard') > 0) {
@@ -1295,7 +1295,7 @@ function changeTable() {
                             '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
                     tdArr.eq(3).html(h);
                 }
-                
+
             }
         }
 
@@ -1312,7 +1312,7 @@ function changeTable() {
             if (tag.indexOf('Go to Tag') == -1) {
                 tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="Go to Tag Page" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
             }
-           
+
         }
     });
     $(".table tbody").show();
@@ -1359,8 +1359,8 @@ function changeTable() {
             updateRelativeDates();
         } catch (e) {
 
-        } 
-      
+        }
+
     }
     $('*[title]').tooltip();
 }
@@ -1404,8 +1404,8 @@ var jobSearcher = new function () {
         });
     };
 
-    
-    
+
+
 
     function FilterJobs(keyword) {
         $('#loaddata').css('visibility', 'unset');
@@ -1456,7 +1456,7 @@ var jobSearcher = new function () {
                 } else {
                     var filtered = (location.pathname.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
                 }
-                 
+
                 $(table).find('tbody tr').remove();
                 //如果是failed页面 需要在每个下面多加一个tr 否则会导致样式问题
                 if (location.pathname.endsWith('jobs/failed')) {
@@ -1506,5 +1506,4 @@ if (window.attachEvent) {
         window.onload = loadHttpJobModule;
     }
 }
-
 

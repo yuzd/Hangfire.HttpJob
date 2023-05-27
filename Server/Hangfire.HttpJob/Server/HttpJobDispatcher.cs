@@ -927,12 +927,23 @@ namespace Hangfire.HttpJob.Server
 				{
 					//支持添加一个 只能手动出发的
 					RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, null, null, false, null), Cron.Never,
-						timeZone, jobItem.QueueName.ToLower());
+						new RecurringJobOptions
+						{
+							TimeZone = timeZone, 
+#pragma warning disable CS0618
+							QueueName = jobItem.QueueName.ToLower()
+#pragma warning restore CS0618
+						});
 					return string.Empty;
 				}
-
 				RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, null, null, false, null), jobItem.Cron,
-					timeZone, jobItem.QueueName.ToLower());
+					new RecurringJobOptions
+					{
+						TimeZone = timeZone, 
+#pragma warning disable CS0618
+						QueueName = jobItem.QueueName.ToLower()
+#pragma warning restore CS0618
+					});
 				return string.Empty;
 			}
 			catch (Exception ex)
