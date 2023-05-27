@@ -17,7 +17,7 @@
 
             if (config.DashboardFooter) {
                 //更改hangfire版本显示替换为任意值
-                $("#footer ul li:first-child").html('<a href="https://github.com/yuzd/Hangfire.HttpJob" target="_blank">' + config.DashboardFooter + '</a>');
+                $("#footer ul li:first-child").html('<a href="https://github.com" target="_blank">' + config.DashboardFooter + '</a>');
 
             }
 
@@ -1168,9 +1168,9 @@ function changeTable() {
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
-                    '">' +
+                    '"><a class="job-method" href="javascript:void(0)">' +
                     ss1[1] +
-                    '</span>' +
+                    '</a></span>' +
                     (ss1[2] == ''
                         ? ''
                         : '<span class="label label-success left5" title="" data-original-title="">' +
@@ -1202,9 +1202,9 @@ function changeTable() {
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
-                    '">' +
+                    '"><a class="job-method" href="javascript:void(0)">' +
                     ss1[1] +
-                    '</span>' +
+                    '</a></span>' +
                     (ss1[2] == ''
                         ? ''
                         : '<span class="label label-success left5" title="" data-original-title="">' +
@@ -1249,9 +1249,9 @@ function changeTable() {
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
-                    '">' +
+                    '"><a class="job-method" href="javascript:void(0)">' +
                     ss1[1] +
-                    '</span>' +
+                    '</a></span>' +
                     (ss1[2] == ''
                         ? ''
                         : '<span class="label label-success left5" title="" data-original-title="">' +
@@ -1285,9 +1285,9 @@ function changeTable() {
                 } else {
                     var h = '<span class="label label-success" title="" data-original-title="' +
                         ss1[0] +
-                        '">' +
+                        '"><a class="job-method" href="javascript:void(0)">' +
                         ss1[1] +
-                        '</span>' +
+                        '</a></span>' +
                         (ss1[2] == ''
                             ? ''
                             : '<span class="label label-success left5" title="" data-original-title="">' +
