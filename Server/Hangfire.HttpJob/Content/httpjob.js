@@ -931,12 +931,12 @@
                         $('#btn_importJobs_save').hide();
                         $('#div_import_model').modal('show');
                     }).fail(function () {
-                    swal({
-                        title: "",
-                        text: "Export Jobs Fail！",
-                        type: "error"
+                        swal({
+                            title: "",
+                            text: "Export Jobs Fail！",
+                            type: "error"
+                        });
                     });
-                });
             });
 
             $('#importHttpJobs').click(function () {
@@ -1001,12 +1001,12 @@
                         });
 
                     }).fail(function () {
-                    window.swal({
-                        title: "",
-                        text: "Add job fail！",
-                        type: "error"
+                        window.swal({
+                            title: "",
+                            text: "Add job fail！",
+                            type: "error"
+                        });
                     });
-                });
             });
 
             function setJson2JsonEditor(edit, json) {
@@ -1163,7 +1163,7 @@ function changeTable() {
                         : '<span class="label label-primary left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                tdArr.eq(1).html(h);
+                tdArr.eq(1).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
@@ -1197,7 +1197,7 @@ function changeTable() {
                         : '<span class="label label-primary left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                tdArr.eq(2).html(h);
+                tdArr.eq(2).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
@@ -1244,7 +1244,7 @@ function changeTable() {
                         : '<span class="label label-primary left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                tdArr.eq(4).html(h);
+                tdArr.eq(4).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
@@ -1281,7 +1281,7 @@ function changeTable() {
                             : '<span class="label label-primary left5" title="" data-original-title="">' +
                             ss1[2] +
                             '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                    tdArr.eq(3).html(h);
+                    tdArr.eq(3).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
                 } else {
                     var h = '<span class="label label-success" title="" data-original-title="' +
                         ss1[0] +
