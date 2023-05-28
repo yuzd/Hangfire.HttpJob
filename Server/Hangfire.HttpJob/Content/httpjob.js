@@ -1,5 +1,4 @@
-﻿﻿(function (hangfire) {
-
+(function (hangfire) {
     hangfire.HttpJob = (function () {
         function HttpJob() {
             this._initialize();
@@ -117,14 +116,14 @@
             };
             if (config.EnableDingTalk && config.EnableDingTalk == 'true') {
                 normalObj.DingTalk = {
-                    Token: config.DingtalkToken||"",
-                    AtPhones: config.DingtalkPhones||"",
+                    Token: config.DingtalkToken || "",
+                    AtPhones: config.DingtalkPhones || "",
                     IsAtAll: config.DingtalkAtAll == 'true' ? true : false
                 }
                 recurringObj.DingTalk = {
                     Token: config.DingtalkToken || "",
-                    AtPhones: config.DingtalkPhones||"",
-                    IsAtAll: config.DingtalkAtAll == 'true'?true:false
+                    AtPhones: config.DingtalkPhones || "",
+                    IsAtAll: config.DingtalkAtAll == 'true' ? true : false
                 }
             }
             var normal_templete = JSON.stringify(normalObj);     // "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
@@ -396,7 +395,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭'?"只能选择一个任务": "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务" : "Select One Job Only!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -408,7 +407,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务" :"Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务" : "Please Select One Job!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -425,7 +424,7 @@
                 if (!text || text.indexOf('Agent:') < 0) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "当前选择的任务非JobAgent类型!" :"Selected Job is not a jobAgent!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "当前选择的任务非JobAgent类型!" : "Selected Job is not a jobAgent!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -433,7 +432,7 @@
                     return;
                 }
                 swal({
-                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "您确定要发送停止指令吗!":"Are you sure want to stop?",
+                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "您确定要发送停止指令吗!" : "Are you sure want to stop?",
                     type: "success",
                     showCancelButton: true,
                     closeOnConfirm: false,
@@ -477,7 +476,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!": "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -498,8 +497,8 @@
                 }
 
                 swal({
-                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "注意" :"JobAgent",
-                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "您确定要发送获取运行详情指令吗!" :"Are you sure to get JobDetail?",
+                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "注意" : "JobAgent",
+                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "您确定要发送获取运行详情指令吗!" : "Are you sure to get JobDetail?",
                     type: "warning",
                     showCancelButton: true,
                     closeOnConfirm: false,
@@ -507,7 +506,7 @@
                     inputPlaceholder: "start param",
                     showLoaderOnConfirm: true,
                     confirmButtonColor: "#DD6B55",
-                    confirmButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "提交" :"Submit",
+                    confirmButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "提交" : "Submit",
                     cancelButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "取消" : "Cancel"
                 }, function () {
                     $.ajax({
@@ -538,7 +537,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" :  "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Select One Job Only!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -558,13 +557,13 @@
                 }
 
                 swal({
-                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "运行" :  "Start Job",
-                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "确定要发送运行指令吗?" :  "Are you sure want to start?",
+                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "运行" : "Start Job",
+                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "确定要发送运行指令吗?" : "Are you sure want to start?",
                     type: "input",
                     showCancelButton: true,
                     closeOnConfirm: false,
                     animation: "slide-from-top",
-                    inputPlaceholder: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "可输入本次运行的参数" :  "start param",
+                    inputPlaceholder: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "可输入本次运行的参数" : "start param",
                     showLoaderOnConfirm: true,
                     confirmButtonColor: "#DD6B55",
                     confirmButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "提交" : "Submit",
@@ -582,7 +581,7 @@
                             $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
                                 swal({
                                     title: "Success",
-                                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "运行指令发送成功" :"start job success",
+                                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "运行指令发送成功" : "start job success",
                                     type: "success"
                                 });
                                 window.location.reload();
@@ -600,10 +599,10 @@
 
                 var jobId = [];
                 $.each($(".js-jobs-list-checkbox:checked"), function (index, d) { jobId.push($(d).val()) });
-                if (jobId.length<1) {
+                if (jobId.length < 1) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" :  "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -630,7 +629,7 @@
                         data: JSON.stringify({ "JobName": jobId, "URL": "baseurl", "ContentType": "application/json", "Cron": (config.NeedEditRecurringJobButton ? "1" : "") }),
                         async: true,
                         success: function (returndata) {
-                            $.post(removeUrl, { 'jobs[]': jobId}, function () {
+                            $.post(removeUrl, { 'jobs[]': jobId }, function () {
                                 window.location.reload();
                             });
                         }
@@ -646,7 +645,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" :  "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Select One Job Only!",
                         type: "error"
                     });
                     e.stopPropagation();
@@ -893,7 +892,7 @@
                     });
 
                 }).fail(function (errText) {
-                    if (errText.responseText && errText.status == 200 ) {
+                    if (errText.responseText && errText.status == 200) {
                         swal({
                             title: "Success",
                             type: "success",
@@ -1033,8 +1032,8 @@
                 $('#jsonModel').modal('hide');
 
                 window.jsonEditor.setText("{}");
-                if (window.jsonViewEditor)window.jsonViewEditor.setText("{}");
-                if (window.jsonEditor3)window.jsonEditor3.setText("{}");
+                if (window.jsonViewEditor) window.jsonViewEditor.setText("{}");
+                if (window.jsonEditor3) window.jsonEditor3.setText("{}");
             }
 
             function getIOEditorData() {
@@ -1056,14 +1055,14 @@
 
 
             //设置job详细
-            window.AgentJobDetail = function(name, isAgent) {
+            window.AgentJobDetail = function (name, isAgent) {
                 var jobId = decodeURIComponent(atob(name));
 
                 if (!jobId) {
                     return;
                 }
 
-                $(".modal-title").html(config.EditRecurringJobButtonName + (isAgent?"【AgentJob】":""));
+                $(".modal-title").html(config.EditRecurringJobButtonName + (isAgent ? "【AgentJob】" : ""));
                 $.ajax({
                     type: "post",
                     url: editgeturl,
@@ -1163,20 +1162,20 @@ function changeTable() {
                         ? ''
                         : '<span class="label label-primary left5" title="" data-original-title="">' +
                         ss1[2] +
-                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' :'<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
                 tdArr.eq(1).html(h);
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
-                    '"><a class="job-method" href="javascript:void(0)">' +
+                    '">' +
                     ss1[1] +
-                    '</a></span>' +
+                    '</span>' +
                     (ss1[2] == ''
                         ? ''
                         : '<span class="label label-success left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                tdArr.eq(1).html(h);
+                tdArr.eq(1).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
             }
 
         }
@@ -1197,26 +1196,26 @@ function changeTable() {
                         ? ''
                         : '<span class="label label-primary left5" title="" data-original-title="">' +
                         ss1[2] +
-                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' :'<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>' );
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-primary" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-primary left5" title="" data-original-title="">' + ss1[3] + '</span>');
                 tdArr.eq(2).html(h);
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
-                    '"><a class="job-method" href="javascript:void(0)">' +
+                    '">' +
                     ss1[1] +
-                    '</a></span>' +
+                    '</span>' +
                     (ss1[2] == ''
                         ? ''
                         : '<span class="label label-success left5" title="" data-original-title="">' +
                         ss1[2] +
-                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>' );
-                tdArr.eq(2).html(h);
+                        '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
+                tdArr.eq(2).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
             }
 
         }
-        if(isreJob && ss){
+        if (isreJob && ss) {
             var cron = ss.replace(/^\s+|\s+$/g, '');
-            if(cron == '0 0 31 2 *'){
+            if (cron == '0 0 31 2 *') {
                 // 获取实际暂停前的cron表达式
                 $.ajax({
                     type: "post",
@@ -1225,7 +1224,7 @@ function changeTable() {
                     data: JSON.stringify({ "JobName": s1, "URL": "baseurl", "ContentType": "application/json" }),
                     async: true,
                     success: function (cron) {
-                        tdArr.eq(2).html('<span class="label label-danger">'+cron +'</span>')
+                        tdArr.eq(2).html('<span class="label label-danger">' + cron + '</span>')
                     }
                 });
             }
@@ -1249,15 +1248,16 @@ function changeTable() {
             } else {
                 var h = '<span class="label label-success" title="" data-original-title="' +
                     ss1[0] +
-                    '"><a class="job-method" href="javascript:void(0)">' +
+                    '">' +
                     ss1[1] +
-                    '</a></span>' +
+                    '</span>' +
                     (ss1[2] == ''
                         ? ''
                         : '<span class="label label-success left5" title="" data-original-title="">' +
                         ss1[2] +
                         '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                tdArr.eq(4).html(h);
+
+                tdArr.eq(4).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
                 isHttpJob = true;
             }
 
@@ -1285,22 +1285,22 @@ function changeTable() {
                 } else {
                     var h = '<span class="label label-success" title="" data-original-title="' +
                         ss1[0] +
-                        '"><a class="job-method" href="javascript:void(0)">' +
+                        '">' +
                         ss1[1] +
-                        '</a></span>' +
+                        '</span>' +
                         (ss1[2] == ''
                             ? ''
                             : '<span class="label label-success left5" title="" data-original-title="">' +
                             ss1[2] +
                             '</span>') + (isreJob ? '<hr style="margin:0"><span class="label label-success" title="" data-original-title="">' + ss1[3] + '</span>' : '<span class="label label-success left5" title="" data-original-title="">' + ss1[3] + '</span>');
-                    tdArr.eq(3).html(h);
+                    tdArr.eq(3).html(`<a class="job-method" href="javascript:void(0)">${h}</a>`);
                 }
 
             }
         }
 
         if (isreJob && isAgentJob) {
-            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',true)">' + tdArr.eq(1).text()+'</a>');
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',true)">' + tdArr.eq(1).text() + '</a>');
         }
 
         if (isreJob && isHttpJob) {
@@ -1452,7 +1452,7 @@ var jobSearcher = new function () {
             function () {
                 var table = $('.table-responsive').find('table');
                 if (keyword.indexOf('name:') == 0 && location.pathname.endsWith('/recurring')) {
-                    var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) +')').closest('tr');
+                    var filtered = $(table).find('td.width-30:contains(' + keyword.substr(5) + ')').closest('tr');
                 } else {
                     var filtered = (location.pathname.endsWith('/recurring')) ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
                 }
