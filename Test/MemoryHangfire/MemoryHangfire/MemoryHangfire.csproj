@@ -34,7 +34,7 @@
     <ItemGroup>
         <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
         <PackageReference Include="Hangfire.InMemory" Version="0.3.7" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
     </ItemGroup>
 
     <ItemGroup>

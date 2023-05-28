@@ -18,7 +18,7 @@
     <PackageReference Include="Hangfire.PostgreSql" Version="1.19.12" />
     <PackageReference Include="Hangfire.Tags.PostgreSql" Version="1.9.5" />
     <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
   </ItemGroup>
 
   <ItemGroup>
