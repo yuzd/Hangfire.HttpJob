@@ -74,6 +74,12 @@ public class JobAgentMiddleware : OwinMiddleware
             httpContext.Response.Cookies.Append("agentServerId",agentServerId);
             httpContext.Response.Headers.Append("agentServerId", agentServerId);
             httpContext.Response.ContentType = "text/plain";
+#if !NETCORE
+            string requestUrl = httpContext.Request.Uri.ToString();
+
+#else
+            string requestUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.Path}{httpContext.Request.PathBase}{httpContext.Request.QueryString}";
+#endif
             string message = string.Empty;
             try
             {
@@ -158,7 +164,7 @@ public class JobAgentMiddleware : OwinMiddleware
                 agentAction = agentAction.ToLower();
                 if (agentAction == "heartbeat" && !string.IsNullOrEmpty(jobItem.HangfireServerId))
                 {
-                    if(jobItem.Storage!=null)jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
+                    if (jobItem.Storage!=null)jobItem.Storage.ExpireAt = TimeSpan.FromMinutes(10);//heartbeat 只保留10分钟有效期 
                     var currentServerUrl = GetHeader(httpContext, "x-job-agent-server");
                     HeartBeatReport.ReportHeartBeat(jobItem.HangfireServerId, currentServerUrl, ()=>GetHangfireStorage(httpContext, jobItem));
                     return;
@@ -358,6 +364,7 @@ public class JobAgentMiddleware : OwinMiddleware
             catch (Exception e)
             {
                 httpContext.Response.StatusCode = 500;
+                _logger.LogError( "url:" + requestUrl + ",ex:" + e.ToString());
                 await httpContext.Response.WriteAsync(e.ToString());
             }
             finally

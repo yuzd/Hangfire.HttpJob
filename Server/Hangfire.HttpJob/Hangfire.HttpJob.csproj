@@ -5,10 +5,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>httpjob for Hangfire(基于hangfire的webjob调度服务)</Description>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
-    <Version>3.7.9</Version>
+    <Version>3.8.1</Version>
     <Authors>yuzd</Authors>
-    <AssemblyVersion>3.7.9.0</AssemblyVersion>
-    <FileVersion>3.7.9.0</FileVersion>
+    <AssemblyVersion>3.8.1.0</AssemblyVersion>
+    <FileVersion>3.8.1.0</FileVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

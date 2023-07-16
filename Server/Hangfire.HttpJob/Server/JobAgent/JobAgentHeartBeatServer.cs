@@ -250,6 +250,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
         private static async Task SendHeartbeat(string agentKey,string url, string basicUserName, string basicPassword)
         {
             var agentServerId = string.Empty;
+            var guid = Guid.NewGuid().ToString("N");
             try
             {
                 var stroageString = HttpJob.GetJobStorage().Value;
@@ -259,7 +260,7 @@ namespace Hangfire.HttpJob.Server.JobAgent
                 }
 
                 HttpClient client = HangfireHttpClientFactory.HttpJobInstance.GetHttpClient(url);
-                var request = new HttpRequestMessage(new HttpMethod("Post"), url);
+                var request = new HttpRequestMessage(new HttpMethod("Post"), url + "?" + guid);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 if (!string.IsNullOrEmpty(basicUserName) && !string.IsNullOrEmpty(basicPassword))
                 {
@@ -285,7 +286,12 @@ namespace Hangfire.HttpJob.Server.JobAgent
             catch (Exception e)
             {
                 //ignore agent挂了就到这
-                Logger.ErrorException("send agent heartbeat fail,agent:"+url,e);
+                Logger.ErrorException("send agent heartbeat fail,agent:"+url + ",currentServerId:"+ ProcessMonitor.CurrentServerId+",guid:"+ guid, e);
+            }
+
+            if (string.IsNullOrEmpty(agentServerId))
+            {
+                return;
             }
 
             try
