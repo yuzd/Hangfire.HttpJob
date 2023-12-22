@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.Tags.SqlServer" Version="1.8.1" />
-    <PackageReference Include="HangFire.SqlServer" Version="1.8.2" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
+    <PackageReference Include="FaceIT.Hangfire.Tags.SqlServer" Version="1.8.2" />
+    <PackageReference Include="HangFire.SqlServer" Version="1.8.6" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.7" />
     <PackageReference Include="Hangfire.Dashboard.BasicAuthorization" Version="1.0.2" />
   </ItemGroup>
 
