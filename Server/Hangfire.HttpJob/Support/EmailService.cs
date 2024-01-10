@@ -14,12 +14,6 @@ namespace Hangfire.HttpJob.Support
     public class SmtpOptions
     {
         private static readonly ILog Logger = LogProvider.For<SmtpOptions>();
-        public SmtpClient SmtpClient => lazySmtpClient().Value;
-
-        private Lazy<SmtpClient> lazySmtpClient()
-        {
-            return new Lazy<SmtpClient>(InitSmtpClient);
-        }
         public string Server { get; set; } = string.Empty;
         public int Port { get; set; } = 25;
         public string User { get; set; } = string.Empty;
@@ -69,33 +63,16 @@ namespace Hangfire.HttpJob.Support
         private static readonly ILog Logger = LogProvider.For<EmailService>();
         private readonly SmtpOptions SmtpOptions;
 
-        static EmailService InitEmailService()
+        public EmailService()
         {
-            return new EmailService(new SmtpOptions
+            SmtpOptions = new SmtpOptions
             {
                 Server = CodingUtil.HangfireHttpJobOptions.MailOption.Server,
                 Port = CodingUtil.HangfireHttpJobOptions.MailOption.Port,
                 UseSsl = CodingUtil.HangfireHttpJobOptions.MailOption.UseSsl,
                 User = CodingUtil.HangfireHttpJobOptions.MailOption.User,
                 Password = CodingUtil.HangfireHttpJobOptions.MailOption.Password
-            });
-        }
-
-        public static EmailService Instance => lazySmtpClient().Value;
-
-        private static Lazy<EmailService> lazySmtpClient()
-        {
-            return new Lazy<EmailService>(InitEmailService);
-        }
-
-        private EmailService()
-        {
-        }
-      
-
-        private EmailService(SmtpOptions _smtpOptions)
-        {
-            SmtpOptions = _smtpOptions;
+            };
         }
 
         /// <summary>
@@ -303,7 +280,7 @@ namespace Hangfire.HttpJob.Support
             //set email body
             mimeMessage.Body = body;
 
-            using (var client = SmtpOptions.SmtpClient)
+            using (var client = SmtpOptions.InitSmtpClient())
             {
                 try
                 {
