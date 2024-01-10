@@ -508,7 +508,7 @@ namespace Hangfire.HttpJob.Server
                 var subject = $"【JOB】[Success]" + item.JobName+(!string.IsNullOrEmpty(item.RecurringJobIdentifier)?"-"+item.RecurringJobIdentifier : "");
                 result = result.Replace("\n", "<br/>");
                 result = result.Replace("\r\n", "<br/>");
-                EmailService.Instance.Send(mail, subject, result);
+                new EmailService().Send(mail, subject, result);
             }
             catch (Exception ex)
             {
@@ -540,7 +540,7 @@ namespace Hangfire.HttpJob.Server
                     result += BuildExceptionMsg(exception);
                 }
 
-                EmailService.Instance.Send(mail, subject, result);
+               new EmailService().Send(mail, subject, result);
             }
             catch (Exception ex)
             {
