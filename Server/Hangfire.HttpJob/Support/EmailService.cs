@@ -20,13 +20,10 @@ namespace Hangfire.HttpJob.Support
         public string Password { get; set; } = string.Empty;
         public bool UseSsl { get; set; } = false;
 
-        public SmtpClient InitSmtpClient()
+        public SmtpClient InitSmtpClient(SmtpClient client)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(this.Server)) return null;
-
-                var client = new SmtpClient();
                 client.Timeout = 5000;
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
@@ -51,8 +48,8 @@ namespace Hangfire.HttpJob.Support
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJobDispatcher.InitSmtpClient", ex);
-                return null;
             }
+            return client;
         }
     }
     /// <summary>
@@ -224,6 +221,7 @@ namespace Hangfire.HttpJob.Support
         /// <param name="isHtml"></param>
         private void SendEmail(string mailTo, string mailCc, string mailBcc, string subject, string message, Encoding encoding, bool isHtml)
         {
+            if (string.IsNullOrWhiteSpace(this.SmtpOptions.Server)) return ;
 
             var _to = new string[0];
             var _cc = new string[0];
@@ -280,8 +278,9 @@ namespace Hangfire.HttpJob.Support
             //set email body
             mimeMessage.Body = body;
 
-            using (var client = SmtpOptions.InitSmtpClient())
+            using (var client = new SmtpClient() )
             {
+                SmtpOptions.InitSmtpClient(client);
                 try
                 {
                     client?.Send(mimeMessage);
@@ -289,10 +288,6 @@ namespace Hangfire.HttpJob.Support
                 catch (Exception ex)
                 {
                     Logger.ErrorException("SmtpClient.SendEmail", ex);
-                }
-                finally
-                {
-                    client?.Disconnect(true);
                 }
             }
         }
