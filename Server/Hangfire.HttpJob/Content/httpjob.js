@@ -395,7 +395,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务" : "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -407,7 +407,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务" : "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -424,7 +424,7 @@
                 if (!text || text.indexOf('Agent:') < 0) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "当前选择的任务非JobAgent类型!" : "Selected Job is not a jobAgent!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectNoJobAgent,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -432,14 +432,14 @@
                     return;
                 }
                 swal({
-                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "您确定要发送停止指令吗!" : "Are you sure want to stop?",
+                    title: window.Hangfire.httpjobConfig.Remind_StopBackgroundJob,
                     type: "success",
                     showCancelButton: true,
                     closeOnConfirm: false,
                     animation: "slide-from-top",
                     confirmButtonColor: "#DD6B55",
-                    confirmButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "提交" : "Submit",
-                    cancelButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "取消" : "Cancel"
+                    confirmButtonText: window.Hangfire.httpjobConfig.SubmitButtonName,
+                    cancelButtonText: window.Hangfire.httpjobConfig.CancelButtonName
                 }, function () {
                     $.ajax({
                         type: "post",
@@ -464,7 +464,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -476,7 +476,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -488,7 +488,7 @@
                 if (!text || text.indexOf('Agent:') < 0) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "当前选择的任务非JobAgent类型!" : "Selected Job is not a jobAgent!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectNoJobAgent,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -497,8 +497,8 @@
                 }
 
                 swal({
-                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "注意" : "JobAgent",
-                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "您确定要发送获取运行详情指令吗!" : "Are you sure to get JobDetail?",
+                    title: window.Hangfire.httpjobConfig.Remind_Warning,
+                    text: window.Hangfire.httpjobConfig.AgentJobRunDetailButton,
                     type: "warning",
                     showCancelButton: true,
                     closeOnConfirm: false,
@@ -506,8 +506,8 @@
                     inputPlaceholder: "start param",
                     showLoaderOnConfirm: true,
                     confirmButtonColor: "#DD6B55",
-                    confirmButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "提交" : "Submit",
-                    cancelButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "取消" : "Cancel"
+                    confirmButtonText: window.Hangfire.httpjobConfig.SubmitButtonName,
+                    cancelButtonText: window.Hangfire.httpjobConfig.CancelButtonName
                 }, function () {
                     $.ajax({
                         type: "post",
@@ -537,7 +537,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -548,7 +548,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -557,17 +557,17 @@
                 }
 
                 swal({
-                    title: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "运行" : "Start Job",
-                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "确定要发送运行指令吗?" : "Are you sure want to start?",
+                    title: window.Hangfire.httpjobConfig.Remind_StartJob,
+                    text: window.Hangfire.httpjobConfig.AgentJobRunningButton,
                     type: "input",
                     showCancelButton: true,
                     closeOnConfirm: false,
                     animation: "slide-from-top",
-                    inputPlaceholder: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "可输入本次运行的参数" : "start param",
+                    inputPlaceholder: window.Hangfire.httpjobConfig.AgentJobRunningParam,
                     showLoaderOnConfirm: true,
                     confirmButtonColor: "#DD6B55",
-                    confirmButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "提交" : "Submit",
-                    cancelButtonText: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "取消" : "Cancel"
+                    confirmButtonText: window.Hangfire.httpjobConfig.SubmitButtonName,
+                    cancelButtonText: window.Hangfire.httpjobConfig.CancelButtonName
                 }, function (inputValue) {
                     if (inputValue === false) return false;
                     $.ajax({
@@ -581,7 +581,7 @@
                             $.post($($('.btn-toolbar button')[0]).data('url'), { 'jobs[]': [jobId] }, function () {
                                 swal({
                                     title: "Success",
-                                    text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "运行指令发送成功" : "start job success",
+                                    text: window.Hangfire.httpjobConfig.AgentJobRunningSuccess,
                                     type: "success"
                                 });
                                 window.location.reload();
@@ -602,7 +602,7 @@
                 if (jobId.length < 1) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -645,7 +645,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -656,7 +656,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -777,7 +777,7 @@
                 if ($("input[type=checkbox]:checked").length > 2) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Select One Job Only!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     return;
@@ -786,7 +786,7 @@
                 if (!jobId) {
                     swal({
                         title: "",
-                        text: window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? "只能选择一个任务!" : "Please Select One Job!",
+                        text: window.Hangfire.httpjobConfig.Remind_SelectOneJob,
                         type: "error"
                     });
                     e.stopPropagation();
@@ -1300,11 +1300,11 @@ function changeTable() {
         }
 
         if (isreJob && isAgentJob) {
-            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',true)">' + tdArr.eq(1).text() + '</a>');
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.AgentJobDeatilButton) + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',true)">' + tdArr.eq(1).text() + '</a>');
         }
 
         if (isreJob && isHttpJob) {
-            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.CloseButtonName == '关闭' ? '点击查看详情' : 'Detail') + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',false)">' + tdArr.eq(1).text() + '</a>');
+            tdArr.eq(1).html('<a style="" title="" data-original-title="' + (window.Hangfire.httpjobConfig.AgentJobDeatilButton) + '" href="javascript:;" onclick="window.AgentJobDetail(\'' + btoa(encodeURIComponent(tdArr.eq(1).text())) + '\',false)">' + tdArr.eq(1).text() + '</a>');
         }
 
         if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
