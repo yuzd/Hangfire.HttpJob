@@ -366,4 +366,37 @@
   <data name="SearchPlaceholderUseName" xml:space="preserve">
     <value>use 【name:xxx】 to search jobDetail</value>
   </data>
+  <data name="Remind_SelectOneJob" xml:space="preserve">
+    <value>Please Choose One Job</value>
+  </data>
+  <data name="Remind_SelectNoJobAgent" xml:space="preserve">
+    <value>Selected Job is not a jobAgent!</value>
+  </data>
+  <data name="SubmitButtonName" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="CancelButtonName" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Remind_Warning" xml:space="preserve">
+    <value>JobAgent</value>
+  </data>
+  <data name="AgentJobRunDetailButton" xml:space="preserve">
+    <value>Are you sure to get JobDetail?</value>
+  </data>
+  <data name="Remind_StopBackgroundJob" xml:space="preserve">
+    <value>Are you sure want to stop?</value>
+  </data>
+  <data name="AgentJobRunningParam" xml:space="preserve">
+    <value>Start Job Param</value>
+  </data>
+  <data name="Remind_StartJob" xml:space="preserve">
+    <value>Start Job</value>
+  </data>
+  <data name="AgentJobRunningButton" xml:space="preserve">
+    <value>Are you sure want to start?</value>
+  </data>
+  <data name="AgentJobRunningSuccess" xml:space="preserve">
+    <value>Start Job Success</value>
+  </data>
 </root>

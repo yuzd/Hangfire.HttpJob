@@ -118,46 +118,46 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AddCronButtonName" xml:space="preserve">
-    <value>Cron表达式生成</value>
+    <value>Cron運算式生成</value>
   </data>
   <data name="AddHttpJobButtonName" xml:space="preserve">
-    <value>新增常规作业</value>
+    <value>新增常規任務</value>
   </data>
   <data name="AddRecurringJobHttpJobButtonName" xml:space="preserve">
-    <value>新增周期性作业</value>
+    <value>新增週期性任務</value>
   </data>
   <data name="Choose" xml:space="preserve">
-    <value>选择一个或多个...</value>
+    <value>選擇一個或多個...</value>
   </data>
   <data name="CloseButtonName" xml:space="preserve">
-    <value>关闭</value>
+    <value>關閉</value>
   </data>
   <data name="CronResult" xml:space="preserve">
-    <value>结果</value>
+    <value>結果</value>
   </data>
   <data name="DashboardName" xml:space="preserve">
-    <value>JOB管理</value>
+    <value>任務管理</value>
   </data>
   <data name="DashboardTitle" xml:space="preserve">
-    <value>JOB系统</value>
+    <value>任務系統</value>
   </data>
   <data name="DayA" xml:space="preserve">
     <value>每月</value>
   </data>
   <data name="DayB" xml:space="preserve">
-    <value>号最近的那个工作日</value>
+    <value>號最近的工作日</value>
   </data>
   <data name="Days" xml:space="preserve">
     <value>日</value>
   </data>
   <data name="Dayss" xml:space="preserve">
-    <value>日执行一次</value>
+    <value>日執行一次</value>
   </data>
   <data name="DESCRIBEEXPRESSION" xml:space="preserve">
     <value>反解析</value>
   </data>
   <data name="EditRecurringJobButtonName" xml:space="preserve">
-    <value>编辑周期任务</value>
+    <value>編輯週期任務</value>
   </data>
   <data name="Every" xml:space="preserve">
     <value>每</value>
@@ -166,91 +166,91 @@
     <value>每天</value>
   </data>
   <data name="EveryDayBetweenDay" xml:space="preserve">
-    <value>周期从</value>
+    <value>週期從</value>
   </data>
   <data name="EveryHour" xml:space="preserve">
-    <value>每小时</value>
+    <value>每小時</value>
   </data>
   <data name="EveryHourBetweenHour" xml:space="preserve">
-    <value>周期从</value>
+    <value>週期從</value>
   </data>
   <data name="EveryMinute" xml:space="preserve">
-    <value>每分钟</value>
+    <value>每分鐘</value>
   </data>
   <data name="EveryMinuteBetweenMinute" xml:space="preserve">
-    <value>周期从</value>
+    <value>週期從</value>
   </data>
   <data name="EveryMonth" xml:space="preserve">
     <value>每月</value>
   </data>
   <data name="EveryMonthBetweenMonth" xml:space="preserve">
-    <value>周期从</value>
+    <value>週期從</value>
   </data>
   <data name="EveryWeekday" xml:space="preserve">
-    <value>每周</value>
+    <value>每週</value>
   </data>
   <data name="EveryWeekdayBetweenWeekday" xml:space="preserve">
-    <value>周期从</value>
+    <value>週期從</value>
   </data>
   <data name="From" xml:space="preserve">
-    <value>从</value>
+    <value>從</value>
   </data>
   <data name="Hours" xml:space="preserve">
-    <value>小时</value>
+    <value>小時</value>
   </data>
   <data name="Hourss" xml:space="preserve">
-    <value>小时执行一次</value>
+    <value>小時執行一次</value>
   </data>
   <data name="JobName" xml:space="preserve">
-    <value>任务名称</value>
+    <value>任務名稱</value>
   </data>
   <data name="JobParam" xml:space="preserve">
-    <value>参数</value>
+    <value>參數</value>
   </data>
   <data name="JobResult" xml:space="preserve">
-    <value>执行结果</value>
+    <value>執行結果</value>
   </data>
   <data name="JobStart" xml:space="preserve">
-    <value>任务开始执行,执行时间</value>
+    <value>任務開始執行,執行時間</value>
   </data>
   <data name="LastDayOfMonth" xml:space="preserve">
-    <value>本月最后一天</value>
+    <value>本月最後一天</value>
   </data>
   <data name="LastWeedDayOfMonth" xml:space="preserve">
-    <value>本月最后一个工作日</value>
+    <value>本月最後一個工作日</value>
   </data>
   <data name="LastWeekdayOfMonth" xml:space="preserve">
-    <value>本月最后一个星期</value>
+    <value>本月最後一個星期</value>
   </data>
   <data name="LogOutButtonName" xml:space="preserve">
-    <value>JOB配置</value>
+    <value>任務配置</value>
   </data>
   <data name="Minutes" xml:space="preserve">
-    <value>分钟</value>
+    <value>分鐘</value>
   </data>
   <data name="Minutess" xml:space="preserve">
-    <value>分钟执行一次</value>
+    <value>分鐘執行一次</value>
   </data>
   <data name="Months" xml:space="preserve">
     <value>月</value>
   </data>
   <data name="Monthss" xml:space="preserve">
-    <value>月执行一次</value>
+    <value>月執行一次</value>
   </data>
   <data name="NoSpecific" xml:space="preserve">
     <value>不指定</value>
   </data>
   <data name="PauseJobButtonName" xml:space="preserve">
-    <value>暂停或开始</value>
+    <value>暫停或開始</value>
   </data>
   <data name="QueuenName" xml:space="preserve">
-    <value>队列名称</value>
+    <value>佇列名稱</value>
   </data>
   <data name="ResponseCode" xml:space="preserve">
-    <value>Http状态码</value>
+    <value>Http狀態碼</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>输入job名称关键字模糊搜索</value>
+    <value>輸入任務名稱關鍵字模糊搜索</value>
   </data>
   <data name="Specific" xml:space="preserve">
     <value>指定</value>
@@ -259,28 +259,28 @@
     <value>指定</value>
   </data>
   <data name="StartingAtDay" xml:space="preserve">
-    <value>从</value>
+    <value>從</value>
   </data>
   <data name="StartingAtDay2" xml:space="preserve">
-    <value>日开始,每</value>
+    <value>日開始,每</value>
   </data>
   <data name="StartingAtHour" xml:space="preserve">
-    <value>从</value>
+    <value>從</value>
   </data>
   <data name="StartingAtHour2" xml:space="preserve">
-    <value>时开始,每</value>
+    <value>時開始,每</value>
   </data>
   <data name="StartingAtMinute" xml:space="preserve">
-    <value>从</value>
+    <value>從</value>
   </data>
   <data name="StartingAtMinute2" xml:space="preserve">
-    <value>分钟开始,每</value>
+    <value>分鐘開始,每</value>
   </data>
   <data name="StartingAtMonth" xml:space="preserve">
-    <value>从</value>
+    <value>從</value>
   </data>
   <data name="StartingAtMontn2" xml:space="preserve">
-    <value>月开始,每</value>
+    <value>月開始,每</value>
   </data>
   <data name="SubmitButtonName" xml:space="preserve">
     <value>提交</value>
@@ -295,108 +295,75 @@
     <value>周 的星期</value>
   </data>
   <data name="JobEnd" xml:space="preserve">
-    <value>任务结束</value>
+    <value>任務結束</value>
   </data>
   <data name="StartBackgroudJobButtonName" xml:space="preserve">
-    <value>带参数运行</value>
+    <value>帶參數運行</value>
   </data>
   <data name="StopBackgroudJobButtonName" xml:space="preserve">
     <value>停止</value>
   </data>
   <data name="AgentJobDeatilButton" xml:space="preserve">
-    <value>查询状态</value>
+    <value>查詢狀態</value>
   </data>
   <data name="MultiBackgroundJobFailToContinue" xml:space="preserve">
-    <value>子任务不能执行,请将重试该任务直到成功或者直接删除该任务!</value>
+    <value>子任務不能執行,請將重試該任務直到成功或者直接刪除該任務!</value>
   </data>
   <data name="LimitReached" xml:space="preserve">
-    <value>错误重试已达到上限!</value>
+    <value>錯誤重試已達到上限!</value>
   </data>
   <data name="CallbackFail" xml:space="preserve">
-    <value>回调失败</value>
+    <value>Callback失敗</value>
   </data>
   <data name="CallbackStart" xml:space="preserve">
-    <value>回调开始</value>
+    <value>Callback開始</value>
   </data>
   <data name="CallbackSuccess" xml:space="preserve">
-    <value>回调成功</value>
+    <value>Callback成功</value>
   </data>
   <data name="GobalSettingButtonName" xml:space="preserve">
-    <value>全局配置</value>
+    <value>全域配置</value>
   </data>
   <data name="ReplacePlaceHolder" xml:space="preserve">
-    <value>占位符替换</value>
+    <value>預留位置替換</value>
   </data>
   <data name="CallbackELExcuteError" xml:space="preserve">
-    <value>回调条件错误</value>
+    <value>Callback條件錯誤</value>
   </data>
   <data name="CallbackELExcuteResult" xml:space="preserve">
-    <value>回调条件结果</value>
+    <value>Callback條件結果</value>
   </data>
   <data name="ExportJobsButtonName" xml:space="preserve">
-    <value>导出任务列表</value>
+    <value>匯出任務列表</value>
   </data>
   <data name="ImportJobsButtonName" xml:space="preserve">
-    <value>导入任务列表</value>
+    <value>匯入任務列表</value>
   </data>
   <data name="DingTalkConfig" xml:space="preserve">
-    <value>任务基础属性</value>
+    <value>任務基礎屬性</value>
   </data>
   <data name="DingTalkLogDetail" xml:space="preserve">
-    <value>日志详细</value>
+    <value>日誌詳細</value>
   </data>
   <data name="DingTalkRequestUrl" xml:space="preserve">
-    <value>请求地址</value>
+    <value>請求位址</value>
   </data>
   <data name="DingTalkResponse" xml:space="preserve">
-    <value>执行情况</value>
+    <value>執行情況</value>
   </data>
   <data name="DingTalkTitle" xml:space="preserve">
-    <value>任务通知</value>
+    <value>任務通知</value>
   </data>
   <data name="AgentJobCount" xml:space="preserve">
-    <value>作业数量</value>
+    <value>任務數量</value>
   </data>
   <data name="AgentServer" xml:space="preserve">
-    <value>服务器</value>
+    <value>伺服器</value>
   </data>
   <data name="AgentServerBeat" xml:space="preserve">
     <value>心跳</value>
   </data>
   <data name="SearchPlaceholderUseName" xml:space="preserve">
-    <value>使用【name:xxx】可筛选作业列</value>
-  </data>
-  <data name="Remind_SelectOneJob" xml:space="preserve">
-    <value>只能选择一个任务</value>
-  </data>
-  <data name="Remind_SelectNoJobAgent" xml:space="preserve">
-    <value>当前选择的任务非JobAgent类型!</value>
-  </data>
-  <data name="SubmitButtonName" xml:space="preserve">
-    <value>提交</value>
-  </data>
-  <data name="CancelButtonName" xml:space="preserve">
-    <value>取消</value>
-  </data>
-  <data name="Remind_Warning" xml:space="preserve">
-    <value>注意</value>
-  </data>
-  <data name="AgentJobRunDetailButton" xml:space="preserve">
-    <value>您确定要发送获取运行详情指令吗!</value>
-  </data>
-  <data name="Remind_StopBackgroundJob" xml:space="preserve">
-    <value>您确定要发送停止指令吗!</value>
-  </data>
-  <data name="AgentJobRunningParam" xml:space="preserve">
-    <value>可输入本次运行的参数</value>
-  </data>
-  <data name="Remind_StartJob" xml:space="preserve">
-    <value>运行</value>
-  </data>
-  <data name="AgentJobRunningButton" xml:space="preserve">
-    <value>确定要发送运行指令吗?</value>
-  </data>
-  <data name="AgentJobRunningSuccess" xml:space="preserve">
-    <value>运行指令发送成功</value>
+    <value>使用【name:xxx】可篩選任務列</value>
   </data>
 </root>
