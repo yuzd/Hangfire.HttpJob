@@ -66,9 +66,9 @@ namespace Hangfire.HttpJob.Support
             try
             {
 
-                if (!string.IsNullOrEmpty(job.JobName) && (CodingUtil.IsTagServiceInstalled))
+                if ((CodingUtil.IsTagServiceInstalled))
                 {
-                    filterContext.BackgroundJob.Id.AddTags(job.JobName);
+                    filterContext.BackgroundJob.Id.AddTags(job.getJobIdentifier());
                 }
 
                 //设置运行时被设置的参数

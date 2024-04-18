@@ -9,10 +9,10 @@
     <Product></Product>
     <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
     <Description>agent job console to hangfire sqlserver</Description>
-    <Version>1.5.0</Version>
+    <Version>1.5.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AssemblyVersion>1.5.0.0</AssemblyVersion>
-    <FileVersion>1.5.0.0</FileVersion>
+    <AssemblyVersion>1.5.1.0</AssemblyVersion>
+    <FileVersion>1.5.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

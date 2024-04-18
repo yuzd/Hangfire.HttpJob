@@ -99,7 +99,6 @@ namespace SqlserverHangfire
                 SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
                 QueuePollInterval = TimeSpan.Zero,
                 UseRecommendedIsolationLevel = true,
-                UsePageLocksOnDequeue = true,
                 DisableGlobalLocks = true
             };
 
@@ -108,10 +107,11 @@ namespace SqlserverHangfire
                 {
                     BackgroundColor = "#000079"
                 })
-                .UseTagsWithSql(new TagsOptions()
-                {
-                    TagsListStyle = TagsListStyle.Dropdown
-                })
+                // issue:https://github.com/HangfireIO/Hangfire/issues/2308
+                //.UseTagsWithSql(new TagsOptions()
+                //{
+                //    TagsListStyle = TagsListStyle.Dropdown
+                //})
                 .UseHangfireHttpJob(httpJobOptions)
                 .UseHeartbeatPage();
         }

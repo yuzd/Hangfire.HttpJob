@@ -925,7 +925,7 @@ namespace Hangfire.HttpJob.Server
 				if (timeZone == null) timeZone = TimeZoneInfo.Local;
 				if (string.IsNullOrEmpty(jobItem.Cron))
 				{
-					//支持添加一个 只能手动出发的
+					//支持添加一个 只能手动触发的
 					RecurringJob.AddOrUpdate(jobidentifier, () => HttpJob.Excute(jobItem, null, null, false, null), Cron.Never,
 						new RecurringJobOptions
 						{

@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 using Spring.Core.TypeConversion;
 using StackExchange.Redis;
+using Hangfire.Redis.StackExchange;
 
 namespace RedisHangfire
 {

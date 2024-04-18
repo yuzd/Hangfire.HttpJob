@@ -17,7 +17,7 @@ namespace Hangfire.HttpJob.Support
         /// <summary>
         ///判断是否引用了tag服务
         /// </summary>
-        public static bool IsTagServiceInstalled = DashboardRoutes.Routes.FindDispatcher("/tags/all") != null;
+        public static bool IsTagServiceInstalled = DashboardRoutes.Routes.FindDispatcher("/tags/all") != null || DashboardRoutes.Routes.FindDispatcher("/tags/search") != null;
 
         /// <summary>
         /// 启动配置

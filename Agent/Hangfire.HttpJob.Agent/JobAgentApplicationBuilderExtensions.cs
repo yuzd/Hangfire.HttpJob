@@ -67,7 +67,7 @@ namespace Hangfire.HttpJob.Agent
             var registerService = new JobAgentRegisterService(options, loggerFactory);
 
 #if NETCORE
-            var lifeRegister = sp.GetRequiredService<IApplicationLifetime>();
+            var lifeRegister = sp.GetRequiredService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
             lifeRegister.ApplicationStarted.Register(async () =>
             {
                 await registerService.StartAsync(CancellationToken.None);

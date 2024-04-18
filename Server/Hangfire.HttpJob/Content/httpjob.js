@@ -1310,7 +1310,7 @@ function changeTable() {
         if (config.ShowTag && "True" == config.ShowTag && config.NeedAddRecurringHttpJobButton) {
             var tag = tdArr.eq(1).html();
             if (tag.indexOf('Go to Tag') == -1) {
-                tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="Go to Tag Page" href="' + config.AppUrl + '/tags/search/' + tdArr.eq(1).text() + '" target="_blank">Tag</a>');
+                tdArr.eq(1).append('<a class="label label-success text-uppercase" title="" data-original-title="Go to Tag Page" href="' + config.AppUrl + '/tags/search/' + cleanTagName(tdArr.eq(1).text()) + '" target="_blank">Tag</a>');
             }
 
         }
@@ -1490,6 +1490,13 @@ function loadHttpJobModule() {
     Hangfire.httpjob = new Hangfire.HttpJob();
 
     //$('.container').addClass('container-fluid').removeClass('container');
+}
+
+function cleanTagName(tag) {
+    var retval = new String(Array.from(tag.toLowerCase()).filter(function (c) {
+        return /[a-z0-9-]/.test(c);
+    }).join('')).replace(/\s/g, '-').replace(/--/g, '-');
+    return retval;
 }
 
 if (window.attachEvent) {
