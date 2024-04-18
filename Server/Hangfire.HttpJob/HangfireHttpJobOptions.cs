@@ -1,32 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using Hangfire.HttpJob.Content.resx;
+﻿using Hangfire.HttpJob.Content.resx;
 using Hangfire.HttpJob.Server;
 using Hangfire.States;
 using HttpClientFactory;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace Hangfire.HttpJob
 {
     public class HangfireHttpJobOptions
     {
-        
+
         /// <summary>
         /// 默认的HttpClient工厂
         /// </summary>
-        public IHttpClientFactory HttpJobClientFactory{ get; set; }
-        
+        public IHttpClientFactory HttpJobClientFactory { get; set; }
+
         /// <summary>
         /// 默认的dingding发送HttpClient的工厂
         /// </summary>
-        public IHttpClientFactory DingTalkClientFactory{ get; set; }
-        
+        public IHttpClientFactory DingTalkClientFactory { get; set; }
+
         /// <summary>
         /// 超时时间 毫秒
         /// </summary>
         public int GlobalHttpTimeOut { get; set; } = 5000;
-        
-        
+
+
         /// <summary>
         /// 默认的HttpClient工厂 超时时间 毫秒 不设置默认为1小时
         /// </summary>
@@ -41,7 +41,7 @@ namespace Hangfire.HttpJob
         /// 默认保留7天执行记录
         /// </summary>
         public long JobExpirationTimeoutDay { get; set; } = 7;
-   
+
         /// <summary>
         /// 设置默认的执行backgroundjob的queue名称
         /// </summary>
@@ -50,7 +50,7 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 全局默认的配置文件
         /// </summary>
-        public string GlobalSettingJsonFilePath { get; set; } 
+        public string GlobalSettingJsonFilePath { get; set; }
 
         /// <summary>
         /// 设置默认的执行周期性job的queue名称
@@ -93,10 +93,21 @@ namespace Hangfire.HttpJob
         public string AddRecurringJobHttpJobButtonName { get; set; } = Strings.AddRecurringJobHttpJobButtonName;
         public string CloseButtonName { get; set; } = Strings.CloseButtonName;
         public string SubmitButtonName { get; set; } = Strings.SubmitButtonName;
+        public string CancelButtonName { get; set; } = Strings.CancelButtonName;
         public string LogOutButtonName { get; set; } = Strings.LogOutButtonName;
         public string StartBackgroudJobButtonName { get; set; } = Strings.StartBackgroudJobButtonName;
         public string StopBackgroudJobButtonName { get; set; } = Strings.StopBackgroudJobButtonName;
         public string AgentJobDeatilButton { get; set; } = Strings.AgentJobDeatilButton;
+
+        public string Remind_SelectOneJob { get; set; } = Strings.Remind_SelectOneJob;
+        public string Remind_SelectNoJobAgent { get; set; } = Strings.Remind_SelectNoJobAgent;
+        public string Remind_Warning { get; set; } = Strings.Remind_Warning;
+        public string Remind_StopBackgroundJob { get; set; } = Strings.Remind_StopBackgroundJob;
+        public string AgentJobRunningParam { get; set; } = Strings.AgentJobRunningParam;
+        public string Remind_StartJob { get; set; } = Strings.Remind_StartJob;
+        public string AgentJobRunDetailButton { get; set; } = Strings.AgentJobRunDetailButton;
+        public string AgentJobRunningButton { get; set; } = Strings.AgentJobRunningButton;
+        public string AgentJobRunningSuccess { get; set; } = Strings.AgentJobRunningSuccess;
 
         public string SearchPlaceholder { get; set; } = Strings.SearchPlaceholder;
         public string SearchPlaceholderUseName { get; set; } = Strings.SearchPlaceholderUseName;
@@ -139,7 +150,7 @@ namespace Hangfire.HttpJob
         /// <summary>
         /// 是否开启钉钉通知服务
         /// </summary>
-        public bool EnableDingTalk { get; set; } 
+        public bool EnableDingTalk { get; set; }
 
         /// <summary>
         /// 当前hangfire调度服务的部署站点域名
@@ -158,7 +169,7 @@ namespace Hangfire.HttpJob
         /// 钉钉Webhook地址
         /// </summary>
         public string Token { get; set; }
-        
+
         /// <summary>
         /// 钉钉签名密钥
         /// </summary>
