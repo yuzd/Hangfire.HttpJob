@@ -2,7 +2,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="1.60.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql" Version="7.0.2" />
+    <PackageReference Include="Npgsql" Version="8.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.HttpJob.Agent\Hangfire.HttpJob.Agent.csproj" />
