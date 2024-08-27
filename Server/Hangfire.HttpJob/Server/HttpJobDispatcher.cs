@@ -543,19 +543,13 @@ namespace Hangfire.HttpJob.Server
 				}
 				else
 				{
-					//get queues from server
-					// ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
-					var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0).FirstOrDefault();
-					// ReSharper disable once PossibleNullReferenceException
-					if (server == null)
+                    //get queues from server
+                    // ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
+                    var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0 && p.Queues.Contains(jobItem.QueueName)).FirstOrDefault();
+                    // ReSharper disable once PossibleNullReferenceException
+                    if (server == null)
 					{
 						return "active server not exist!";
-					}
-					var queues = server.Queues.Select(m => m.ToLower()).ToList();
-					if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
-					{
-						Logger.Warn($"HttpJobDispatcher.AddHttpbackgroundjob Error => HttpJobItem.QueueName：`{jobItem.QueueName}` not exist, Use DEFAULT extend!");
-						jobItem.QueueName = EnqueuedState.DefaultQueue;
 					}
 				}
 
@@ -882,11 +876,11 @@ namespace Hangfire.HttpJob.Server
 			}
 			else
 			{
-				//get queues from server
-				// ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
-				var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0).FirstOrDefault();
-				// ReSharper disable once PossibleNullReferenceException
-				if (server == null)
+                //get queues from server
+                // ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
+                var server = JobStorage.Current.GetMonitoringApi().Servers().Where(p => p.Queues.Count > 0 && p.Queues.Contains(jobItem.QueueName)).FirstOrDefault();
+                // ReSharper disable once PossibleNullReferenceException
+                if (server == null)
 				{
 					return "active server not exist!";
 				}
