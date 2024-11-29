@@ -354,6 +354,21 @@
   <data name="DingTalkTitle" xml:space="preserve">
     <value>任務通知</value>
   </data>
+  <data name="WorkWeixinConfig" xml:space="preserve">
+    <value>任務基礎屬性</value>
+  </data>
+  <data name="WorkWeixinLogDetail" xml:space="preserve">
+    <value>日誌詳細</value>
+  </data>
+  <data name="WorkWeixinRequestUrl" xml:space="preserve">
+    <value>請求位址</value>
+  </data>
+  <data name="WorkWeixinResponse" xml:space="preserve">
+    <value>執行情況</value>
+  </data>
+  <data name="WorkWeixinTitle" xml:space="preserve">
+    <value>任務通知</value>
+  </data>
   <data name="AgentJobCount" xml:space="preserve">
     <value>任務數量</value>
   </data>

@@ -93,6 +93,15 @@ namespace Hangfire.HttpJob.Support
         }
 
         /// <summary>
+        /// 企业微信错误内容通知默认用Exception.ToString 如果这个设置为true 那么只会用Exception.Message
+        /// </summary>
+        /// <returns></returns>
+        public static bool WorkWeixinErrReportSimplify()
+        {
+            return CodingUtil.GetGlobalAppsettings().TryGetValue("EnableWorkWeixinErrReportSimplify", out var value) && value is bool dd && dd;
+        }
+
+        /// <summary>
         /// 配置设置job的过期时间单位是天
         /// </summary>
         /// <returns></returns>

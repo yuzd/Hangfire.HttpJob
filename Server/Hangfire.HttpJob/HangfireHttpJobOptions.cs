@@ -22,6 +22,11 @@ namespace Hangfire.HttpJob
         public IHttpClientFactory DingTalkClientFactory { get; set; }
 
         /// <summary>
+        /// 默认的企业微信发送HttpClient的工厂
+        /// </summary>
+        public IHttpClientFactory WorkWeixinClientFactory { get; set; }
+
+        /// <summary>
         /// 超时时间 毫秒
         /// </summary>
         public int GlobalHttpTimeOut { get; set; } = 5000;
@@ -153,6 +158,16 @@ namespace Hangfire.HttpJob
         public bool EnableDingTalk { get; set; }
 
         /// <summary>
+        /// 配置默认的企业微信发送
+        /// </summary>
+        public WorkWeixinOption WorkWeixinOption { get; set; } = new WorkWeixinOption();
+
+        /// <summary>
+        /// 是否开启企业微信通知服务
+        /// </summary>
+        public bool EnableWorkWeixin { get; set; }
+
+        /// <summary>
         /// 当前hangfire调度服务的部署站点域名
         /// </summary>
         public string CurrentDomain { get; set; }
@@ -174,6 +189,24 @@ namespace Hangfire.HttpJob
         /// 钉钉签名密钥
         /// </summary>
         public string Secret { get; set; }
+
+        /// <summary>
+        /// 通知是否@对应手机号的人员 , 分割
+        /// </summary>
+        public string AtPhones { get; set; }
+
+        /// <summary>
+        ///  通知是否@所有人
+        /// </summary>
+        public bool IsAtAll { get; set; }
+    }
+
+    public class WorkWeixinOption
+    {
+        /// <summary>
+        /// 企业微信Webhook地址
+        /// </summary>
+        public string Key { get; set; }
 
         /// <summary>
         /// 通知是否@对应手机号的人员 , 分割

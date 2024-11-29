@@ -348,6 +348,21 @@
   <data name="DingTalkTitle" xml:space="preserve">
     <value>HttpJob-Alert</value>
   </data>
+  <data name="WorkWeixinConfig" xml:space="preserve">
+    <value>HttpJob-Detail</value>
+  </data>
+  <data name="WorkWeixinLogDetail" xml:space="preserve">
+    <value>JobLogDetail</value>
+  </data>
+  <data name="WorkWeixinRequestUrl" xml:space="preserve">
+    <value>RequestUrl</value>
+  </data>
+  <data name="WorkWeixinResponse" xml:space="preserve">
+    <value>Response</value>
+  </data>
+  <data name="WorkWeixinTitle" xml:space="preserve">
+    <value>HttpJob-Alert</value>
+  </data>
   <data name="AgentJobCount" xml:space="preserve">
     <value>JobCount</value>
   </data>

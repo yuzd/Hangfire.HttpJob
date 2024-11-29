@@ -276,6 +276,11 @@ namespace Hangfire.HttpJob.Agent
         public DingTalkOption DingTalk { get; set; }
 
         /// <summary>
+        /// 企业微信配置
+        /// </summary>
+        public WorkWeixinOption WorkWeixin { get; set; }
+
+        /// <summary>
         /// 服务端传过来的storage配置
         /// </summary>
         internal JobStorageConfig Storage { get; set; }
@@ -286,6 +291,23 @@ namespace Hangfire.HttpJob.Agent
         /// 钉钉Webhook地址
         /// </summary>
         public string Token { get; set; }
+
+        /// <summary>
+        /// 通知是否@对应手机号的人员 , 分割
+        /// </summary>
+        public string AtPhones { get; set; }
+
+        /// <summary>
+        ///  通知是否@所有人
+        /// </summary>
+        public bool IsAtAll { get; set; }
+    }
+    public class WorkWeixinOption
+    {
+        /// <summary>
+        /// 企业微信Webhook地址
+        /// </summary>
+        public string Key { get; set; }
 
         /// <summary>
         /// 通知是否@对应手机号的人员 , 分割

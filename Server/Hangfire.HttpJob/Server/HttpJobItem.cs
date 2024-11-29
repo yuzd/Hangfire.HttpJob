@@ -235,6 +235,11 @@ namespace Hangfire.HttpJob.Server
         /// </summary>
         public DingTalkOption DingTalk { get; set; }
 
+        /// <summary>
+        /// 企业微信配置
+        /// </summary>
+        public WorkWeixinOption WorkWeixin { get; set; }
+
         public string getJobIdentifier()
         {
 	        return string.IsNullOrEmpty(RecurringJobIdentifier) ? JobName : RecurringJobIdentifier;

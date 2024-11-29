@@ -67,6 +67,7 @@ namespace Hangfire.HttpJob
                 HangfireHttpClientFactory.SetDefaultHttpJobInstance(options.HttpJobClientFactory);
             }
             HangfireHttpClientFactory.SetDefaultDingTalkInstance(options.DingTalkClientFactory);
+            HangfireHttpClientFactory.SetDefaultWorkWeixinInstance(options.WorkWeixinClientFactory);
 
             CodingUtil.HangfireHttpJobOptions = options;
             JobAgentReportServer.Start();

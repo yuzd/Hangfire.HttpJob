@@ -20,6 +20,10 @@ namespace Hangfire.HttpJob.Server
         /// 钉钉的请求发送
         /// </summary>
         internal static  IHttpClientFactory DingTalkInstance;
+        /// <summary>
+        /// 企业微信的请求发送
+        /// </summary>
+        internal static IHttpClientFactory WorkWeixinInstance;
 
         /// <summary>
         /// 设置httpclientFactory来处理HttpClient请求
@@ -39,7 +43,16 @@ namespace Hangfire.HttpJob.Server
             DingTalkInstance = factory?? new HangfireHttpClientFactory(TimeSpan.FromSeconds(60), "application/json;charset=UTF-8");
         }
 
-      
+        /// <summary>
+        /// 设置httpclientFactory来处理HttpClient请求
+        /// </summary>
+        /// <param name="factory"></param>
+        public static void SetDefaultWorkWeixinInstance(IHttpClientFactory factory = null)
+        {
+            WorkWeixinInstance = factory ?? new HangfireHttpClientFactory(TimeSpan.FromSeconds(60), "application/json;charset=UTF-8");
+        }
+
+
         public HangfireHttpClientFactory(TimeSpan timeOut,string contentType)
         {
             _timeOut = timeOut;

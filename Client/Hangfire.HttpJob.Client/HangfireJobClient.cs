@@ -115,7 +115,8 @@ namespace Hangfire.HttpJob.Client
                 CallbackEL = backgroundJob.CallbackEL,
                 QueueName = backgroundJob.QueueName,
                 TimeZone = backgroundJob.TimeZone,
-                DingTalk = backgroundJob.DingTalk
+                DingTalk = backgroundJob.DingTalk,
+                WorkWeixin = backgroundJob.WorkWeixin
             };
 
             AppendChildJob(jobItem, backgroundJob.Success, backgroundJob.Fail);
@@ -247,7 +248,8 @@ namespace Hangfire.HttpJob.Client
                 Headers = recurringJob.Headers,
                 CallbackEL = recurringJob.CallbackEL,
                 TimeZone = recurringJob.TimeZone,
-                DingTalk = recurringJob.DingTalk
+                DingTalk = recurringJob.DingTalk,
+                WorkWeixin = recurringJob.WorkWeixin
             };
             
             AppendChildJob(jobItem,recurringJob.Success,recurringJob.Fail);
