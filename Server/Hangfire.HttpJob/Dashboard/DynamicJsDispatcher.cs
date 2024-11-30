@@ -19,6 +19,7 @@ namespace Hangfire.HttpJob.Dashboard
             var builder = new StringBuilder();
             string DefaultTimeZone = CodingUtil.GetGlobalAppsetting<string>("DefaultTimeZone", null);
             bool EnableDingTalk = CodingUtil.GetGlobalAppsetting<bool>("EnableDingTalk", false);
+            bool EnableWorkWeixin = CodingUtil.GetGlobalAppsetting<bool>("EnableWorkWeixin", false);
             var hangfireUrl = context.GetCurrentHangfireUrl();
 
             builder.Append(@"(function (hangFire) {")
@@ -28,6 +29,10 @@ namespace Hangfire.HttpJob.Dashboard
                    .AppendFormat("hangFire.httpjobConfig.DingtalkPhones = '{0}';", _options?.DingTalkOption?.AtPhones ?? "")
                    .AppendFormat("hangFire.httpjobConfig.DingtalkAtAll = '{0}';", _options?.DingTalkOption?.IsAtAll ?? false ? "true" : "false")
                    .AppendFormat("hangFire.httpjobConfig.EnableDingTalk = '{0}';", EnableDingTalk ? "true" : _options?.EnableDingTalk ?? false ? "true" : "false")
+                   .AppendFormat("hangFire.httpjobConfig.WorkWeixinToken = '{0}';", _options?.WorkWeixinOption?.Key ?? "")
+                   .AppendFormat("hangFire.httpjobConfig.WorkWeixinPhones = '{0}';", _options?.WorkWeixinOption?.AtPhones ?? "")
+                   .AppendFormat("hangFire.httpjobConfig.WorkWeixinAtAll = '{0}';", _options?.WorkWeixinOption?.IsAtAll ?? false ? "true" : "false")
+                   .AppendFormat("hangFire.httpjobConfig.EnableWorkWeixin = '{0}';", EnableWorkWeixin ? "true" : _options?.EnableWorkWeixin ?? false ? "true" : "false")
                    .AppendFormat("hangFire.httpjobConfig.AddHttpJobButtonName = '{0}';", _options.AddHttpJobButtonName)
                    .AppendFormat("hangFire.httpjobConfig.ExportJobsButtonName = '{0}';", _options.ExportJobsButtonName)
                    .AppendFormat("hangFire.httpjobConfig.ImportJobsButtonName = '{0}';", _options.ImportJobsButtonName)

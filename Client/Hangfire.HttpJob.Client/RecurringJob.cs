@@ -129,5 +129,10 @@ namespace Hangfire.HttpJob.Client
         /// 钉钉配置
         /// </summary>
         public DingTalkOption DingTalk { get; set; }
+
+        /// <summary>
+        /// 企业微信配置
+        /// </summary>
+        public WorkWeixinOption WorkWeixin { get; set; }
     }
 }

@@ -32,7 +32,7 @@ namespace Hangfire.HttpJob.Server
 
         private static readonly ILog Logger = LogProvider.For<HttpJob>();
         private static Lazy<string> _currentStorage = new Lazy<string>(GetCurrentJobStorage);
-      
+
         #endregion
 
         #region Public
@@ -57,7 +57,7 @@ namespace Hangfire.HttpJob.Server
             {
                 object runTimeDataItem = null;
                 context?.Items.TryGetValue("Data", out runTimeDataItem);
-                if(runTimeDataItem!=null)
+                if (runTimeDataItem != null)
                 {
                     var runTimeData = runTimeDataItem as string;
                     if (!string.IsNullOrEmpty(runTimeData))
@@ -179,7 +179,7 @@ namespace Hangfire.HttpJob.Server
                 RunWithTry(() => context.WriteLine($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item)}】"));
                 logList.Add($"{Strings.JobParam}:【{JsonConvert.SerializeObject(item, Formatting.Indented)}】");
                 HttpClient client;
-                
+
                 //当前job指定如果开启了proxy 并且 有配置代理 那么就走代理
                 if (CodingUtil.TryGetGlobalProxy(out var globalProxy) && item.Headers != null && item.Headers.TryGetValue("proxy", out var enableCurrentJobProxy) && !string.IsNullOrEmpty(enableCurrentJobProxy) && enableCurrentJobProxy.ToLower().Equals("true"))
                 {
@@ -221,15 +221,15 @@ namespace Hangfire.HttpJob.Server
                             throw new AgentJobException(item.AgentClass, result);
                         }
 
-                        AddErrToJob(context, new Exception("ignore:"+ result));
+                        AddErrToJob(context, new Exception("ignore:" + result));
                     }
 
                     //jobagent的话 在header里面有一个agentServerId
                     GetCurrentJobAgentServerId(httpResponse, item, context);
-                  
+
                 }
                 //检查HttpResponse StatusCode
-                else if ((CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode == null && (int)httpResponse.StatusCode < 400 ) || (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode?.Invoke(httpResponse.StatusCode, result) ?? true))
+                else if ((CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode == null && (int)httpResponse.StatusCode < 400) || (CodingUtil.HangfireHttpJobOptions.CheckHttpResponseStatusCode?.Invoke(httpResponse.StatusCode, result) ?? true))
                 {
                     RunWithTry(() => context.WriteLine($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok "));
                     logList.Add($"{Strings.ResponseCode}:{httpResponse.StatusCode} ===> CheckResult: Ok ");
@@ -244,7 +244,7 @@ namespace Hangfire.HttpJob.Server
                 if (!string.IsNullOrEmpty(item.CallbackEL))
                 {
                     var elResult = InvokeSpringElCondition(item.CallbackEL, result, context,
-                        new Dictionary<string, object> { { "resultBody", result } , { "StatusCode", (int)httpResponse.StatusCode } });
+                        new Dictionary<string, object> { { "resultBody", result }, { "StatusCode", (int)httpResponse.StatusCode } });
                     if (!elResult)
                     {
                         //错误的log都会在exception里面出
@@ -254,7 +254,7 @@ namespace Hangfire.HttpJob.Server
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackELExcuteResult}:Ok 】" + item.CallbackEL));
                 }
 
-               
+
                 if (parentJob != null)
                     RunWithTry(() => context.WriteLine($"【{Strings.CallbackSuccess}】[{item.CallbackRoot}]"));
 
@@ -367,11 +367,11 @@ namespace Hangfire.HttpJob.Server
 
         #region Private
 
-        
+
         /// <summary>
         /// 发送钉钉通知
         /// </summary>
-        private static void SendDingTalkNotice(HttpJobItem item,string jobId, string resString,bool isSuccess, Exception exception = null)
+        private static void SendDingTalkNotice(HttpJobItem item, string jobId, string resString, bool isSuccess, Exception exception = null)
         {
             try
             {
@@ -396,15 +396,15 @@ namespace Hangfire.HttpJob.Server
                 var logDetail = CodingUtil.GetCurrentJobDetailUrl(jobId);
 
                 var content =
-                    $@"## {item.JobName+(!string.IsNullOrEmpty(item.RecurringJobIdentifier) ? "-" + item.RecurringJobIdentifier : "")} {(isSuccess?"Success": "<font color=#E74C3C>Failed</font>")}{Strings.DingTalkTitle}
+                    $@"## {item.JobName + (!string.IsNullOrEmpty(item.RecurringJobIdentifier) ? "-" + item.RecurringJobIdentifier : "")} {(isSuccess ? "Success" : "<font color=#E74C3C>Failed</font>")}{Strings.DingTalkTitle}
 ### {Strings.DingTalkConfig}
->#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName)?"DEFAULT": item.QueueName)} 
+>#### {Strings.QueuenName}:{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)} 
 ### {Strings.DingTalkRequestUrl}: 
 > #### {item.Url}
 ### {Strings.DingTalkResponse}:
 >#### {resString}   
 ### {Strings.DingTalkLogDetail}：
->#### {logDetail}{(exception!=null?"\n\n"+(CodingUtil.DingTalkErrReportSimplify()?exception.Message: exception.ToString()):"")}    
+>#### {logDetail}{(exception != null ? "\n\n" + (CodingUtil.DingTalkErrReportSimplify() ? exception.Message : exception.ToString()) : "")}    
 ";
 
                 var title = $"{Strings.DingTalkTitle}";
@@ -425,7 +425,7 @@ namespace Hangfire.HttpJob.Server
                 };
 
                 var requestUri = $"https://oapi.dingtalk.com/robot/send?access_token={dingTalk.Token}";
-                
+
                 if (!string.IsNullOrEmpty(dingTalk.Secret))
                 {
                     var timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -435,7 +435,7 @@ namespace Hangfire.HttpJob.Server
                     var hmac256 = new HMACSHA256(secretEnc);
                     var hashMessage = hmac256.ComputeHash(stringToSignEnc);
                     var sign = Convert.ToBase64String(hashMessage);
-                    requestUri=$"{requestUri}&timestamp={timestamp}&sign={sign}";
+                    requestUri = $"{requestUri}&timestamp={timestamp}&sign={sign}";
                 }
 
                 HttpClient httpClient;
@@ -466,14 +466,88 @@ namespace Hangfire.HttpJob.Server
         }
 
         /// <summary>
+        /// 发送企业微信通知
+        /// </summary>
+        private static void SendWorkWeixinNotice(HttpJobItem item, string jobId, string resString, bool isSuccess, Exception exception = null)
+        {
+            try
+            {
+                //成功 并且开启了 成功通知 才进行企业微信播报
+                if (isSuccess && !item.SendSuccess)
+                {
+                    return;
+                }
+
+                //失败 并且开启了 失败通知 才进行企业微信播报
+                if (!isSuccess && !item.SendFail)
+                {
+                    return;
+                }
+
+                WorkWeixinOption workWeixin = item.WorkWeixin ?? CodingUtil.HangfireHttpJobOptions.WorkWeixinOption;
+                if (workWeixin == null || string.IsNullOrEmpty(workWeixin.Key))
+                {
+                    return;
+                }
+
+                var logDetail = CodingUtil.GetCurrentJobDetailUrl(jobId);
+                var content = $"<font color=\"{(isSuccess ? "info" : "warning")}\">{Strings.WorkWeixinTitle}</font>\n" +
+                    $"<font color=\"{(isSuccess ? "info" : "warning")}\">■【{(isSuccess ? "Success" : "Failed")}】{DateTime.Now:yyyy-MM-dd HH:mm:ss}</font>\n" +
+                    $">{Strings.JobName}:<font color=\"comment\">{item.JobName}</font>\n" +
+                    $">{Strings.QueuenName}:<font color=\"comment\">{(string.IsNullOrEmpty(item.QueueName) ? "DEFAULT" : item.QueueName)}</font>\n" +
+                    $">{Strings.WorkWeixinRequestUrl}:<font color=\"comment\">{item.Url}</font>\n" +
+                    $">{Strings.WorkWeixinLogDetail}:<font color=\"comment\">{logDetail}</font>\n" +
+                    $"<font color=\"{(isSuccess ? "info" : "warning")}\">{(exception != null ? (CodingUtil.WorkWeixinErrReportSimplify() ? exception.Message : (exception.ToString().Length > 500 ? exception.ToString().Substring(0, 500) : exception.ToString()) + "...") : "")}</font>";
+
+                var mentioned_mobile_list = new List<string>();
+                if (!string.IsNullOrEmpty(workWeixin.AtPhones))
+                {
+                    mentioned_mobile_list = workWeixin.AtPhones.Split(',').ToList();
+                }
+                if (workWeixin.IsAtAll)
+                {
+                    mentioned_mobile_list.Add("@all");
+                }
+
+                var obj = new
+                {
+                    msgtype = "markdown",
+                    markdown = new
+                    {
+                        content,
+                        mentioned_mobile_list
+                    },
+                };
+
+                var requestUri = $"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={workWeixin.Key}";
+
+                //per host per HttpClient
+                var httpClient = HangfireHttpClientFactory.WorkWeixinInstance.GetHttpClient(requestUri);
+
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json")
+                };
+
+                var res = httpClient.SendAsync(request).GetAwaiter().GetResult();
+                res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("HttpJob.SendWorkWeixinNotice=>" + item, e);
+            }
+        }
+
+        /// <summary>
         /// 发送成功通知
         /// </summary>
-        private static void SendSuccess(string jobId,HttpJobItem item, string result)
+        private static void SendSuccess(string jobId, HttpJobItem item, string result)
         {
             new Task(() =>
             {
                 SendSuccessMail(item, result);
-                SendDingTalkNotice(item, jobId, result,true);
+                SendDingTalkNotice(item, jobId, result, true);
+                SendWorkWeixinNotice(item, jobId, result, true);
             }).Start();
         }
 
@@ -485,7 +559,8 @@ namespace Hangfire.HttpJob.Server
             new Task(() =>
             {
                 SendFailMail(item, result, exception);
-                SendDingTalkNotice(item, jobId, result,false,exception);
+                SendDingTalkNotice(item, jobId, result, false, exception);
+                SendWorkWeixinNotice(item, jobId, result, false, exception);
             }).Start();
         }
 
@@ -505,7 +580,7 @@ namespace Hangfire.HttpJob.Server
                     : item.Mail;
 
                 if (string.IsNullOrWhiteSpace(mail)) return;
-                var subject = $"【JOB】[Success]" + item.JobName+(!string.IsNullOrEmpty(item.RecurringJobIdentifier)?"-"+item.RecurringJobIdentifier : "");
+                var subject = $"【JOB】[Success]" + item.JobName + (!string.IsNullOrEmpty(item.RecurringJobIdentifier) ? "-" + item.RecurringJobIdentifier : "");
                 result = result.Replace("\n", "<br/>");
                 result = result.Replace("\r\n", "<br/>");
                 new EmailService().Send(mail, subject, result);
@@ -540,7 +615,7 @@ namespace Hangfire.HttpJob.Server
                     result += BuildExceptionMsg(exception);
                 }
 
-               new EmailService().Send(mail, subject, result);
+                new EmailService().Send(mail, subject, result);
             }
             catch (Exception ex)
             {
@@ -625,7 +700,7 @@ namespace Hangfire.HttpJob.Server
                 foreach (var header in item.Headers)
                 {
                     if (string.IsNullOrEmpty(header.Key)) continue;
-                    
+
                     //查看是否需要替换;
                     var headerKey = string.Empty;
                     if (header.Key.Contains("#{") || header.Key.Contains("${"))
@@ -683,7 +758,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     request.Headers.Add("x-job-server", Convert.ToBase64String(Encoding.UTF8.GetBytes(currentServerId)));
                 }
-                
+
                 request.Headers.Add("x-job-agent-class", item.AgentClass);
                 if (!string.IsNullOrEmpty(headerKeys))
                 {
@@ -709,9 +784,13 @@ namespace Hangfire.HttpJob.Server
                 {
                     basicItem.DingTalk = CodingUtil.HangfireHttpJobOptions.DingTalkOption;
                 }
+                if (basicItem.WorkWeixin == null)
+                {
+                    basicItem.WorkWeixin = CodingUtil.HangfireHttpJobOptions.WorkWeixinOption;
+                }
 
-                var jobUrl =  CodingUtil.GetCurrentJobDetailUrl(context.BackgroundJob.Id);
-                request.Headers.Add("x-job-url",Convert.ToBase64String(Encoding.UTF8.GetBytes(jobUrl)));
+                var jobUrl = CodingUtil.GetCurrentJobDetailUrl(context.BackgroundJob.Id);
+                request.Headers.Add("x-job-url", Convert.ToBase64String(Encoding.UTF8.GetBytes(jobUrl)));
                 request.Headers.Add("x-job-id", context.BackgroundJob.Id);
 
                 //detect-if-a-character-is-a-non-ascii-character
@@ -835,10 +914,10 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception e)
             {
-                Logger.ErrorException("get connectionString fail",e);
+                Logger.ErrorException("get connectionString fail", e);
                 return "";
             }
-            
+
         }
 
         #endregion
@@ -1005,11 +1084,11 @@ namespace Hangfire.HttpJob.Server
                 {
                     if (!param.ContainsKey(item.Key))
                     {
-                        param.Add(item.Key,item.Value);
+                        param.Add(item.Key, item.Value);
                     }
                 }
             }
-           
+
             var parameterValue = ExpressionEvaluator.GetValue(null, placeholder, param);
             return parameterValue.ToString();
         }

@@ -99,6 +99,11 @@ namespace Hangfire.HttpJob.Client
         /// 钉钉配置
         /// </summary>
         public DingTalkOption DingTalk { get; set; }
+
+        /// <summary>
+        /// 企业微信配置
+        /// </summary>
+        public WorkWeixinOption WorkWeixin { get; set; }
         #endregion
     }
     public class DingTalkOption
@@ -112,6 +117,23 @@ namespace Hangfire.HttpJob.Client
         /// 钉钉签名密钥
         /// </summary>
         public string Secret { get; set; }
+
+        /// <summary>
+        /// 通知是否@对应手机号的人员 , 分割
+        /// </summary>
+        public string AtPhones { get; set; }
+
+        /// <summary>
+        ///  通知是否@所有人
+        /// </summary>
+        public bool IsAtAll { get; set; }
+    }
+    public class WorkWeixinOption
+    {
+        /// <summary>
+        /// 企业微信Webhook地址
+        /// </summary>
+        public string Key { get; set; }
 
         /// <summary>
         /// 通知是否@对应手机号的人员 , 分割

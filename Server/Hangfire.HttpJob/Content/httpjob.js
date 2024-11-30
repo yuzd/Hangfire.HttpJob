@@ -126,6 +126,18 @@
                     IsAtAll: config.DingtalkAtAll == 'true' ? true : false
                 }
             }
+            if (config.EnableWorkWeixin && config.EnableWorkWeixin == 'true') {
+                normalObj.WorkWeixin = {
+                    Token: config.WorkWeixinToken || "",
+                    AtPhones: config.WorkWeixinPhones || "",
+                    IsAtAll: config.WorkWeixinAtAll == 'true' ? true : false
+                }
+                recurringObj.WorkWeixin = {
+                    Token: config.WorkWeixinToken || "",
+                    AtPhones: config.WorkWeixinPhones || "",
+                    IsAtAll: config.WorkWeixinAtAll == 'true' ? true : false
+                }
+            }
             var normal_templete = JSON.stringify(normalObj);     // "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultBackGroundJobQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
             var recurring_templete = JSON.stringify(recurringObj); // "{\"JobName\":\"\",\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Headers\":{},\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Cron\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"" + config.DefaultRecurringQueueName + "\",\"EnableRetry\":false,\"RetryTimes\":3,\"RetryDelaysInSeconds\":\"20,30,60\",\"SendSucMail\":false,\"SendFaiMail\":true,\"Mail\":\"\",\"AgentClass\":\"\",\"CallbackEL\":\"\"}";
             // console.log(normal_templete);

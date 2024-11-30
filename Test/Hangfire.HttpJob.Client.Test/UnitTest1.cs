@@ -25,6 +25,12 @@ namespace Hangfire.HttpJob.Client.Test
                     AtPhones = "",
                     IsAtAll = false
                 },
+                WorkWeixin = new WorkWeixinOption
+                {
+                    Key = "",
+                    AtPhones = "",
+                    IsAtAll = false
+                },
                 Success = new HttpCallbackJob
                 {
                     Method = "Get",
@@ -83,6 +89,12 @@ namespace Hangfire.HttpJob.Client.Test
                 DingTalk = new DingTalkOption
                 {
                     Token = "",
+                    AtPhones = "",
+                    IsAtAll = false
+                },
+                WorkWeixin = new WorkWeixinOption
+                {
+                    Key = "",
                     AtPhones = "",
                     IsAtAll = false
                 },
