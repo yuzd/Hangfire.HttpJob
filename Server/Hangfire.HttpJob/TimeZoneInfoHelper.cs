@@ -45,7 +45,7 @@ namespace Hangfire.HttpJob
         { "America/Indiana/Indianapolis", "US Eastern Standard Time" },
         { "America/La_Paz", "SA Western Standard Time" },
         { "America/Los_Angeles", "Pacific Standard Time" },
-        { "America/Mexico_City", "Mexico Standard Time" },
+        { "America/Mexico_City", "Pacific Standard Time (Mexico)" },
         { "America/Montevideo", "Montevideo Standard Time" },
         { "America/New_York", "Eastern Standard Time" },
         { "America/Noronha", "UTC-02" },
